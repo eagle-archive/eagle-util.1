@@ -1,8 +1,10 @@
 #include <afx.h>         // MFC core and standard components
 #include <string>
+#include <direct.h>
+#include <io.h>
+#include <shlobj.h>
 #include "FileUtil.h"
 #include "StrUtil.h"
-#include <shlobj.h>
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 #define new DEBUG_NEW
@@ -127,6 +129,45 @@ bool WriteAllLines(const TCHAR * name, const CStringArray &linesArray)
    }
 
    return bRes;
+}
+
+bool CreateDirNested(const char *pDir)
+{
+    int iRet = 0;
+    int iLen;
+    char* pszDir;
+
+    if(NULL == pDir) {
+        return false;
+    }
+    if (_access(pDir, 0) == 0) {
+        return true;
+    }
+
+    pszDir = _strdup(pDir);
+    iLen = strlen(pszDir);
+
+    for (int i = 0;i < iLen; i++) {
+        if (pszDir[i] == '\\' || pszDir[i] == '/') { 
+            pszDir[i] = '\0';
+
+            // create the file if it does not exist
+            iRet = _access(pszDir, 0);
+            if (iRet != 0) {
+                iRet = _mkdir(pszDir);
+                if (iRet != 0) {
+                    return false;
+                }
+            }
+            pszDir[i] = '/'; // Replace '\' with '/' to support Linux
+        }
+    }
+    
+    if (_access(pszDir, 0) != 0) {
+        iRet = _mkdir(pszDir);
+    }
+    free(pszDir);
+    return iRet == 0;
 }
 
 }

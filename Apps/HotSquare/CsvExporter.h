@@ -9,7 +9,7 @@
 class CsvExporter {
 public:
     CsvExporter(const char *sOutFolder, const char *sSchema, const char *sTableName,
-        const char *sTemplateFolder);
+        const char *sTemplateFolder, int nRecCount);
     ~CsvExporter();
     // Generate various export files excluding the "data.csv"
     bool GenerateExportFiles();
@@ -27,6 +27,7 @@ private:
 
     std::string mstrSchema;
     std::string mstrTableName;
+    int mnRecordCount;
     std::string mstrError;
 };
 

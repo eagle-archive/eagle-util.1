@@ -14,6 +14,7 @@ std::string GetCurModulePathname();
 std::string GetFilePath(const char* pathname);
 std::string GetFileName(const char* pathname);
 std::string GetFileTitle(const char* pathname);
+bool CreateDirNested(const char *pDir);
 
 bool WriteAllLines(const TCHAR * name, const CStringArray &linesArray);
 

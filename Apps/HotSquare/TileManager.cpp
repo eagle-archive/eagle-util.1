@@ -288,10 +288,27 @@ bool TileManager::SaveToHanaExportFiles(const char *folder)
 {
     const char *sTemplateFolder = "Data\\CsvTemplate\\SegsTiles";
 
-    CsvExporter exporter(folder, "I078212", "WAY_SEGMENT_17", sTemplateFolder);
+    CsvExporter exporter(folder, "I078212", "WAY_SEGMENT_17", sTemplateFolder, mpSegMgr->GetSegArrayCount());
+    if (false == SaveSegTilesToCsv(exporter.GetDataFilePath().c_str())) {
+        printf("ERROR: cannot save to segment-tile file: %s\n", exporter.GetDataFilePath().c_str());
+        return false;
+    }
+
     if (!exporter.GenerateExportFiles()) {
         printf("ERROR: %s\n", exporter.GetErrorStr().c_str());
         return false;
     }
-    return SaveToCsvFile(exporter.GetDataFilePath().c_str());
+    return true;
+}
+
+bool TileManager::SaveSegTilesToCsv(const char *filename)
+{
+    std::ofstream out(filename);
+    if (!out.good())
+        return false;
+
+    // TODO: how to save?
+
+    out.close();
+    return true;
 }

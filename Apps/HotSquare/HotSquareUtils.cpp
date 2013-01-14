@@ -4,6 +4,8 @@
 
 #include <Windows.h>
 #include <string>
+#include <direct.h>
+#include <io.h>
 #include "HotSquare.h"
 
 using namespace std;
@@ -54,30 +56,27 @@ void StringReplace(string &strBase, const string &strSrc, const string &strDes)
     }
 }
 
-
-#include <direct.h>
-#include <io.h>
-
-bool CreatDirNested(const char *pDir)
+bool CreateDirNested(const char *pDir)
 {
-    int i = 0;
-    int iRet;
+    int iRet = 0;
     int iLen;
     char* pszDir;
 
     if(NULL == pDir) {
         return false;
     }
+    if (_access(pDir, 0) == 0) {
+        return true;
+    }
 
     pszDir = _strdup(pDir);
     iLen = strlen(pszDir);
 
-    // 创建中间目录
-    for (i = 0;i < iLen; i++) {
+    for (int i = 0;i < iLen; i++) {
         if (pszDir[i] == '\\' || pszDir[i] == '/') { 
             pszDir[i] = '\0';
 
-            //如果不存在,创建
+            // create the file if it does not exist
             iRet = _access(pszDir, 0);
             if (iRet != 0) {
                 iRet = _mkdir(pszDir);
@@ -85,14 +84,13 @@ bool CreatDirNested(const char *pDir)
                     return false;
                 }
             }
-//#if !defined(_WIN32)
-            //支持linux,将所有\换成/
-            pszDir[i] = '/';
-//#endif
+            pszDir[i] = '/'; // Replace '\' with '/' to support Linux
         }
     }
-
-    iRet = _mkdir(pszDir);
+    
+    if (_access(pszDir, 0) != 0) {
+        iRet = _mkdir(pszDir);
+    }
     free(pszDir);
     return iRet == 0;
 }

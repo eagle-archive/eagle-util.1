@@ -45,6 +45,7 @@ public:
     };
     bool GenerateTiles(SegManager &segMgr);
     bool SaveToCsvFile(const char *filename);
+    bool SaveSegTilesToCsv(const char *filename);
     bool SaveToHanaExportFiles(const char *folder);
     SEG_ID_T AssignSegment(const COORDINATE_T &coord, int nHeading); // return 0 if not found
 

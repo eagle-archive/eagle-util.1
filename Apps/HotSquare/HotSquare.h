@@ -47,7 +47,8 @@
 std::string FormatTimeStr(unsigned int uTimeMs);
 std::string ElapsedTimeStr();
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
-bool CreatDirNested(const char *pDir);
+bool CreateDirNested(const char *pDir);
+bool GetLine(std::ifstream &fs, std::string &line);
 
 double GetDistanceInMeter(double lat1, double lng1, double lat2, double lng2);
 

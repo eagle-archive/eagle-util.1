@@ -35,8 +35,7 @@ int SegManager::GetSegArrayCount() const
     return (int)mAllSegs.size();
 }
 
-static
-bool get_line(std::ifstream &fs, std::string &line) {
+bool GetLine(std::ifstream &fs, std::string &line) {
     line.clear();
     do{
         if(getline(fs, line)) {
@@ -60,7 +59,7 @@ bool SegManager::LoadFromCsvFile(const char *path)
     std::string line;
 
     int count = 0, csvLineNum = 0;
-    while (get_line(in, line)) {
+    while (GetLine(in, line)) {
         SEGMENT_T seg;
         int one_way;
 
