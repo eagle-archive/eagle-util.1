@@ -58,9 +58,9 @@ bool GenerateSquareIds(const SEGMENT_T segments[], int count, int nThreadId, has
     squareIdSet.clear();
 
     for (int i=0; i<count; i++) {
-        if ((i % 500) == 0) {
+        if ((i % 500) == 0 || i == count-1) {
             printf("\r%s: thread #%d - Generating square IDs, %d/%d, %2.2lf%%\t",
-				ElapsedTimeStr().c_str(), nThreadId, i, count, (double)i/count * 100);
+				ElapsedTimeStr().c_str(), nThreadId, i, count, (double)(i+1)/count * 100);
         }
 
         subSet.clear();
@@ -158,12 +158,15 @@ static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[]
     arrSquarePtr.reserve(num);
 
     for (int i = 0; i < num; i++) {
+        if ((i % 20000) == 0 || i == num - 1) {
+            printf("\r%s: thread #%d - Pre-calculating %d/%d, %2.2lf%%\t",
+                ElapsedTimeStr().c_str(), nThreadId, i, num, (double)(i+1)/num * 100);
+        }
+
         SQUARE_T *psq = new SQUARE_T;
         psq->square_id = squareIds[i];
-        if ((i % 20000) == 0) {
-            printf("\r%s: thread #%d - Pre-calculating %d/%d, %2.2lf%%\t",
-                ElapsedTimeStr().c_str(), nThreadId, i, num, (double)i/num * 100);
-        }
+        psq->square_lng_id = (int)psq->square_id;
+        psq->square_lat_id = (int)(psq->square_id >> 32);
 
         COORDINATE_T centerCoord;
         SquareManager::SquareIdToCenterCoordinate(psq->square_id, &centerCoord);
@@ -311,6 +314,28 @@ bool SquareManager::SaveToCsvFile(const char *filename)
             char buff[512];
             // "seqare id, heading_from, heading_to, segment id"
             sprintf(buff, "%lld,%d,%d,%lld\n", pSq->square_id,
+                pSq->arr_headings_seg_id[i].from_level, pSq->arr_headings_seg_id[i].to_level,
+                pSq->arr_headings_seg_id[i].seg_id);
+            out << buff;
+        }
+    }
+    out.close();
+    return true;
+}
+
+// Save squares into CSV file, not saving 64-bit square IDs, but seperated lng IDs and lat IDs.
+bool SquareManager::SaveToCsvFile2(const char *filename)
+{
+    std::ofstream out(filename);
+    if (!out.good())
+        return false;
+
+	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
+        SQUARE_T *pSq = it->second;
+        for (size_t i = 0; i < pSq->arr_headings_seg_id.size(); i++) {
+            char buff[512];
+            // "seqare lng id, seqare lat id, heading_from, heading_to, segment id"
+            sprintf(buff, "%d,%d,%d,%d,%lld\n", pSq->square_lng_id, pSq->square_lat_id,
                 pSq->arr_headings_seg_id[i].from_level, pSq->arr_headings_seg_id[i].to_level,
                 pSq->arr_headings_seg_id[i].seg_id);
             out << buff;
