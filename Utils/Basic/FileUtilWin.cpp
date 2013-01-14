@@ -131,6 +131,41 @@ bool WriteAllLines(const TCHAR * name, const CStringArray &linesArray)
    return bRes;
 }
 
+bool GetLine(std::ifstream &fs, std::string &line) {
+    line.clear();
+    do{
+        if(getline(fs, line)) {
+            if(fs.good() && line.empty()){
+                continue;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } while(true);
+    return false;
+}
+
+bool ReadAllFromFile(const char *path, string &data)
+{
+    std::ifstream in(path);
+    string line;
+
+    data.clear();
+    while(GetLine(in, line)) {
+        data += line + '\n';
+    }
+    return true;
+}
+
+bool WriteStrToFile(const char *path, const string &data)
+{
+    std::ofstream out(path);
+    if (!out.good()) return false;
+    out << data;
+    return true;
+}
+
 bool CreateDirNested(const char *pDir)
 {
     int iRet = 0;

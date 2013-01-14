@@ -16,7 +16,10 @@ std::string GetFileName(const char* pathname);
 std::string GetFileTitle(const char* pathname);
 bool CreateDirNested(const char *pDir);
 
-bool WriteAllLines(const TCHAR * name, const CStringArray &linesArray);
+bool WriteAllLines(const TCHAR *name, const CStringArray &linesArray);
+bool WriteStrToFile(const char *name, const std::string &data);
+bool GetLine(std::ifstream &fs, std::string &line);
+bool ReadAllFromFile(const char *path, std::string &data);
 
 }
 

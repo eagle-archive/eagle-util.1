@@ -26,6 +26,7 @@ static bool ReadAll(const char *path, string &data)
 static bool WriteAll(const char *path, const string &data)
 {
     std::ofstream out(path);
+    if (!out.good()) return false;
     out << data;
     return true;
 }
