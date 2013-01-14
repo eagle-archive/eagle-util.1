@@ -36,6 +36,9 @@
     <ClInclude Include="SegManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CsvExporter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SquareManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CsvExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

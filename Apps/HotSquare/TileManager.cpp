@@ -6,6 +6,7 @@
 #include <fstream>
 #include <float.h>
 #include "TileManager.h"
+#include "CsvExporter.h"
 
 using namespace std;
 using namespace stdext;
@@ -281,4 +282,16 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
     }
 
     return minIndex < 0 ? 0 : arrSegs[minIndex]->seg_id;
+}
+
+bool TileManager::SaveToHanaExportFiles(const char *folder)
+{
+    const char *sTemplateFolder = "Data\\CsvTemplate\\SegsTiles";
+
+    CsvExporter exporter(folder, "I078212", "WAY_SEGMENT_17", sTemplateFolder);
+    if (!exporter.GenerateExportFiles()) {
+        printf("ERROR: %s\n", exporter.GetErrorStr().c_str());
+        return false;
+    }
+    return SaveToCsvFile(exporter.GetDataFilePath().c_str());
 }

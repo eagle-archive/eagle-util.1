@@ -39,5 +39,16 @@ bool WideStrToAnsiStr(std::string &str, const WCHAR * wstr)
     return result;
 }
 
+void StringReplace(string &strBase, const string &strSrc, const string &strDes)
+{
+    string::size_type pos = 0;
+    string::size_type srcLen = strSrc.size();
+    string::size_type desLen = strDes.size();
+    pos = strBase.find(strSrc, pos); 
+    while ((pos != string::npos)) {
+        strBase.replace(pos, srcLen, strDes);
+        pos=strBase.find(strSrc, (pos+desLen));
+    }
+}
 
 }

@@ -74,6 +74,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CsvExporter.h" />
     <ClInclude Include="HotSquare.h" />
     <ClInclude Include="SegManager.h" />
     <ClInclude Include="SquareManager.h" />
@@ -82,6 +83,7 @@
     <ClInclude Include="TileManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CsvExporter.cpp" />
     <ClCompile Include="HotSquare.cpp" />
     <ClCompile Include="HotSquareUtils.cpp" />
     <ClCompile Include="SegManager.cpp" />
