@@ -12,6 +12,9 @@ using namespace std;
 
 CsvExporter::CsvExporter(const char *sOutFolder, const char *sSchema, const char *sTableName, const char *sTemplateFolder)
 {
+    mstrSchema = sSchema;
+    mstrTableName = sTableName;
+
     mstrBaseFolder = sOutFolder;
     StringReplace(mstrBaseFolder, "/", "\\");
     if (!mstrBaseFolder.empty() && mstrBaseFolder[mstrBaseFolder.size()-1] != '\\') {
@@ -21,10 +24,8 @@ CsvExporter::CsvExporter(const char *sOutFolder, const char *sSchema, const char
     if (!mstrTemplateFolder.empty() && mstrTemplateFolder[mstrTemplateFolder.size()-1] != '\\') {
         mstrTemplateFolder += '\\';
     }
-    mstrDataFolder = mstrBaseFolder + "index\\" + mstrSchema + "\\" + mstrTableName.substr(0, 2) + '\\';
-
-    mstrSchema = sSchema;
-    mstrTableName = sTableName;
+    mstrDataFolder = mstrBaseFolder + "index\\" + mstrSchema + "\\" + mstrTableName.substr(0, 2) +
+        '\\' + mstrTableName + '\\';
 }
 
 CsvExporter::~CsvExporter()

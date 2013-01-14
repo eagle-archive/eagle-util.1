@@ -73,22 +73,22 @@ bool CreatDirNested(const char *pDir)
     iLen = strlen(pszDir);
 
     // 创建中间目录
-    for (i = 0;i < iLen;i ++) {
+    for (i = 0;i < iLen; i++) {
         if (pszDir[i] == '\\' || pszDir[i] == '/') { 
             pszDir[i] = '\0';
 
             //如果不存在,创建
-            iRet = _access(pszDir,0);
+            iRet = _access(pszDir, 0);
             if (iRet != 0) {
                 iRet = _mkdir(pszDir);
                 if (iRet != 0) {
                     return false;
-                } 
+                }
             }
-#if !defined(_WIN32)
+//#if !defined(_WIN32)
             //支持linux,将所有\换成/
             pszDir[i] = '/';
-#endif
+//#endif
         }
     }
 

@@ -9,7 +9,12 @@
 // Global Constants
 
 // define it to 0 to read all segments
+#ifdef _DEBUG
+#define SEGMENTS_CSV_READ_LIMIT  100
+#else
 #define SEGMENTS_CSV_READ_LIMIT  0
+#endif
+
 #define SEGMENTS_CSV_PATH   "Data\\WAY_SEGMENTS\\data"
 
 // Below two defines are specific to Harbin
