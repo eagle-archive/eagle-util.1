@@ -1,11 +1,30 @@
 
 #include <iostream>
+#include <fstream>
 #include "../HotSquare.h"
 #include "../SquareManager.h"
 
 #define DMS_TO_DEGREE(d,m,s,ms)    (d + (m)/60.0 + ((s) + (ms)/1000.0)/3600.0)
 
 using namespace std;
+
+
+typedef struct {
+    long long   gpsdata_id;
+    string      devid;
+    string      stime; // unix time
+    int         alarmflag;
+    int         state;
+    double      latitude;
+    double      longtitude;
+    short       speed;
+    double      orientation;
+    string      gpstime; // unix time
+    double      odometer;
+    double      oilgauge;
+
+    SEG_ID_T    assigned_seg;
+} VEHICLE_RECORD;
 
 extern SegManager gSegManager;
 extern TileManager gTileManager;
@@ -139,8 +158,58 @@ void Test_GetTileSize()
     double m2 = GetDistanceInMeter(north, east, north, west);
 }
 
+
+static 
+bool ParseRecord(string &line, VEHICLE_RECORD &r) {
+    std::vector<std::string> row;
+    CsvLinePopulate(row, line, ',');
+
+    if(row.size() < 12){
+        return false;
+    }
+
+    r.gpsdata_id = atol(row[0].c_str());
+    r.devid = row[1];
+    r.stime = row[2];
+    r.alarmflag = atoi(row[3].c_str());
+    r.state = atoi(row[4].c_str());
+    r.latitude = atof(row[5].c_str());
+    r.longtitude = atof(row[6].c_str());
+    r.speed = atoi(row[7].c_str());
+    r.orientation = atof(row[8].c_str());
+    r.gpstime = row[9];
+    r.odometer = 0;
+    r.oilgauge = 0;
+    r.assigned_seg = 0;
+
+    return true;
+}
+
+bool Test_TileManager_TestData5000()
+{
+    cout << "Enter Test_TileManager_TestData5000()\n";
+    std::ifstream in("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data.csv");
+    std::ofstream out("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data-2.csv");
+    std::string line;
+    while (GetLine(in, line)) {
+        VEHICLE_RECORD record;
+        if (true == ParseRecord(line, record)) {
+            COORDINATE_T coord;
+            coord.lng = record.longtitude;
+            coord.lat = record.latitude;
+            record.assigned_seg = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            out << record.gpsdata_id << ',' << record.devid << ',' << record.stime << ','
+                << record.alarmflag << ',' << record.state << ',' << record.latitude << ',' << record.longtitude << ','
+                << record.speed << ',' << record.orientation << ',' << record.gpstime << ','
+                << record.odometer << ',' << record.oilgauge << ',' << record.assigned_seg << "\n";
+        }
+    }
+    return true;
+}
+
 bool Test_Main()
 {
+/*
     if (false == Test_CoordinateMapping()) {
         printf("Test_CoordinateMapping failed!\n");
     }
@@ -151,6 +220,7 @@ bool Test_Main()
     Test_GetTileSize();
     Test_TileManager_SampleDataAssignment();
     Test_SquareManager_SampleDataAssignment();
-
+    Test_TileManager_TestData5000();
+*/
     return true;
 }

@@ -19,8 +19,8 @@ bool CreateDirNested(const char *pDir);
 bool WriteAllLines(const TCHAR *name, const CStringArray &linesArray);
 bool WriteStrToFile(const char *name, const std::string &data);
 bool GetLine(std::ifstream &fs, std::string &line);
+void CsvLinePopulate(std::vector<std::string> &items, const std::string &line, char delimiter);
 bool ReadAllFromFile(const char *path, std::string &data);
 
-}
 
 #endif // _FILE_UTIL_H

@@ -32,8 +32,8 @@ int main()
     }
     printf("%s: Generated %d tiles.\n",
         ElapsedTimeStr().c_str(), gTileManager.GetTileCount());
-    //gTileManager.SaveToCsvFile("Data\\Tiles.csv");
-    gTileManager.SaveToHanaExportFiles("Data\\Seg-Tiles-Zoom17");
+    gTileManager.SaveToCsvFile("Data\\Tiles.csv");
+    //gTileManager.SaveToHanaExportFiles("Data\\Seg-Tiles-Zoom17");
     printf("%s: Tiles for zoom level %d saved to file Data\\Tiles.csv\n",
         ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
 
@@ -41,7 +41,7 @@ int main()
     printf("\n%s: Generated %d squares.\n",
         ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount());
 
-    //Test_Main();
+    Test_Main();
 
     gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
     printf("%s: Squares saved to file Data\\Squares.csv\n",

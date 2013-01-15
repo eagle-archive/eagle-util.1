@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <string>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Global Constants
@@ -49,6 +50,7 @@ std::string ElapsedTimeStr();
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 bool CreateDirNested(const char *pDir);
 bool GetLine(std::ifstream &fs, std::string &line);
+void CsvLinePopulate(std::vector<std::string> &items, const std::string &line, char delimiter);
 
 double GetDistanceInMeter(double lat1, double lng1, double lat2, double lng2);
 
