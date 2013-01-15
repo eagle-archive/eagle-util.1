@@ -1,3 +1,6 @@
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -22,8 +25,6 @@ typedef struct {
     string      gpstime; // unix time
     double      odometer;
     double      oilgauge;
-
-    SEG_ID_T    assigned_seg;
 } VEHICLE_RECORD;
 
 extern SegManager gSegManager;
@@ -180,16 +181,22 @@ bool ParseRecord(string &line, VEHICLE_RECORD &r) {
     r.gpstime = row[9];
     r.odometer = 0;
     r.oilgauge = 0;
-    r.assigned_seg = 0;
 
     return true;
+}
+
+static string DoubleToStr(double f) {
+    char buff[32];
+    sprintf(buff, "%9.7lf", f);
+    return buff;
 }
 
 bool Test_TileManager_TestData5000()
 {
     cout << "Enter Test_TileManager_TestData5000()\n";
-    std::ifstream in("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data.csv");
-    std::ofstream out("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data-2.csv");
+    std::ifstream  in("C:\\Users\\I078212\\Temp\\TEST_DATA_5000.data.csv");
+    std::ofstream out("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data.csv");
+
     std::string line;
     while (GetLine(in, line)) {
         VEHICLE_RECORD record;
@@ -197,11 +204,13 @@ bool Test_TileManager_TestData5000()
             COORDINATE_T coord;
             coord.lng = record.longtitude;
             coord.lat = record.latitude;
-            record.assigned_seg = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            SEG_ID_T assigned_seg_id = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
             out << record.gpsdata_id << ',' << record.devid << ',' << record.stime << ','
-                << record.alarmflag << ',' << record.state << ',' << record.latitude << ',' << record.longtitude << ','
-                << record.speed << ',' << record.orientation << ',' << record.gpstime << ','
-                << record.odometer << ',' << record.oilgauge << ',' << record.assigned_seg << "\n";
+                << record.alarmflag << ',' << record.state << ','
+                << DoubleToStr(record.latitude) << ',' << DoubleToStr(record.longtitude) << ','
+                << DoubleToStr(record.speed) << ',' << DoubleToStr(record.orientation) << ','
+                << record.gpstime << ',' << record.odometer << ',' << record.oilgauge << ','
+                << assigned_seg_id << endl;
         }
     }
     return true;
@@ -220,7 +229,8 @@ bool Test_Main()
     Test_GetTileSize();
     Test_TileManager_SampleDataAssignment();
     Test_SquareManager_SampleDataAssignment();
-    Test_TileManager_TestData5000();
 */
+    Test_TileManager_TestData5000();
+
     return true;
 }

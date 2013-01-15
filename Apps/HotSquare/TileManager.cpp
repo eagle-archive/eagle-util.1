@@ -235,7 +235,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
     TILE_ID_T tileId = TileManager::CoordToTileId(coord);
 	TILE_MAP_T::iterator it = mTileMap.find(tileId);
     if (it == mTileMap.end())
-        return false;
+        return INVALID_SEG_ID;
 
     TILE_T *pTile = it->second;
     std::vector<SEGMENT_T *> &arrSegs = pTile->segsWithNeighbors;
@@ -252,7 +252,6 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
     double aDistances[MAX];
 
     for (size_t i = 0; i < arrSegs.size(); i++) {
-        //const SEGMENT_T *pSeg = mpSegMgr->GetSegByID(arrSegs[i]);
         const SEGMENT_T *pSeg = arrSegs[i];
 
         // If not the same direction, ignore
@@ -268,6 +267,10 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
         }
     }
 
+    if (distanceMin > SEG_ASSIGN_DISTANCE_MAX * SEG_ASSIGN_DISTANCE_MAX) {
+        return INVALID_SEG_ID;
+    }
+
     int angleMin = 180;
     for (size_t i = 0; i < arrSegs.size(); i++) {
         if (aIsSameDir[i] &&
@@ -281,7 +284,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
         }
     }
 
-    return minIndex < 0 ? 0 : arrSegs[minIndex]->seg_id;
+    return minIndex < 0 ? INVALID_SEG_ID : arrSegs[minIndex]->seg_id;
 }
 
 bool TileManager::SaveToHanaExportFiles(const char *folder)

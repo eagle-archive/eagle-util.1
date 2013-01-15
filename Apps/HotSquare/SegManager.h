@@ -24,7 +24,8 @@ typedef struct {
     double lng;
 } COORDINATE_T;
 
-typedef unsigned long long SEG_ID_T;
+typedef long long SEG_ID_T;
+#define INVALID_SEG_ID  ((SEG_ID_T)-1)
 
 typedef struct {
     // The following are raw data members

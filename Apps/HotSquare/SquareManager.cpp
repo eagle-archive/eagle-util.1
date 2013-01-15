@@ -349,7 +349,7 @@ SEG_ID_T SquareManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
 {
     SQUARE_ID_T sqId = SquareManager::CoordinateToSquareId(coord);
     SQUARE_T *pSq = GetSquareById(sqId);
-    if (!pSq) return 0;
+    if (!pSq) return INVALID_SEG_ID;
 
     int headingLevel = SegManager::HeadingToLevel(nHeading);
     for (size_t i = 0; i < pSq->arr_headings_seg_id.size(); i++) {
@@ -358,5 +358,5 @@ SEG_ID_T SquareManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
             return head_segids.seg_id;
         }
     }
-    return 0;
+    return INVALID_SEG_ID;
 }
