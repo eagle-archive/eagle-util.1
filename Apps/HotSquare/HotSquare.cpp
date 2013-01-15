@@ -43,9 +43,9 @@ int main()
     printf("\n%s: Generated %d squares.\n",
         ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount());
 
-    //Test_Main();
+    Test_Main();
 
-    gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
+    //gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
     printf("%s: Squares saved to file Data\\Squares.csv\n",
         ElapsedTimeStr().c_str());
 
