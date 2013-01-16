@@ -45,8 +45,10 @@ public:
 		SQUARE_MAP_T::iterator it = mSquareMap.find(id);
         return (it == mSquareMap.end()) ? NULL : it->second;
     };
+    int CalcCsvLineCount();
     bool SaveToCsvFile(const char *filename);
     bool SaveToCsvFile2(const char *filename);
+    bool SaveToHanaExportFiles(const char *folder, const char *schema, const char *table);
     SEG_ID_T AssignSegment(const COORDINATE_T &coord, int nHeading); // return 0 if not found
 
     static inline SQUARE_ID_T CoordinateToSquareId(const COORDINATE_T &coord) {

@@ -6,6 +6,7 @@
 #include <fstream>
 #include "HotSquare.h"
 #include "SquareManager.h"
+#include "CsvExporter.h"
 
 using namespace std;
 using namespace stdext;
@@ -19,6 +20,9 @@ static const double LNG_STEP = SQUARE_LNG_SPAN / 4.0 / LNG_METERS_PER_DEGREE;
 static
 bool GetSegmentNeighboringSquareIds(const SEGMENT_T *pSegment, hash_set<SQUARE_ID_T> &sqIdSet)
 {
+    static const double MAX_ASSIGN_DISTANCE_2 =
+        (SEG_ASSIGN_DISTANCE_MAX + SQUARE_LAT_SPAN) * (SEG_ASSIGN_DISTANCE_MAX + SQUARE_LAT_SPAN);
+
     double lat1 = pSegment->from.lat;
     double lng1 = pSegment->from.lng;
     double lat2 = pSegment->to.lat;
@@ -40,7 +44,7 @@ bool GetSegmentNeighboringSquareIds(const SEGMENT_T *pSegment, hash_set<SQUARE_I
     for (coord.lat = lat1; coord.lat <= lat2; coord.lat += LAT_STEP) {
         for (coord.lng = lng1; coord.lng < lng2; coord.lng += LNG_STEP) {
             SQUARE_ID_T id = SquareManager::CoordinateToSquareId(coord);
-            if (SegManager::CalcDistanceSquareMeters(coord, *pSegment) < SEG_ASSIGN_DISTANCE_MAX * SEG_ASSIGN_DISTANCE_MAX) {
+            if (SegManager::CalcDistanceSquareMeters(coord, *pSegment) < MAX_ASSIGN_DISTANCE_2) {
                 if (sqIdSet.find(id) == sqIdSet.end()) {
                         sqIdSet.insert(id);
                 }
@@ -187,7 +191,7 @@ static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[]
                 i2++;
             }
             i2--;
-            if (seg_id_heading_levels[i1] != 0) {
+            if (seg_id_heading_levels[i1] != INVALID_SEG_ID) {
                 HEADINGS_TO_SEG_IDS_T heads_segid;
                 heads_segid.from_level = i1;
                 heads_segid.to_level = i2;
@@ -345,6 +349,15 @@ bool SquareManager::SaveToCsvFile2(const char *filename)
     return true;
 }
 
+int SquareManager::CalcCsvLineCount()
+{
+    int count = 0;
+	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
+        count += it->second->arr_headings_seg_id.size();
+    }
+    return count;
+}
+
 SEG_ID_T SquareManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
 {
     SQUARE_ID_T sqId = SquareManager::CoordinateToSquareId(coord);
@@ -359,4 +372,21 @@ SEG_ID_T SquareManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
         }
     }
     return INVALID_SEG_ID;
+}
+
+bool SquareManager::SaveToHanaExportFiles(const char *folder, const char *schema, const char *table)
+{
+    const char *sTemplateFolder = "Data\\CsvTemplate\\SquareSeg";
+
+    CsvExporter exporter(folder, schema, table, sTemplateFolder, CalcCsvLineCount());
+    if (false == SaveToCsvFile2(exporter.GetDataFilePath().c_str())) {
+        printf("ERROR: cannot save to Square-Segment file: %s\n", exporter.GetDataFilePath().c_str());
+        return false;
+    }
+
+    if (!exporter.GenerateExportFiles()) {
+        printf("ERROR: %s\n", exporter.GetErrorStr().c_str());
+        return false;
+    }
+    return true;
 }

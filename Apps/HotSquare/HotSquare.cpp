@@ -45,9 +45,9 @@ int main()
 
     //Test_Main();
 
-    gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
-    printf("%s: Squares saved to file Data\\Squares.csv\n",
-        ElapsedTimeStr().c_str());
+    //gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
+    //printf("%s: Squares saved to file Data\\Squares.csv\n", ElapsedTimeStr().c_str());
+    gSquareManager.SaveToHanaExportFiles("Data\\SQUARE_SEGMENT_10_10", "I078212", "SQUARE_SEGMENT_10_10");
 
     printf("%s: Done!\n", ElapsedTimeStr().c_str());
 	return 0;
