@@ -290,7 +290,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
 
 bool TileManager::SaveToHanaExportFiles(const char *folder)
 {
-    const char *sTemplateFolder = "Data\\CsvTemplate\\SegsTiles";
+    const char *sTemplateFolder = "CsvTemplate\\SegsTiles";
 
     CsvExporter exporter(folder, "I078212", "WAY_SEGMENT_17", sTemplateFolder, mpSegMgr->GetSegArrayCount());
     if (false == SaveSegTilesToCsv(exporter.GetDataFilePath().c_str())) {

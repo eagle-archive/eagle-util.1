@@ -53,6 +53,7 @@ bool GetLine(std::ifstream &fs, std::string &line);
 void CsvLinePopulate(std::vector<std::string> &items, const std::string &line, char delimiter);
 
 double GetDistanceInMeter(double lat1, double lng1, double lat2, double lng2);
-
+double GetDistanceSameLatInMeter(double lat, double lng1, double lng2);
+double GetDistanceSameLngInMeter(double lng, double lat1, double lat2);
 
 #endif // HOT_SQUARE_H_

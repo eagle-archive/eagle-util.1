@@ -355,7 +355,7 @@ SEG_ID_T SquareManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
 
 bool SquareManager::SaveToHanaExportFiles(const char *folder, const char *schema, const char *table)
 {
-    const char *sTemplateFolder = "Data\\CsvTemplate\\SquareSeg";
+    const char *sTemplateFolder = "CsvTemplate\\SquareSeg";
 
     CsvExporter exporter(folder, schema, table, sTemplateFolder, CalcCsvLineCount());
     if (false == SaveToCsvFile(exporter.GetDataFilePath().c_str())) {
