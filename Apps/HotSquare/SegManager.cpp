@@ -63,7 +63,7 @@ bool SegManager::LoadFromCsvFile(const char *path)
         SEGMENT_T seg;
         int one_way;
 
-        int r = sscanf(line.c_str(), "%lld,%lf,%lf,%lf,%lf,%lld,%d,%lf,%lf",
+        int r = sscanf(line.c_str(), "\"%lld\",%lf,%lf,%lf,%lf,\"%lld\",%d,%lf,%lf",
             &seg.seg_id, &seg.from.lat, &seg.from.lng, &seg.to.lat, &seg.to.lng,
             &seg.way_id, &one_way, &seg.length, &seg.weight);
         if (r == 9) {

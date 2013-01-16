@@ -30,23 +30,19 @@ int main()
         printf("Error: cannot generate tiles\n");
         return 20;
     }
-    printf("%s: Generated %d tiles.\n",
-        ElapsedTimeStr().c_str(), gTileManager.GetTileCount());
-    gTileManager.SaveToCsvFile("Data\\Tiles.csv");
+    printf("%s: Generated %d tiles.\n", ElapsedTimeStr().c_str(), gTileManager.GetTileCount());
+    //gTileManager.SaveToCsvFile("Data\\Tiles.csv");
     //gTileManager.SaveToHanaExportFiles("Data\\Seg-Tiles-Zoom17");
-    printf("%s: Tiles for zoom level %d saved to file Data\\Tiles.csv\n",
-        ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
-
-    //Test_Main();
-
-    gSquareManager.BuildSquareMap_Multi(gSegManager, gTileManager, 4);
-    printf("\n%s: Generated %d squares.\n",
-        ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount());
+    //printf("%s: Tiles for zoom level %d saved to file Data\\Tiles.csv\n", ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
 
     Test_Main();
 
-    //gSquareManager.SaveToCsvFile2("Data\\Squares.csv");
-    //printf("%s: Squares saved to file Data\\Squares.csv\n", ElapsedTimeStr().c_str());
+    gSquareManager.BuildSquareMap_Multi(gSegManager, gTileManager, 4);
+    printf("\n%s: Generated %d squares, %d records.\n", ElapsedTimeStr().c_str(),
+        gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
+
+    //Test_Main();
+
     gSquareManager.SaveToHanaExportFiles("Data\\SQUARE_SEGMENT_10_10", "I078212", "SQUARE_SEGMENT_10_10");
     printf("%s: Squares saved to file Data\\SQUARE_SEGMENT_10_10\\\n", ElapsedTimeStr().c_str());
 

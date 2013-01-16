@@ -47,7 +47,6 @@ public:
     };
     int CalcCsvLineCount();
     bool SaveToCsvFile(const char *filename);
-    bool SaveToCsvFile2(const char *filename);
     bool SaveToHanaExportFiles(const char *folder, const char *schema, const char *table);
     SEG_ID_T AssignSegment(const COORDINATE_T &coord, int nHeading); // return 0 if not found
 
@@ -55,6 +54,10 @@ public:
         unsigned int hi = (unsigned int)(coord.lat * LAT_METERS_PER_DEGREE / SQUARE_LAT_SPAN);
         unsigned int low = (unsigned int)(coord.lng * LNG_METERS_PER_DEGREE / SQUARE_LNG_SPAN);
         return ((unsigned long long)hi << 32) | low;
+    };
+    static void CoordinateToSquareIds(const COORDINATE_T &coord, int *square_lng_id, int *square_lat_id) {
+        *square_lat_id = (unsigned int)(coord.lat * LAT_METERS_PER_DEGREE / SQUARE_LAT_SPAN);
+        *square_lng_id = (unsigned int)(coord.lng * LNG_METERS_PER_DEGREE / SQUARE_LNG_SPAN);
     };
     static inline void SquareIdToCenterCoordinate(const SQUARE_ID_T &id, COORDINATE_T *pCoord) {
         pCoord->lat = ((unsigned int)(id >> 32) + 0.5) * (double)SQUARE_LAT_SPAN / LAT_METERS_PER_DEGREE;

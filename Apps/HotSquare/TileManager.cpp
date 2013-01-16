@@ -271,10 +271,11 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
         return INVALID_SEG_ID;
     }
 
+    static const double ERROR_2 = 1*1;
     int angleMin = 180;
     for (size_t i = 0; i < arrSegs.size(); i++) {
         if (aIsSameDir[i] &&
-            (distanceMin - aDistances[i] < 1) && (distanceMin - aDistances[i] > -1))
+            (distanceMin - aDistances[i] < ERROR_2) && (distanceMin - aDistances[i] > -ERROR_2))
         {
             int angle = GetAngle(arrSegs[i]->heading_int, nHeading);
             if (angle < angleMin) {

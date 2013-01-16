@@ -55,7 +55,7 @@ public:
     };
 
     static int HeadingToLevel(double heading) {
-        return int(heading / (360.0/HEADING_LEVEL_NUM) + 0.5) % HEADING_LEVEL_NUM;
+        return int((heading + 360.0)/ (360.0/HEADING_LEVEL_NUM) + 0.5) % HEADING_LEVEL_NUM;
     };
     static double GetHeading(const COORDINATE_T &coFrom, const COORDINATE_T &coTo);
     static int GetHeadingLevel(const COORDINATE_T &coFrom, const COORDINATE_T &coTo) {

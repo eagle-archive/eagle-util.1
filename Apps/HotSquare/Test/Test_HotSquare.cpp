@@ -115,9 +115,16 @@ bool Test_SquareManager_AssignOnePoint(double lng, double lat, int heading, cons
     coord.lng = lng;
     coord.lat = lat;
 
-    SEG_ID_T res_id = gSquareManager.AssignSegment(coord, heading);
-    cout << "expected seg ID: " << expected_id << " assigned ID: " << res_id << "\n";
-    return res_id == expected_id;
+    int level = SegManager::HeadingToLevel(heading);
+
+    int square_lng_id, square_lat_id;
+    SquareManager::CoordinateToSquareIds(coord, &square_lng_id, &square_lat_id);
+    cout << "square_lng_id: " << square_lng_id << " square_lat_id: " << square_lat_id << "\t";
+
+    SEG_ID_T res_id_1 = gTileManager.AssignSegment(coord, heading);
+    SEG_ID_T res_id_2 = gSquareManager.AssignSegment(coord, heading);
+    cout << "expected seg ID: " << expected_id << " assigned ID 1: " << res_id_1 << " assigned ID 2: " << res_id_2 << "\n";
+    return res_id_2 == expected_id;
     return true;
 }
 
@@ -127,9 +134,7 @@ bool Test_SquareManager_SampleDataAssignment()
     Test_SquareManager_AssignOnePoint(DMS_TO_DEGREE(126,36,51,299), DMS_TO_DEGREE(45,39,46,619), 217, 0);
     Test_SquareManager_AssignOnePoint(DMS_TO_DEGREE(126,39,42,803), DMS_TO_DEGREE(45,45,24,299), 272, 9774);
     Test_SquareManager_AssignOnePoint(DMS_TO_DEGREE(126,40,45,433), DMS_TO_DEGREE(45,44, 3,418),  56, 2798);
-    Test_SquareManager_AssignOnePoint(126.70537972222222, 45.75574972222222, 19, 3980);
-    Test_SquareManager_AssignOnePoint(126.78225972222222, 45.77801972222222, 17, 22197);
-    Test_SquareManager_AssignOnePoint(126.64852972222224, 45.743409722222225, 22, 12759);
+    Test_SquareManager_AssignOnePoint(126.65652, 45.78949, 271, 16832);
 
     return true;
 }
@@ -193,9 +198,13 @@ static string DoubleToStr(double f) {
 
 bool Test_Data5000()
 {
+    const char *infile = "Data\\TEST_DATA_5000.data.csv";
+    const char *outfile = "Data\\TEST_DATA_5000\\data.csv";
+
     cout << "Enter Test_Data5000()\n";
-    std::ifstream in("Data\\TEST_DATA_5000.data.csv");
-    std::ofstream out("Data\\TEST_DATA_5000\\data.csv");
+    std::ifstream in(infile);
+    remove(outfile);
+    std::ofstream out(outfile);
 
     int diff_count = 0;
     std::string line;
@@ -207,13 +216,15 @@ bool Test_Data5000()
             coord.lat = record.latitude;
             SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
             SEG_ID_T assigned_seg_id2 = gSquareManager.AssignSegment(coord, (int)(record.orientation + 0.5));
-            out << record.gpsdata_id << ',' << record.devid << ',' << record.stime << ','
+            out << record.gpsdata_id << ',' << record.devid << ',' << '"'
+                << record.stime << '"' << ','
                 << record.alarmflag << ',' << record.state << ','
                 << DoubleToStr(record.latitude) << ',' << DoubleToStr(record.longtitude) << ','
                 << DoubleToStr(record.speed) << ',' << DoubleToStr(record.orientation) << ','
-                << record.gpstime << ',' << record.odometer << ',' << record.oilgauge << ','
+                << '"' << record.gpstime << '"' << ','
+                << record.odometer << ',' << record.oilgauge << ','
                 << assigned_seg_id1;
-            out << ',' << assigned_seg_id2;
+            out << ',' << assigned_seg_id2 << ',' << int(assigned_seg_id1 == assigned_seg_id2);
             out << endl;
             if (assigned_seg_id1 != assigned_seg_id2) {
                 diff_count++;
@@ -236,8 +247,8 @@ bool Test_Main()
     Test_SegManager_Distance();
     Test_GetTileSize();
     Test_TileManager_SampleDataAssignment();
-    Test_SquareManager_SampleDataAssignment();
 */
+    Test_SquareManager_SampleDataAssignment();
     Test_Data5000();
 
     return true;

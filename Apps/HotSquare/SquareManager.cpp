@@ -306,29 +306,8 @@ void SquareManager::ClearSquareMap()
     mSquareMap.clear();
 }
 
-bool SquareManager::SaveToCsvFile(const char *filename)
-{
-    std::ofstream out(filename);
-    if (!out.good())
-        return false;
-
-	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
-        SQUARE_T *pSq = it->second;
-        for (size_t i = 0; i < pSq->arr_headings_seg_id.size(); i++) {
-            char buff[512];
-            // "seqare id, heading_from, heading_to, segment id"
-            sprintf(buff, "%lld,%d,%d,%lld\n", pSq->square_id,
-                pSq->arr_headings_seg_id[i].from_level, pSq->arr_headings_seg_id[i].to_level,
-                pSq->arr_headings_seg_id[i].seg_id);
-            out << buff;
-        }
-    }
-    out.close();
-    return true;
-}
-
 // Save squares into CSV file, not saving 64-bit square IDs, but seperated lng IDs and lat IDs.
-bool SquareManager::SaveToCsvFile2(const char *filename)
+bool SquareManager::SaveToCsvFile(const char *filename)
 {
     std::ofstream out(filename);
     if (!out.good())
@@ -379,7 +358,7 @@ bool SquareManager::SaveToHanaExportFiles(const char *folder, const char *schema
     const char *sTemplateFolder = "Data\\CsvTemplate\\SquareSeg";
 
     CsvExporter exporter(folder, schema, table, sTemplateFolder, CalcCsvLineCount());
-    if (false == SaveToCsvFile2(exporter.GetDataFilePath().c_str())) {
+    if (false == SaveToCsvFile(exporter.GetDataFilePath().c_str())) {
         printf("ERROR: cannot save to Square-Segment file: %s\n", exporter.GetDataFilePath().c_str());
         return false;
     }
