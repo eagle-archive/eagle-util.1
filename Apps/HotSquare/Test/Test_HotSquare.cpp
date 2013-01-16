@@ -191,12 +191,13 @@ static string DoubleToStr(double f) {
     return buff;
 }
 
-bool Test_TileManager_TestData5000()
+bool Test_Data5000()
 {
-    cout << "Enter Test_TileManager_TestData5000()\n";
-    std::ifstream  in("C:\\Users\\I078212\\Temp\\TEST_DATA_5000.data.csv");
-    std::ofstream out("C:\\Users\\I078212\\Temp\\TEST_DATA_5000\\index\\UNIT_TEST\\TE\\TEST_DATA_5000\\data.csv");
+    cout << "Enter Test_Data5000()\n";
+    std::ifstream in("Data\\TEST_DATA_5000.data.csv");
+    std::ofstream out("Data\\TEST_DATA_5000\\data.csv");
 
+    int diff_count = 0;
     std::string line;
     while (GetLine(in, line)) {
         VEHICLE_RECORD record;
@@ -204,15 +205,22 @@ bool Test_TileManager_TestData5000()
             COORDINATE_T coord;
             coord.lng = record.longtitude;
             coord.lat = record.latitude;
-            SEG_ID_T assigned_seg_id = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            SEG_ID_T assigned_seg_id2 = gSquareManager.AssignSegment(coord, (int)(record.orientation + 0.5));
             out << record.gpsdata_id << ',' << record.devid << ',' << record.stime << ','
                 << record.alarmflag << ',' << record.state << ','
                 << DoubleToStr(record.latitude) << ',' << DoubleToStr(record.longtitude) << ','
                 << DoubleToStr(record.speed) << ',' << DoubleToStr(record.orientation) << ','
                 << record.gpstime << ',' << record.odometer << ',' << record.oilgauge << ','
-                << assigned_seg_id << endl;
+                << assigned_seg_id1;
+            out << ',' << assigned_seg_id2;
+            out << endl;
+            if (assigned_seg_id1 != assigned_seg_id2) {
+                diff_count++;
+            }
         }
     }
+    cout << "Exit Test_Data5000(), diff count = " << diff_count << endl;
     return true;
 }
 
@@ -230,7 +238,7 @@ bool Test_Main()
     Test_TileManager_SampleDataAssignment();
     Test_SquareManager_SampleDataAssignment();
 */
-    Test_TileManager_TestData5000();
+    Test_Data5000();
 
     return true;
 }
