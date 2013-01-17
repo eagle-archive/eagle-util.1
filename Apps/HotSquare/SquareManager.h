@@ -51,19 +51,25 @@ public:
     SEG_ID_T AssignSegment(const COORDINATE_T &coord, int nHeading); // return 0 if not found
 
     static inline SQUARE_ID_T CoordinateToSquareId(const COORDINATE_T &coord) {
-        unsigned int hi = (unsigned int)(coord.lat * LAT_METERS_PER_DEGREE / SQUARE_LAT_SPAN);
-        unsigned int low = (unsigned int)(coord.lng * LNG_METERS_PER_DEGREE / SQUARE_LNG_SPAN);
-        return ((unsigned long long)hi << 32) | low;
+        int latId = (int)floor((1.0 - log( tan(coord.lat * M_PI/180.0) + 1.0 / cos(coord.lat * M_PI/180.0)) / M_PI) / 2.0 * (double)TOTAL_SQUARE_NUM);
+        int lngId = (int)floor((coord.lng + 180.0) / 360.0 * (double)TOTAL_SQUARE_NUM);
+        return ((unsigned long long)latId << 32) | (unsigned long long)lngId;
     };
     static void CoordinateToSquareIds(const COORDINATE_T &coord, int *square_lng_id, int *square_lat_id) {
-        *square_lat_id = (unsigned int)(coord.lat * LAT_METERS_PER_DEGREE / SQUARE_LAT_SPAN);
-        *square_lng_id = (unsigned int)(coord.lng * LNG_METERS_PER_DEGREE / SQUARE_LNG_SPAN);
+        *square_lat_id = (int)floor((1.0 - log( tan(coord.lat * M_PI/180.0) + 1.0 / cos(coord.lat * M_PI/180.0)) / M_PI) / 2.0 * (double)TOTAL_SQUARE_NUM);
+        *square_lng_id = (int)floor((coord.lng + 180.0) / 360.0 * (double)TOTAL_SQUARE_NUM);
     };
     static inline void SquareIdToCenterCoordinate(const SQUARE_ID_T &id, COORDINATE_T *pCoord) {
-        pCoord->lat = ((unsigned int)(id >> 32) + 0.5) * (double)SQUARE_LAT_SPAN / LAT_METERS_PER_DEGREE;
-        pCoord->lng = ((unsigned int)id + 0.5) * (double)SQUARE_LNG_SPAN / LNG_METERS_PER_DEGREE;
+        pCoord->lat = LatIdToLat((int)(id >> 32));
+        pCoord->lng = LngIdToLng((int)id);
     };
-
+    static inline double LngIdToLng(unsigned int lngId) {
+        return lngId / (double)TOTAL_SQUARE_NUM * 360.0 - 180;
+    };
+    static inline double LatIdToLat(unsigned int latId) {
+        double n = M_PI - 2.0 * M_PI * latId / (double)TOTAL_SQUARE_NUM;
+        return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
+    };
 private:
     void ClearSquareMap();
 

@@ -11,7 +11,7 @@
 
 // define it to 0 to read all segments
 #ifdef _DEBUG
-//#define SEGMENTS_CSV_READ_LIMIT  100
+#define SEGMENTS_CSV_READ_LIMIT  100
 #else
 #define SEGMENTS_CSV_READ_LIMIT  0
 #endif
@@ -21,7 +21,7 @@
 // Below two defines are specific to Harbin
 // Refer to http://www.hhlink.com/%E7%BB%8F%E7%BA%AC%E5%BA%A6
 //          http://blog.csdn.net/e_wsq/article/details/7551376
-#define LAT_METERS_PER_DEGREE   111190
+#define LAT_METERS_PER_DEGREE   (111194.99646)  // R_EARTH * 2 * PI / 360
 #define LNG_METERS_PER_DEGREE   77628
 
 #define R_EARTH     6371004 // in meters
@@ -29,6 +29,9 @@
 // square size (in meters)
 #define SQUARE_LAT_SPAN     10
 #define SQUARE_LNG_SPAN     10
+
+#define SQUARE_ZOOM_LEVEL  22
+#define TOTAL_SQUARE_NUM  (2 << (SQUARE_ZOOM_LEVEL - 1))
 
 // Device [0, 360) into some heading levels
 // E.g., for 8 heading levels: 0: [-22.5, 22.5), Level 1: [22.5, 45+22.5), ...
