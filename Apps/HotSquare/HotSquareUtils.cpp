@@ -10,7 +10,6 @@
 
 using namespace std;
 
-#define R_EARTH 6378137
 
 std::string FormatTimeStr(unsigned int uTimeMs)
 {
@@ -41,22 +40,21 @@ double GetDistanceInMeter(double lat1, double lng1, double lat2, double lng2)
     double b = rad(lng1) - rad(lng2);
     double sin_a_2 = sin(a/2);
     double sin_b_2 = sin(b/2);
-    double s = 2 * asin(sqrt((sin_a_2*sin_a_2) + cos(radLat1)*cos(radLat2)* (sin_b_2*sin_b_2)));
+    double s = 2 * asin(sqrt(sin_a_2 * sin_a_2 + cos(radLat1) * cos(radLat2) * (sin_b_2 * sin_b_2)));
     return s * R_EARTH;
 }
 
 // Get the distance on earth surface between two points with the same lat coordinate
 double GetDistanceSameLatInMeter(double lat, double lng1, double lng2)
 {
-    double b = rad(lng1) - rad(lng2);
-    double s = 2 * asin(cos(rad(lat)) * sin(b/2));
-    return s * R_EARTH ;
+    double r = (R_EARTH * M_PI / 180) * cos(rad(lat)) * (lng2 - lng1);
+    return r < 0 ? -r : r;
 }
 
 // Get the distance on earth surface between two points with the same lng coordinate
-double GetDistanceSameLngInMeter(double lng, double lat1, double lat2)
+double GetDistanceSameLngInMeter(double lat1, double lat2)
 {
-    double r = (rad(lat1) - rad(lat2)) * R_EARTH;
+    double r = (R_EARTH * M_PI / 180) * (lat2 - lat1);
     return r < 0 ? -r : r;
 }
 

@@ -141,13 +141,16 @@ bool Test_SquareManager_SampleDataAssignment()
 
 bool Test_SegManager_Distance()
 {
-    COORDINATE_T coord;
-    coord.lng = 126.63961;
-    coord.lat = 45.78882;
-    const SEGMENT_T *pSeg1 = gSegManager.GetSegByID(20925); // should be of minimal distance?
-    const SEGMENT_T *pSeg2 = gSegManager.GetSegByID(20923);
-    double distance1 = gSegManager.CalcDistance(coord, *pSeg1);
-    double distance2 = gSegManager.CalcDistance(coord, *pSeg2);
+    COORDINATE_T coord1, coord2;
+    coord1.lng = 126.6119100;
+    coord1.lat = 45.7396050;
+    coord2.lng = 126.6357800;
+    coord2.lat = 45.7371900;
+
+    const SEGMENT_T *pSeg1 = gSegManager.GetSegByID(2270); // should be of minimal distance?
+    const SEGMENT_T *pSeg2 = gSegManager.GetSegByID(22549);
+    double distance1 = gSegManager.CalcDistanceSquareMeters(coord1, *pSeg1);
+    double distance2 = gSegManager.CalcDistanceSquareMeters(coord2, *pSeg2);
     return distance1 <= distance2;
 }
 
@@ -160,8 +163,12 @@ void Test_GetTileSize()
     double north, south, east, west;
     TileManager::GetBoundingBox(tid, north, south, east, west);
 
-    double m1 = GetDistanceInMeter(north, east, south, east);
-    double m2 = GetDistanceInMeter(north, east, north, west);
+    double span_lat = GetDistanceInMeter(north, east, south, east);
+    double span_lng = GetDistanceInMeter(north, east, north, west);
+
+    double span_lat2 = GetDistanceSameLngInMeter(north, south);
+    double span_lng2 = GetDistanceSameLatInMeter(north, east, west);
+
 }
 
 
@@ -244,12 +251,12 @@ bool Test_Main()
     if (false == Test_TileManager()) {
         printf("Test_TileManager failed!\n");
     }
-    Test_SegManager_Distance();
     Test_GetTileSize();
+    Test_SegManager_Distance();
     Test_TileManager_SampleDataAssignment();
-*/
     Test_SquareManager_SampleDataAssignment();
-    Test_Data5000();
 
+    Test_Data5000();
+*/
     return true;
 }

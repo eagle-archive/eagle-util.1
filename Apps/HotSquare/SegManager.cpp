@@ -137,6 +137,8 @@ double SegManager::CalcDistance(const COORDINATE_T &coord, const SEGMENT_T &seg)
     return r1*r1 + r2*r2;
 }
 
+static const double METERS_PER_DEGREE = R_EARTH * 2 * M_PI / 360;
+
 // Returns the square meters of distance
 double SegManager::CalcDistanceSquareMeters(const COORDINATE_T &coord, const SEGMENT_T &seg)
 {
@@ -155,7 +157,7 @@ double SegManager::CalcDistanceSquareMeters(const COORDINATE_T &coord, const SEG
     }
 
     //printf("points(%3.8lf, %3.8lf)\n", seg.from.lng + abx * t, seg.from.lat + aby * t);
-    double r1 = (coord.lng - (seg.from.lng + abx * t)) * LNG_METERS_PER_DEGREE;
-    double r2 = (coord.lat - (seg.from.lat + aby * t)) * LAT_METERS_PER_DEGREE;
+    double r1 = (coord.lng - (seg.from.lng + abx * t)) * METERS_PER_DEGREE * cos(coord.lat * M_PI / 180.0);
+    double r2 = (coord.lat - (seg.from.lat + aby * t)) * METERS_PER_DEGREE;
     return r1*r1 + r2*r2;
 }

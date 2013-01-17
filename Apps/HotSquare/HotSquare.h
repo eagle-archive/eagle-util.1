@@ -24,9 +24,11 @@
 #define LAT_METERS_PER_DEGREE   111190
 #define LNG_METERS_PER_DEGREE   77628
 
+#define R_EARTH     6371004 // in meters
+
 // square size (in meters)
-#define SQUARE_LAT_SPAN     5
-#define SQUARE_LNG_SPAN     5
+#define SQUARE_LAT_SPAN     10
+#define SQUARE_LNG_SPAN     10
 
 // Device [0, 360) into some heading levels
 // E.g., for 8 heading levels: 0: [-22.5, 22.5), Level 1: [22.5, 45+22.5), ...
@@ -54,6 +56,6 @@ void CsvLinePopulate(std::vector<std::string> &items, const std::string &line, c
 
 double GetDistanceInMeter(double lat1, double lng1, double lat2, double lng2);
 double GetDistanceSameLatInMeter(double lat, double lng1, double lng2);
-double GetDistanceSameLngInMeter(double lng, double lat1, double lat2);
+double GetDistanceSameLngInMeter(double lat1, double lat2);
 
 #endif // HOT_SQUARE_H_

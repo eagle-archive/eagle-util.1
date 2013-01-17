@@ -308,8 +308,10 @@ bool TileManager::SaveToHanaExportFiles(const char *folder)
 bool TileManager::SaveSegTilesToCsv(const char *filename)
 {
     std::ofstream out(filename);
-    if (!out.good())
+    if (!out.good()) {
+        printf("Error: cannot open %s to write.", filename);
         return false;
+    }
 
     // TODO: how to save?
 

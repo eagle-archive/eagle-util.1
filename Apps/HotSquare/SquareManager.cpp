@@ -367,5 +367,8 @@ bool SquareManager::SaveToHanaExportFiles(const char *folder, const char *schema
         printf("ERROR: %s\n", exporter.GetErrorStr().c_str());
         return false;
     }
+
+    printf("%s: Squares saved to file %s, schema:%s, table:%s\n", ElapsedTimeStr().c_str(),
+        folder, schema, table);
     return true;
 }
