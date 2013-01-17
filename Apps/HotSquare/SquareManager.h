@@ -60,8 +60,11 @@ public:
         *square_lng_id = (int)floor((coord.lng + 180.0) / 360.0 * (double)TOTAL_SQUARE_NUM);
     };
     static inline void SquareIdToCenterCoordinate(const SQUARE_ID_T &id, COORDINATE_T *pCoord) {
-        pCoord->lat = LatIdToLat((int)(id >> 32));
-        pCoord->lng = LngIdToLng((int)id);
+        unsigned int lngId = (int)id;
+        unsigned int latId = (int)(id >> 32);
+        double n = M_PI - 2.0 * M_PI * (latId + 0.5) / (double)TOTAL_SQUARE_NUM;
+        pCoord->lat = 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
+        pCoord->lng = (lngId + 0.5) / (double)TOTAL_SQUARE_NUM * 360.0 - 180;
     };
     static inline double LngIdToLng(unsigned int lngId) {
         return lngId / (double)TOTAL_SQUARE_NUM * 360.0 - 180;

@@ -16,19 +16,10 @@
 #define SEGMENTS_CSV_READ_LIMIT  0
 #endif
 
-#define SEGMENTS_CSV_PATH   "Data\\WAY_SEGMENTS\\data.csv"
 
-// Below two defines are specific to Harbin
-// Refer to http://www.hhlink.com/%E7%BB%8F%E7%BA%AC%E5%BA%A6
-//          http://blog.csdn.net/e_wsq/article/details/7551376
 #define LAT_METERS_PER_DEGREE   (111194.99646)  // R_EARTH * 2 * PI / 360
-#define LNG_METERS_PER_DEGREE   77628
 
 #define R_EARTH     6371004 // in meters
-
-// square size (in meters)
-#define SQUARE_LAT_SPAN     10
-#define SQUARE_LNG_SPAN     10
 
 #define SQUARE_ZOOM_LEVEL  22
 #define TOTAL_SQUARE_NUM  (2 << (SQUARE_ZOOM_LEVEL - 1))

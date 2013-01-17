@@ -210,6 +210,10 @@ bool Test_Data5000()
 
     cout << "Enter Test_Data5000()\n";
     std::ifstream in(infile);
+    if (!in.good()) {
+        cout << "Cannot open file " << infile << endl;
+        return false;
+    }
     remove(outfile);
     std::ofstream out(outfile);
 
@@ -255,8 +259,8 @@ bool Test_Main()
     Test_SegManager_Distance();
     Test_TileManager_SampleDataAssignment();
     Test_SquareManager_SampleDataAssignment();
-
     Test_Data5000();
 */
+
     return true;
 }

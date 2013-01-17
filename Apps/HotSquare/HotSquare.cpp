@@ -34,6 +34,7 @@ int main()
         return 1;
     }
 
+    const char *SEGMENTS_CSV_PATH = "Data\\WAY_SEGMENTS\\data.csv";
     if (false == gSegManager.LoadFromCsvFile(SEGMENTS_CSV_PATH))
     {
         printf("Error: cannot read Segments CSV file: %s\n", SEGMENTS_CSV_PATH);
@@ -58,7 +59,7 @@ int main()
     Test_Main();
 
     char square_table[512];
-    sprintf(square_table, "SQUARE_SEGMENT_%d_%d", SQUARE_LNG_SPAN, SQUARE_LAT_SPAN);
+    sprintf(square_table, "SQUARE_SEGMENT_Z%d", SQUARE_ZOOM_LEVEL);
     gSquareManager.SaveToHanaExportFiles((std::string("Data\\") + square_table).c_str(), "ITRAFFIC_TEST", square_table);
 
     printf("%s: Done!\n", ElapsedTimeStr().c_str());

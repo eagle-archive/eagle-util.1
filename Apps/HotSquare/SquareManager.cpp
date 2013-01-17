@@ -11,17 +11,14 @@
 using namespace std;
 using namespace stdext;
 
-
-static const double LAT_MARGIN = SEG_ASSIGN_DISTANCE_MAX * 1.1 / LAT_METERS_PER_DEGREE;
-static const double LNG_MARGIN = SEG_ASSIGN_DISTANCE_MAX * 1.1 / LNG_METERS_PER_DEGREE;
-static const double LAT_STEP = SQUARE_LAT_SPAN / 4.0 / LAT_METERS_PER_DEGREE;
-static const double LNG_STEP = SQUARE_LNG_SPAN / 4.0 / LNG_METERS_PER_DEGREE;
-
 static
 bool GetSegmentNeighboringSquareIds(const SEGMENT_T *pSegment, hash_set<SQUARE_ID_T> &sqIdSet)
 {
+    static const double MARGIN = SEG_ASSIGN_DISTANCE_MAX * 1.1 / LAT_METERS_PER_DEGREE;
+    static const double STEP = 2.0 / LAT_METERS_PER_DEGREE;
+
     static const double MAX_ASSIGN_DISTANCE_2 =
-        (SEG_ASSIGN_DISTANCE_MAX + SQUARE_LAT_SPAN) * (SEG_ASSIGN_DISTANCE_MAX + SQUARE_LAT_SPAN);
+        (SEG_ASSIGN_DISTANCE_MAX + 7) * (SEG_ASSIGN_DISTANCE_MAX + 7);
 
     double lat1 = pSegment->from.lat;
     double lng1 = pSegment->from.lng;
@@ -34,15 +31,15 @@ bool GetSegmentNeighboringSquareIds(const SEGMENT_T *pSegment, hash_set<SQUARE_I
         double t = lng1; lng1 = lng2; lng2 = t;
     }
 
-    lat1 -= LAT_MARGIN;
-    lat2 += LAT_MARGIN;
-    lng1 -= LNG_MARGIN;
-    lng2 += LNG_MARGIN;
+    lat1 -= MARGIN;
+    lat2 += MARGIN;
+    lng1 -= MARGIN;
+    lng2 += MARGIN;
 
     sqIdSet.clear();
     COORDINATE_T coord;
-    for (coord.lat = lat1; coord.lat <= lat2; coord.lat += LAT_STEP) {
-        for (coord.lng = lng1; coord.lng < lng2; coord.lng += LNG_STEP) {
+    for (coord.lat = lat1; coord.lat <= lat2; coord.lat += STEP) {
+        for (coord.lng = lng1; coord.lng < lng2; coord.lng += STEP) {
             SQUARE_ID_T id = SquareManager::CoordinateToSquareId(coord);
             if (SegManager::CalcDistanceSquareMeters(coord, *pSegment) < MAX_ASSIGN_DISTANCE_2) {
                 if (sqIdSet.find(id) == sqIdSet.end()) {
