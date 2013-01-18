@@ -12,26 +12,24 @@
 typedef unsigned long long SQUARE_ID_T;
 
 typedef struct {
-    int         from_level;
-    int         to_level;
+    short       from_level;
+    short       to_level;
     SEG_ID_T    seg_id;
 } HEADINGS_TO_SEG_IDS_T;
 
 typedef struct {
-    int square_lng_id;
-    int square_lat_id;
     // low 32 bit from lng coordinate, hi 32 bit from lat coordinate
     SQUARE_ID_T square_id;
     // Array of segment IDs for all the heading levels
     std::vector<HEADINGS_TO_SEG_IDS_T> arr_headings_seg_id;
 } SQUARE_T, *P_SQUARE_T;
 
-typedef std::map<SQUARE_ID_T, P_SQUARE_T> SQUARE_MAP_T;
+typedef std::map<SQUARE_ID_T, SQUARE_T> SQUARE_MAP_T;
 
 class SquareManager {
 public:
     SquareManager() { mpSegMgr = NULL; };
-    ~SquareManager() { ClearSquareMap();};
+    ~SquareManager() {};
 
     bool BuildSquareMap_Multi(SegManager &segMgr, TileManager &tileMgr, int nThreadCount);
 
@@ -43,7 +41,7 @@ public:
     };
     SQUARE_T *GetSquareById(const SQUARE_ID_T &id) {
 		SQUARE_MAP_T::iterator it = mSquareMap.find(id);
-        return (it == mSquareMap.end()) ? NULL : it->second;
+        return (it == mSquareMap.end()) ? NULL : &it->second;
     };
     int CalcCsvLineCount();
     bool SaveToCsvFile(const char *filename);
@@ -74,8 +72,6 @@ public:
         return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
     };
 private:
-    void ClearSquareMap();
-
     SegManager  *mpSegMgr;
     TileManager *mpTileMgr;
     SQUARE_MAP_T mSquareMap;

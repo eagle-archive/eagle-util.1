@@ -37,16 +37,6 @@ static inline int GetAngle(int heading1, int heading2) {
     return (diff <= 180) ? diff : 360 - diff;
 }
 
-void TileManager::ClearTileMap()
-{
-    for (TILE_MAP_T::iterator it = mTileMap.begin(); it != mTileMap.end(); it++) {
-        if (it->second != NULL) {
-            delete it->second;
-            it->second = NULL;
-        }
-    }
-    mTileMap.clear();
-}
 
 // return number of neighboring tiles
 // NOTE: buff size of neiTiles[] must be 8
@@ -56,7 +46,7 @@ static inline int GetNeighborTiles(TILE_MAP_T &tileMap, TILE_T *pThisTile, P_TIL
     for (int i = 0; i < COUNT_OF(idNeighbors); i++) {
 		TILE_MAP_T::iterator it = tileMap.find(idNeighbors[i]);
         if (it != tileMap.end()) {
-            neiTiles[count] = it->second;
+            neiTiles[count] = &it->second;
             count++;
         }
     }
@@ -73,13 +63,13 @@ static inline void CheckUpdateTile(TILE_MAP_T &tileMap, const TILE_ID_T &tileId,
 
     TILE_MAP_T::iterator it = tileMap.find(tileId);
     if (it == tileMap.end()) {
-        TILE_T *pTile = new TILE_T();
-        pTile->tile_id = tileId;
-        pTile->segIdsSet.insert(segId);
-        tileMap.insert(TILE_MAP_T::value_type(tileId, pTile));
+        TILE_T tile;
+        tile.tile_id = tileId;
+        tile.segIdsSet.insert(segId);
+        tileMap.insert(TILE_MAP_T::value_type(tileId, tile));
     } else {
         // The tile for the tile ID already in the map, segment ID => segment ID set
-        TILE_T *pTile = it->second;
+        TILE_T *pTile = &it->second;
         if (pTile->segIdsSet.find(segId) == pTile->segIdsSet.end()) {
             pTile->segIdsSet.insert(segId);
         }
@@ -115,9 +105,9 @@ static inline void CheckAddEmptyNeighborTiles(TILE_MAP_T &tileMap, TILE_ID_T til
 		TILE_MAP_T::iterator it = tileMap.find(nbTileIdArray[i]);
         if (it == tileMap.end()) {
             // Simply inser an empty tile for the neighbor
-            TILE_T *pTile = new TILE_T();
-            pTile->tile_id = nbTileIdArray[i];
-            tileMap.insert(TILE_MAP_T::value_type(nbTileIdArray[i], pTile));
+            TILE_T tile;
+            tile.tile_id = nbTileIdArray[i];
+            tileMap.insert(TILE_MAP_T::value_type(nbTileIdArray[i], tile));
         }
     }
 }
@@ -178,7 +168,7 @@ bool TileManager::GenerateTiles(SegManager &segMgr)
     }
 
 	for (TILE_MAP_T::iterator it = mTileMap.begin(); it != mTileMap.end(); it++) {
-        UpdateTileForNeighborSegs(segMgr, mTileMap, it->second);
+        UpdateTileForNeighborSegs(segMgr, mTileMap, &it->second);
     }
 
     return !mTileMap.empty();
@@ -192,10 +182,10 @@ bool TileManager::SaveToCsvFile(const char *filename)
 
     for (TILE_MAP_T::iterator it = mTileMap.begin(); it != mTileMap.end(); it++) {
         COORDINATE_T coord1, coord2;
-        GetTileCoordinates(it->second->tile_id, &coord1, &coord2);
+        GetTileCoordinates(it->second.tile_id, &coord1, &coord2);
 
         char buff[1024];
-        sprintf(buff, "0x%llX,%lf,%lf,%lf,%lf\n", it->second->tile_id,
+        sprintf(buff, "0x%llX,%lf,%lf,%lf,%lf\n", it->second.tile_id,
             coord1.lat, coord1.lng, coord2.lat, coord2.lng);
         out << buff;
     }
@@ -237,7 +227,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
     if (it == mTileMap.end())
         return INVALID_SEG_ID;
 
-    TILE_T *pTile = it->second;
+    TILE_T *pTile = &it->second;
     std::vector<SEGMENT_T *> &arrSegs = pTile->segsWithNeighbors;
 
     double distanceMin = DBL_MAX;

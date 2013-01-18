@@ -152,11 +152,11 @@ static void SquareSetToArray(hash_set<SQUARE_ID_T> &squareIdSet, vector<SQUARE_I
     }
 }
 
-static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[], int num,
-    int nThreadId, vector<SQUARE_T *> &arrSquarePtr)
+static bool GenerateSquareArray(TileManager &tileMgr, SQUARE_ID_T squareIds[], int num,
+    int nThreadId, vector<SQUARE_T> &arrSquare)
 {
-    arrSquarePtr.clear();
-    arrSquarePtr.reserve(num);
+    arrSquare.clear();
+    arrSquare.reserve(num);
 
     for (int i = 0; i < num; i++) {
         if ((i % 20000) == 0 || i == num - 1) {
@@ -164,13 +164,11 @@ static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[]
                 ElapsedTimeStr().c_str(), nThreadId, i, num, (double)(i+1)/num * 100);
         }
 
-        SQUARE_T *psq = new SQUARE_T;
-        psq->square_id = squareIds[i];
-        psq->square_lng_id = (int)psq->square_id;
-        psq->square_lat_id = (int)(psq->square_id >> 32);
+        SQUARE_T sq;
+        sq.square_id = squareIds[i];
 
         COORDINATE_T centerCoord;
-        SquareManager::SquareIdToCenterCoordinate(psq->square_id, &centerCoord);
+        SquareManager::SquareIdToCenterCoordinate(sq.square_id, &centerCoord);
         SEG_ID_T seg_id_heading_levels[HEADING_LEVEL_NUM];
         // Get seg ID for each heading for the coordinate
         for (int level = HEADING_LEVEL_NUM - 1; level >= 0; level--) {
@@ -178,8 +176,8 @@ static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[]
                 tileMgr.AssignSegment(centerCoord, level * (360 / HEADING_LEVEL_NUM));
         }
 
-        psq->arr_headings_seg_id.clear();
-        psq->arr_headings_seg_id.reserve(HEADING_LEVEL_NUM);
+        sq.arr_headings_seg_id.clear();
+        sq.arr_headings_seg_id.reserve(HEADING_LEVEL_NUM);
 
         // compress seg_id_heading_levels[] into psq->arr_headings_seg_id
         for (int i1 = 0; i1 < HEADING_LEVEL_NUM;) {
@@ -193,18 +191,18 @@ static bool GenerateSquarePtrArray(TileManager &tileMgr, SQUARE_ID_T squareIds[]
                 heads_segid.from_level = i1;
                 heads_segid.to_level = i2;
                 heads_segid.seg_id = seg_id_heading_levels[i1];
-                psq->arr_headings_seg_id.push_back(heads_segid);
+                sq.arr_headings_seg_id.push_back(heads_segid);
             }
             i1 = i2 + 1;
         }
 
 #ifdef CPP11_SUPPORT
-		psq->arr_headings_seg_id.shrink_to_fit();
+		sq.arr_headings_seg_id.shrink_to_fit();
 #endif
-        arrSquarePtr.push_back(psq);
+        arrSquare.push_back(sq);
     }
 
-    return !arrSquarePtr.empty();
+    return !arrSquare.empty();
 }
 
 typedef struct {
@@ -212,14 +210,14 @@ typedef struct {
     TileManager *pTileManager;
     SQUARE_ID_T *pSqStart;
     int nSqCount;
-    vector<SQUARE_T *> arrSquarePtr;
+    vector<SQUARE_T> arrSquare;
 } THREAD_DATA2;
 
 static unsigned long WINAPI ThreadFun_GenSquareArray( LPVOID lpParam ) 
 { 
     THREAD_DATA2 *pData = (THREAD_DATA2 *)lpParam;
-    GenerateSquarePtrArray(*pData->pTileManager, pData->pSqStart, pData->nSqCount,
-        pData->nThreadId, pData->arrSquarePtr);
+    GenerateSquareArray(*pData->pTileManager, pData->pSqStart, pData->nSqCount,
+        pData->nThreadId, pData->arrSquare);
     return 0; 
 }
 
@@ -256,12 +254,12 @@ static bool GenerateSquareArray_Multi(TileManager &tileMgr, int nThreadCount,
     // build mSquareMap
     sqMap.clear();
     for (size_t n = 0; n < dataArray.size(); n++) {
-        vector<SQUARE_T *> &arrSquarePtr = dataArray[n].arrSquarePtr;
-        for (size_t i = 0; i < arrSquarePtr.size(); i++) {
-            sqMap.insert(SQUARE_MAP_T::value_type(arrSquarePtr[i]->square_id, arrSquarePtr[i]));
+        vector<SQUARE_T> &arrSquare = dataArray[n].arrSquare;
+        for (size_t i = 0; i < arrSquare.size(); i++) {
+            sqMap.insert(SQUARE_MAP_T::value_type(arrSquare[i].square_id, arrSquare[i]));
         }
 
-        arrSquarePtr.clear();
+        arrSquare.clear();
     }
 
     return true;
@@ -292,17 +290,6 @@ bool SquareManager::BuildSquareMap_Multi(SegManager &segMgr, TileManager &tileMg
     return !mSquareMap.empty();
 }
 
-void SquareManager::ClearSquareMap()
-{
-	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
-        if (it->second != NULL) {
-            delete it->second;
-            it->second = NULL;
-        }
-    }
-    mSquareMap.clear();
-}
-
 // Save squares into CSV file, not saving 64-bit square IDs, but seperated lng IDs and lat IDs.
 bool SquareManager::SaveToCsvFile(const char *filename)
 {
@@ -311,12 +298,12 @@ bool SquareManager::SaveToCsvFile(const char *filename)
         return false;
 
 	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
-        SQUARE_T *pSq = it->second;
+        SQUARE_T *pSq = &it->second;
         for (size_t i = 0; i < pSq->arr_headings_seg_id.size(); i++) {
             char buff[512];
             // "seqare lng id, seqare lat id, heading_from, heading_to, segment id"
-            sprintf(buff, "%d,%d,%d,%d,%lld\n", pSq->square_lng_id, pSq->square_lat_id,
-                pSq->arr_headings_seg_id[i].from_level, pSq->arr_headings_seg_id[i].to_level,
+            sprintf(buff, "%d,%d,%d,%d,%lld\n", (int)(pSq->square_id >> 32), (int)pSq->square_id,
+                (int)pSq->arr_headings_seg_id[i].from_level, (int)pSq->arr_headings_seg_id[i].to_level,
                 pSq->arr_headings_seg_id[i].seg_id);
             out << buff;
         }
@@ -329,7 +316,7 @@ int SquareManager::CalcCsvLineCount()
 {
     int count = 0;
 	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
-        count += it->second->arr_headings_seg_id.size();
+        count += it->second.arr_headings_seg_id.size();
     }
     return count;
 }

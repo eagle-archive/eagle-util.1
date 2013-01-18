@@ -19,22 +19,20 @@ typedef struct {
     std::vector<SEGMENT_T *> segsWithNeighbors;
 } TILE_T, *P_TILE_T;
 
-typedef std::map<TILE_ID_T, TILE_T *> TILE_MAP_T;
+typedef std::map<TILE_ID_T, TILE_T> TILE_MAP_T;
 
 class TileManager {
 public:
     TileManager() {
         mpSegMgr = NULL;
     };
-    ~TileManager() {
-        ClearTileMap();
-    };
+    ~TileManager() {};
     int GetTileCount() const {
         return (int)mTileMap.size();
     };
     TILE_T *GetTileById(const TILE_ID_T &tileId) {
 		TILE_MAP_T::iterator it = mTileMap.find(tileId);
-        return it == mTileMap.end() ? NULL : it->second;
+        return it == mTileMap.end() ? NULL : &it->second;
     };
     TILE_T *GetTileByCoord(const COORDINATE_T &coord) {
         return GetTileById(CoordToTileId(coord));
@@ -71,7 +69,6 @@ public:
     };
 
 private:
-    void ClearTileMap();
     SegManager *mpSegMgr;
     TILE_MAP_T mTileMap;
 };

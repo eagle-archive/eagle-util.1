@@ -259,8 +259,8 @@ bool Test_Main()
     Test_SegManager_Distance();
     Test_TileManager_SampleDataAssignment();
     Test_SquareManager_SampleDataAssignment();
-    Test_Data5000();
 */
+    Test_Data5000();
 
     return true;
 }
