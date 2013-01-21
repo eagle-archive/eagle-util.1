@@ -227,6 +227,7 @@ bool Test_Data5000()
             coord.lat = record.latitude;
             SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
             SEG_ID_T assigned_seg_id2 = gSquareManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+
             out << record.gpsdata_id << ',' << record.devid << ',' << '"'
                 << record.stime << '"' << ','
                 << record.alarmflag << ',' << record.state << ','
@@ -235,7 +236,10 @@ bool Test_Data5000()
                 << '"' << record.gpstime << '"' << ','
                 << record.odometer << ',' << record.oilgauge << ','
                 << assigned_seg_id1;
+
+            // Comment out the line below for generation of 5000 records for accuracy verification
             out << ',' << assigned_seg_id2 << ',' << int(assigned_seg_id1 == assigned_seg_id2);
+
             out << endl;
             if (assigned_seg_id1 != assigned_seg_id2) {
                 diff_count++;

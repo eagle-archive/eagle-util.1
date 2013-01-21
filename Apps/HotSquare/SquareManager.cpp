@@ -11,6 +11,82 @@
 using namespace std;
 using namespace stdext;
 
+
+typedef struct {
+    SquareManager *pSqManager;
+    int nThreadId;
+    SEGMENT_T *pSegStart;
+    unsigned int nSegCount;
+    unsigned int nFinishedCount;
+    hash_set<SQUARE_ID_T> squareIdSet;
+} THREAD_DATA1;
+
+typedef struct {
+    int nThreadId;
+    SquareManager *pSqManager;
+    TileManager *pTileManager;
+    SQUARE_ID_T *pSqStart;
+    unsigned int nSqCount;
+    unsigned int nFinishedCount;
+    vector<SQUARE_T> *parrSquare;
+} THREAD_DATA2;
+
+
+static
+void TimerProc_OnGenSquareIds(void *pData)
+{
+    if (pData) {
+        vector<THREAD_DATA1> &dataArray = *(vector<THREAD_DATA1> *)pData;
+        unsigned int nTotalCount = 0;
+        unsigned int nTotalFinishedCount = 0;
+
+        static CONSOLE_SCREEN_BUFFER_INFO sConsoleInfo;
+        if (sConsoleInfo.dwSize.X == 0) {
+            ::GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &sConsoleInfo);
+        }
+        ::SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), sConsoleInfo.dwCursorPosition);
+
+        printf("\r%s: Generating square IDs: ", ElapsedTimeStr().c_str());
+        for (size_t i = 0; i < dataArray.size(); i++) {
+            if ((i % 4) == 0) {
+                printf("\t\n\t");
+            }
+            printf("thread #%d - %2.2lf%%, ", dataArray[i].nThreadId, (double)dataArray[i].nFinishedCount/dataArray[i].nSegCount * 100);
+            nTotalCount += dataArray[i].nSegCount;
+            nTotalFinishedCount += dataArray[i].nFinishedCount;
+        }
+        printf("\n\tTotal - %2.2lf%% ", (double)nTotalFinishedCount/nTotalCount * 100);
+    }
+}
+
+static
+void TimerProc_OnGenSquareArray(void *pData)
+{
+    if (pData) {
+        vector<THREAD_DATA2> &dataArray = *(vector<THREAD_DATA2> *)pData;
+        unsigned int nTotalCount = 0; 
+        unsigned int nTotalFinishedCount = 0;
+
+        static CONSOLE_SCREEN_BUFFER_INFO sConsoleInfo;
+        if (sConsoleInfo.dwSize.X == 0) {
+            ::GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &sConsoleInfo);
+        }
+        ::SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), sConsoleInfo.dwCursorPosition);
+
+        printf("\r%s: Squares pre-calculating: ", ElapsedTimeStr().c_str());
+        for (size_t i = 0; i < dataArray.size(); i++) {
+            if ((i % 4) == 0) {
+                printf("\t\n\t");
+            }
+            printf("thread #%d - %2.2lf%%, ", dataArray[i].nThreadId, (double)dataArray[i].nFinishedCount/dataArray[i].nSqCount * 100);
+
+            nTotalCount += dataArray[i].nSqCount;
+            nTotalFinishedCount += dataArray[i].nFinishedCount;
+        }
+        printf("\n\tTotal - %2.2lf%% ", (double)nTotalFinishedCount/nTotalCount * 100);
+    }
+}
+
 static
 bool GetSegmentNeighboringSquareIds(SquareManager *This, const SEGMENT_T *pSegment, hash_set<SQUARE_ID_T> &sqIdSet)
 {
@@ -53,46 +129,35 @@ bool GetSegmentNeighboringSquareIds(SquareManager *This, const SEGMENT_T *pSegme
 }
 
 static
-bool GenerateSquareIds(SquareManager *This, const SEGMENT_T segments[], int count, int nThreadId,
-    hash_set<SQUARE_ID_T> &squareIdSet)
+bool GenerateSquareIds(THREAD_DATA1 *pData1)
 {
     hash_set<SQUARE_ID_T> subSet;
-    squareIdSet.clear();
+    pData1->squareIdSet.clear();
 
-    for (int i=0; i<count; i++) {
+    for (unsigned int i=0; i<pData1->nSegCount; i++) {
         if ((i % 500) == 0) {
-            printf("\r%s: thread #%d - Generating square IDs, %d/%d, %2.2lf%%\t",
-				ElapsedTimeStr().c_str(), nThreadId, i, count, (double)(i+1)/count * 100);
+            ::InterlockedExchange(&pData1->nFinishedCount, i + 1);
         }
 
         subSet.clear();
-        GetSegmentNeighboringSquareIds(This, &segments[i], subSet);
+        GetSegmentNeighboringSquareIds(pData1->pSqManager, &pData1->pSegStart[i], subSet);
 
         for (hash_set<SQUARE_ID_T>::iterator it = subSet.begin(); it != subSet.end(); it++) {
-            if (squareIdSet.find(*it) == squareIdSet.end()) {
-                squareIdSet.insert(*it);
+            if (pData1->squareIdSet.find(*it) == pData1->squareIdSet.end()) {
+                pData1->squareIdSet.insert(*it);
             }
         }
     }
-    printf("\r%s: thread #%d - Generating square IDs, %d/%d, %2.2lf%%\t",
-        ElapsedTimeStr().c_str(), nThreadId, count, count, 100.0);
+    ::InterlockedExchange(&pData1->nFinishedCount, pData1->nSegCount);
 
-    return !squareIdSet.empty();
+    return !pData1->squareIdSet.empty();
 }
 
-
-typedef struct {
-    SquareManager *pSqManager;
-    int nThreadId;
-    SEGMENT_T *pSegStart;
-    int nSegCount;
-    hash_set<SQUARE_ID_T> squareIdSet;
-} THREAD_DATA1;
 
 static unsigned long WINAPI ThreadFun_GenSquareIds( LPVOID lpParam ) 
 { 
     THREAD_DATA1 *pData = (THREAD_DATA1 *)lpParam;
-    GenerateSquareIds(pData->pSqManager, pData->pSegStart, pData->nSegCount, pData->nThreadId, pData->squareIdSet);
+    GenerateSquareIds(pData);
     return 0; 
 }
 
@@ -122,15 +187,30 @@ bool GenerateSquareIds_Multi(SquareManager *pSqManager, const SEGMENT_T segments
         if (i == nThreadCount - 1) {
             dataArray[i].nSegCount = nSegs - nAverageCount * i;
         }
-
+        dataArray[i].nFinishedCount = 0;
         hThreadArray[i] = ::CreateThread(NULL, 0, ThreadFun_GenSquareIds,
             &dataArray[i], 0, &dwThreadIdArray[i]);
     }
 
-    // Wait until all threads have terminated.
-    ::WaitForMultipleObjects(nThreadCount, &hThreadArray[0], TRUE, INFINITE);
+    // Wait until all threads are terminated.
+    while (true) {
+        TimerProc_OnGenSquareIds(&dataArray);
+
+        bool bNotFinished = false;
+        for (size_t i = 0; i < dataArray.size(); i++) {
+            if (dataArray[i].nFinishedCount < dataArray[i].nSegCount) {
+                bNotFinished = true;
+                break;
+            }
+        }
+        if (!bNotFinished) {
+            break;
+        }
+        ::Sleep(1000);
+    }
+    TimerProc_OnGenSquareIds(&dataArray);
     for(int i=0; i<nThreadCount; i++) {
-        CloseHandle(hThreadArray[i]);
+        ::CloseHandle(hThreadArray[i]);
     }
 
     // combine the result set
@@ -159,28 +239,26 @@ static void SquareSetToArray(hash_set<SQUARE_ID_T> &squareIdSet, vector<SQUARE_I
 }
 
 static
-bool GenerateSquareArray(SquareManager *pSqManager, TileManager &tileMgr, SQUARE_ID_T squareIds[], int num,
-    int nThreadId, vector<SQUARE_T> &arrSquare)
+bool GenerateSquareArray(THREAD_DATA2 *pThreadData)
 {
-    arrSquare.clear();
-    arrSquare.reserve(num);
+    pThreadData->parrSquare->clear();
+    pThreadData->parrSquare->reserve(pThreadData->nSqCount);
 
-    for (int i = 0; i < num; i++) {
+    for (unsigned int i = 0; i < pThreadData->nSqCount; i++) {
         if ((i % 20000) == 0) {
-            printf("\r%s: thread #%d - Pre-calculating %d/%d, %2.2lf%%\t",
-                ElapsedTimeStr().c_str(), nThreadId, i, num, (double)(i+1)/num * 100);
+            ::InterlockedExchange(&pThreadData->nFinishedCount, i + 1);
         }
 
         SQUARE_T sq;
-        sq.square_id = squareIds[i];
+        sq.square_id = pThreadData->pSqStart[i];
 
         COORDINATE_T centerCoord;
-        pSqManager->SquareIdToCenterCoordinate(sq.square_id, &centerCoord);
+        pThreadData->pSqManager->SquareIdToCenterCoordinate(sq.square_id, &centerCoord);
         SEG_ID_T seg_id_heading_levels[HEADING_LEVEL_NUM];
         // Get seg ID for each heading for the coordinate
         for (int level = HEADING_LEVEL_NUM - 1; level >= 0; level--) {
             seg_id_heading_levels[level] =
-                tileMgr.AssignSegment(centerCoord, level * (360 / HEADING_LEVEL_NUM));
+                pThreadData->pTileManager->AssignSegment(centerCoord, level * (360 / HEADING_LEVEL_NUM));
         }
 
         // compress seg_id_heading_levels[] into psq->arr_headings_seg_id
@@ -203,28 +281,17 @@ bool GenerateSquareArray(SquareManager *pSqManager, TileManager &tileMgr, SQUARE
 #ifdef CPP11_SUPPORT
 		sq.arr_headings_seg_id.shrink_to_fit();
 #endif
-        arrSquare.push_back(sq);
+        pThreadData->parrSquare->push_back(sq);
     }
-    printf("\r%s: thread #%d - Pre-calculating %d/%d, %2.2lf%%\t", ElapsedTimeStr().c_str(),
-        nThreadId, num, num, 100.0);
 
-    return !arrSquare.empty();
+    ::InterlockedExchange(&pThreadData->nFinishedCount, pThreadData->nSqCount);
+    return !pThreadData->parrSquare->empty();
 }
-
-typedef struct {
-    int nThreadId;
-    SquareManager *pSqManager;
-    TileManager *pTileManager;
-    SQUARE_ID_T *pSqStart;
-    int nSqCount;
-    vector<SQUARE_T> *parrSquare;
-} THREAD_DATA2;
 
 static unsigned long WINAPI ThreadFun_GenSquareArray( LPVOID lpParam ) 
 { 
     THREAD_DATA2 *pData = (THREAD_DATA2 *)lpParam;
-    GenerateSquareArray(pData->pSqManager, *pData->pTileManager, pData->pSqStart, pData->nSqCount,
-        pData->nThreadId, *pData->parrSquare);
+    GenerateSquareArray(pData);
     return 0; 
 }
 
@@ -248,14 +315,30 @@ static bool GenerateSquareArray_Multi(SquareManager *pSqManager, TileManager &ti
         if (i == nThreadCount - 1) {
             dataArray[i].nSqCount = (int)squareIdArr.size() - nAverageCount * i;
         }
+        dataArray[i].nFinishedCount = 0;
         dataArray[i].parrSquare = new vector<SQUARE_T>;
 
         hThreadArray[i] = ::CreateThread(NULL, 0, ThreadFun_GenSquareArray,
             &dataArray[i], 0, &dwThreadIdArray[i]);
     }
 
-    // Wait until all threads have terminated.
-    ::WaitForMultipleObjects(nThreadCount, &hThreadArray[0], TRUE, INFINITE);
+    // Wait until all threads are terminated.
+    while (true) {
+        TimerProc_OnGenSquareArray(&dataArray);
+
+        bool bNotFinished = false;
+        for (size_t i = 0; i < dataArray.size(); i++) {
+            if (dataArray[i].nFinishedCount < dataArray[i].nSqCount) {
+                bNotFinished = true;
+                break;
+            }
+        }
+        if (!bNotFinished) {
+            break;
+        }
+        ::Sleep(1000);
+    }
+    TimerProc_OnGenSquareArray(&dataArray);
     for(int i=0; i<nThreadCount; i++) {
         ::CloseHandle(hThreadArray[i]);
     }
@@ -289,13 +372,13 @@ bool SquareManager::BuildSquareMap_Multi(SegManager &segMgr, TileManager &tileMg
     mpSegMgr = &segMgr;
     mpTileMgr = &tileMgr;
 
-    printf("%s: To generate square Ids, waiting ...\n", ElapsedTimeStr().c_str());
+    printf("%s: To generate square IDs, waiting ...\n", ElapsedTimeStr().c_str());
     hash_set<SQUARE_ID_T> squareIdSet;
     bool res = GenerateSquareIds_Multi(this, segMgr.GetSegArray(), segMgr.GetSegArrayCount(),
         nThreadCount, squareIdSet);
     if (res == false)
         return res;
-    printf("\n%s: Generated square Ids count: %d\n", ElapsedTimeStr().c_str(), squareIdSet.size());
+    printf("\n%s: Generated square IDs count: %d\n", ElapsedTimeStr().c_str(), squareIdSet.size());
 
     //printf("%s: before SetToArray\n", ElapsedTimeStr().c_str());
     vector<SQUARE_ID_T> squareIdArr;
