@@ -36,8 +36,8 @@ bool Test_CoordinateMapping()
     COORDINATE_T coord, coord2;
     coord.lat = 0.000500;
     coord.lng = 0.000500;
-    unsigned long long id = SquareManager::CoordinateToSquareId(coord);
-    SquareManager::SquareIdToCenterCoordinate(id, &coord2);
+    unsigned long long id = gSquareManager.CoordinateToSquareId(coord);
+    gSquareManager.SquareIdToCenterCoordinate(id, &coord2);
     return true;
 }
 
@@ -118,7 +118,7 @@ bool Test_SquareManager_AssignOnePoint(double lng, double lat, int heading, cons
     int level = SegManager::HeadingToLevel(heading);
 
     int square_lng_id, square_lat_id;
-    SquareManager::CoordinateToSquareIds(coord, &square_lng_id, &square_lat_id);
+    gSquareManager.CoordinateToSquareIds(coord, &square_lng_id, &square_lat_id);
     cout << "square_lng_id: " << square_lng_id << " square_lat_id: " << square_lat_id << "\t";
 
     SEG_ID_T res_id_1 = gTileManager.AssignSegment(coord, heading);

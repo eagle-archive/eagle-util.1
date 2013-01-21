@@ -180,7 +180,7 @@ bool CreateDirNested(const char *pDir)
     }
 
     pszDir = _strdup(pDir);
-    iLen = strlen(pszDir);
+    iLen = (int)strlen(pszDir);
 
     for (int i = 0;i < iLen; i++) {
         if (pszDir[i] == '\\' || pszDir[i] == '/') { 
@@ -217,7 +217,7 @@ void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
     int linepos = 0;
     int inquotes = false;
     char c;
-    int linemax = line.length();
+    int linemax = (int)line.length();
     std::string curstring;
     record.clear();
 

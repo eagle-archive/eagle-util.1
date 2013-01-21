@@ -33,10 +33,14 @@ int main()
     if (false == CheckSettings()) {
         return 1;
     }
+    gSquareManager.SetZoomLevel(SQUARE_ZOOM_LEVEL);
+    double fLngSpan, fLatSpan;
+    gSquareManager.GetSquareSpansInMeter(&fLngSpan, &fLatSpan);
+    printf("%s: Square Zoom Level: %lf (%lf M x %lf M)\n", ElapsedTimeStr().c_str(),
+        gSquareManager.GetZoomLevel(), fLngSpan, fLatSpan);
 
     const char *SEGMENTS_CSV_PATH = "Data\\WAY_SEGMENTS\\data.csv";
-    if (false == gSegManager.LoadFromCsvFile(SEGMENTS_CSV_PATH))
-    {
+    if (false == gSegManager.LoadFromCsvFile(SEGMENTS_CSV_PATH)) {
         printf("Error: cannot read Segments CSV file: %s\n", SEGMENTS_CSV_PATH);
         return 10;
     }
@@ -48,9 +52,8 @@ int main()
         return 20;
     }
     printf("%s: Generated %d tiles.\n", ElapsedTimeStr().c_str(), gTileManager.GetTileCount());
-    //gTileManager.SaveToCsvFile("Data\\Tiles.csv");
-    //gTileManager.SaveToHanaExportFiles("Data\\Seg-Tiles-Zoom17");
-    //printf("%s: Tiles for zoom level %d saved to file Data\\Tiles.csv\n", ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
+    //gTileManager.SaveToHanaExportFiles("Data\\Tiles-Z17");
+    //printf("%s: Tiles for zoom level %d saved to file Data\\Tiles-Z17\\\n", ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
 
     gSquareManager.BuildSquareMap_Multi(gSegManager, gTileManager, 4);
     printf("\n%s: Generated %d squares, %d records.\n", ElapsedTimeStr().c_str(),
@@ -58,8 +61,7 @@ int main()
 
     Test_Main();
 
-    char square_table[512];
-    sprintf(square_table, "SQUARE_SEGMENT_Z%d", SQUARE_ZOOM_LEVEL);
+    const char *square_table = "SQUARE_SEGMEN_10X10";
     gSquareManager.SaveToHanaExportFiles((std::string("Data\\") + square_table).c_str(), "ITRAFFIC_TEST", square_table);
 
     printf("%s: Done!\n", ElapsedTimeStr().c_str());

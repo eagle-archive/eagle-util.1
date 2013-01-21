@@ -251,7 +251,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
             double distance = SegManager::CalcDistanceSquareMeters(coord, *pSeg);
             aDistances[i] = distance;
             if (distance < distanceMin) {
-                minIndex = i;
+                minIndex = (int)i;
                 distanceMin = distance;
             }
         }
@@ -269,7 +269,7 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
         {
             int angle = GetAngle(arrSegs[i]->heading_int, nHeading);
             if (angle < angleMin) {
-                minIndex = i;
+                minIndex = (int)i;
                 angleMin = angle;
             }
         }
