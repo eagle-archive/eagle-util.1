@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\External\iniparser\src\dictionary.h" />
+    <ClInclude Include="..\..\External\iniparser\src\iniparser.h" />
     <ClInclude Include="CsvExporter.h" />
     <ClInclude Include="HotSquare.h" />
     <ClInclude Include="SegManager.h" />
@@ -150,6 +152,8 @@
     <ClInclude Include="TileManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\External\iniparser\src\dictionary.c" />
+    <ClCompile Include="..\..\External\iniparser\src\iniparser.c" />
     <ClCompile Include="CsvExporter.cpp" />
     <ClCompile Include="HotSquare.cpp" />
     <ClCompile Include="HotSquareUtils.cpp" />

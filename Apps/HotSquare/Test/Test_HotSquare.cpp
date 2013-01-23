@@ -34,10 +34,14 @@ extern SquareManager gSquareManager;
 bool Test_CoordinateMapping()
 {
     COORDINATE_T coord, coord2;
-    coord.lat = 0.000500;
-    coord.lng = 0.000500;
+    coord.lat = 45.72275;
+    coord.lng = 126.60161;
     unsigned long long id = gSquareManager.CoordinateToSquareId(coord);
     gSquareManager.SquareIdToCenterCoordinate(id, &coord2);
+
+    int square_lng_id, square_lat_id;
+    gSquareManager.CoordinateToSquareIds(coord, &square_lng_id, &square_lat_id);    // For 10X10, it shoudl be: 2380198, 997351
+
     return true;
 }
 

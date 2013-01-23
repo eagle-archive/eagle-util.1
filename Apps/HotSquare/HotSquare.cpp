@@ -44,8 +44,7 @@ int main()
         printf("Error: cannot read Segments CSV file: %s\n", SEGMENTS_CSV_PATH);
         return 10;
     }
-    printf("%s: Found %d segments.\n",
-        ElapsedTimeStr().c_str(), gSegManager.GetSegArrayCount());
+    printf("%s: Found %d segments.\n", ElapsedTimeStr().c_str(), gSegManager.GetSegArrayCount());
 
     if (false == gTileManager.GenerateTiles(gSegManager)) {
         printf("Error: cannot generate tiles\n");

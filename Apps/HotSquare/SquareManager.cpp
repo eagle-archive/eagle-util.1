@@ -404,7 +404,7 @@ bool SquareManager::SaveToCsvFile(const char *filename)
         for (size_t i = 0; i < pSq->arr_headings_seg_id.size(); i++) {
             char buff[512];
             // "seqare lng id, seqare lat id, heading_from, heading_to, segment id"
-            sprintf(buff, "%d,%d,%d,%d,%lld\n", (int)(pSq->square_id >> 32), (int)pSq->square_id,
+            sprintf(buff, "%d,%d,%d,%d,%lld\n", (int)pSq->square_id, (int)(pSq->square_id >> 32),
                 (int)pSq->arr_headings_seg_id[i].from_level, (int)pSq->arr_headings_seg_id[i].to_level,
                 pSq->arr_headings_seg_id[i].seg_id);
             out << buff;

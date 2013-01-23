@@ -23,11 +23,7 @@ SegManager::~SegManager()
 
 SEGMENT_T *SegManager::GetSegArray()
 {
-#ifdef CPP11_SUPPORT
-    return mAllSegs.data();
-#else
     return &mAllSegs[0];
-#endif
 }
 
 int SegManager::GetSegArrayCount() const
@@ -55,8 +51,13 @@ bool SegManager::LoadFromCsvFile(const char *path)
     mAllSegs.clear();
     mAllSegs.reserve(30000);
 
-    std::ifstream in(path);
     std::string line;
+    std::ifstream in(path);
+
+    if (!in.good()) {
+        printf("Error in opening file: %s\n", path);
+        return false;
+    }
 
     int count = 0, csvLineNum = 0;
     while (GetLine(in, line)) {
@@ -77,7 +78,7 @@ bool SegManager::LoadFromCsvFile(const char *path)
                 count++;
             }
         } else {
-            printf("incorrect line in CSV: %s\n", line.c_str());
+            printf("Warning: incorrect line in CSV: %s\n", line.c_str());
         }
 
 #ifdef SEGMENTS_CSV_READ_LIMIT

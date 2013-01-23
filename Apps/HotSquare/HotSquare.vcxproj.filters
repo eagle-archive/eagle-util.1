@@ -16,6 +16,12 @@
     <Filter Include="Test">
       <UniqueIdentifier>{5557baa5-730d-4835-8a92-944fe52536f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{b52b94c9-4e31-4531-bc97-6af5e06dac57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External\INI">
+      <UniqueIdentifier>{73e55c4c-082e-4de8-a3c2-cec1510d45f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -38,6 +44,12 @@
     </ClInclude>
     <ClInclude Include="CsvExporter.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\External\iniparser\src\dictionary.h">
+      <Filter>External\INI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\External\iniparser\src\iniparser.h">
+      <Filter>External\INI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="CsvExporter.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\External\iniparser\src\dictionary.c">
+      <Filter>External\INI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\External\iniparser\src\iniparser.c">
+      <Filter>External\INI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
