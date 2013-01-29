@@ -40,6 +40,7 @@ public:
         return mfZoomLevel;
     };
     bool BuildSquareMap_Multi(SegManager &segMgr, TileManager &tileMgr, int nThreadCount);
+    bool BuildSquareMap_FromCsv(SegManager &segMgr, TileManager &tileMgr, const char *filename);
 
     SQUARE_MAP_T &GetSquareMap() {
         return mSquareMap;

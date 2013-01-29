@@ -31,21 +31,6 @@ int SegManager::GetSegArrayCount() const
     return (int)mAllSegs.size();
 }
 
-bool GetLine(std::ifstream &fs, std::string &line) {
-    line.clear();
-    do{
-        if(getline(fs, line)) {
-            if(fs.good() && line.empty()){
-                continue;
-            }
-            return true;
-        } else {
-            return false;
-        }
-    } while(true);
-    return false;
-}
-
 bool SegManager::LoadFromCsvFile(const char *path)
 {
     mAllSegs.clear();

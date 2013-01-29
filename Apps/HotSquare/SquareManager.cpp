@@ -414,6 +414,70 @@ bool SquareManager::SaveToCsvFile(const char *filename)
     return true;
 }
 
+static void PrintCsvReadStatus(int rec_count)
+{
+    static CONSOLE_SCREEN_BUFFER_INFO sConsoleInfo;
+    if (sConsoleInfo.dwSize.X == 0) {
+        ::GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &sConsoleInfo);
+    }
+    ::SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), sConsoleInfo.dwCursorPosition);
+    printf("\r%s: reading square count: %d", ElapsedTimeStr().c_str(), rec_count);
+}
+
+bool SquareManager::BuildSquareMap_FromCsv(SegManager &segMgr, TileManager &tileMgr, const char *filename)
+{
+    mpSegMgr = &segMgr;
+    mpTileMgr = &tileMgr;
+
+    std::ifstream infile(filename);
+    if (!infile.good()) {
+        printf("Canot open %s\n", filename);
+        return false;
+    }
+
+    mSquareMap.clear();
+    std::string line;
+
+    int rec_count = 0;
+    while (GetLine(infile, line)) {
+        rec_count++;
+        if (rec_count % 100000 == 0) {
+            PrintCsvReadStatus(rec_count);
+        }
+
+        unsigned int sqlngid, sqlatid;
+        int from_level, to_level;
+        SEG_ID_T seg_id;
+
+        int r = sscanf(line.c_str(), "%d,%d,%d,%d,%lld",
+            &sqlngid, &sqlatid, &from_level, &to_level, &seg_id);
+        if (r == 5) {
+            HEADINGS_TO_SEG_IDS_T htos;
+            htos.from_level = from_level;
+            htos.to_level = to_level;
+            htos.seg_id = seg_id;
+
+            SQUARE_ID_T square_id = (SQUARE_ID_T)sqlngid | ((SQUARE_ID_T)sqlatid << 32);
+            SQUARE_T *pSq = GetSquareById(square_id);
+            if (pSq) {
+                pSq->arr_headings_seg_id.push_back(htos);
+            } else {
+                SQUARE_T sq;
+                sq.square_id = square_id;
+                sq.arr_headings_seg_id.push_back(htos);
+                mSquareMap.insert(SQUARE_MAP_T::value_type(square_id, sq));
+            }
+        } else {
+            printf("Warning: incorrect line in CSV: %s\n", line.c_str());
+        }
+    }
+    PrintCsvReadStatus(rec_count);
+
+    infile.close();
+    return true;
+}
+
+
 int SquareManager::CalcCsvLineCount()
 {
     int count = 0;

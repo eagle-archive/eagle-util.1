@@ -6,10 +6,26 @@
 #include <string>
 #include <direct.h>
 #include <io.h>
+#include <fstream>
 #include "HotSquare.h"
 
 using namespace std;
 
+
+bool GetLine(std::ifstream &fs, std::string &line) {
+    line.clear();
+    do{
+        if(getline(fs, line)) {
+            if(fs.good() && line.empty()){
+                continue;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } while(true);
+    return false;
+}
 
 std::string FormatTimeStr(unsigned int uTimeMs)
 {

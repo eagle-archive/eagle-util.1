@@ -39,7 +39,7 @@ int main()
     printf("%s: Square Zoom Level: %lf (%lf M x %lf M)\n", ElapsedTimeStr().c_str(),
         gSquareManager.GetZoomLevel(), fLngSpan, fLatSpan);
 
-    const char *SEGMENTS_CSV_PATH = "Data\\WAY_SEGMENTS\\data.csv";
+    const char *SEGMENTS_CSV_PATH = "Data\\WAY_SEGMENTS\\heb_data.csv";
     if (false == gSegManager.LoadFromCsvFile(SEGMENTS_CSV_PATH)) {
         printf("Error: cannot read Segments CSV file: %s\n", SEGMENTS_CSV_PATH);
         return 10;
@@ -54,14 +54,17 @@ int main()
     //gTileManager.SaveToHanaExportFiles("Data\\Tiles-Z17");
     //printf("%s: Tiles for zoom level %d saved to file Data\\Tiles-Z17\\\n", ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
 
+
     gSquareManager.BuildSquareMap_Multi(gSegManager, gTileManager, 8);
-    printf("\n%s: Generated %d squares, %d records.\n", ElapsedTimeStr().c_str(),
-        gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
+    printf("\n%s: Generated %d squares, %d records.\n", ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
+
+    gSquareManager.BuildSquareMap_FromCsv(gSegManager, gTileManager, "Data\\HEB_SQUARES\\index\\HEB_OSM\\HE\\HEB_SQUARES\\data.csv");
+    printf("\n%s: Got %d squares, %d records from CSV file.\n", ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
 
     Test_Main();
 
-    const char *square_table = "SQUARE_SEGMEN_10X10";
-    gSquareManager.SaveToHanaExportFiles((std::string("Data\\") + square_table).c_str(), "ITRAFFIC_TEST", square_table);
+    const char *square_table = "CQ_SQUARES";
+    //gSquareManager.SaveToHanaExportFiles((std::string("Data\\") + square_table).c_str(), "ITRAFFIC_TEST", square_table);
 
     printf("%s: Done!\n", ElapsedTimeStr().c_str());
 	return 0;

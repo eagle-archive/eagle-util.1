@@ -19,7 +19,7 @@ typedef struct {
     int         alarmflag;
     int         state;
     double      latitude;
-    double      longtitude;
+    double      longitude;
     short       speed;
     double      orientation;
     string      gpstime; // unix time
@@ -191,7 +191,7 @@ bool ParseRecord(string &line, VEHICLE_RECORD &r) {
     r.alarmflag = atoi(row[3].c_str());
     r.state = atoi(row[4].c_str());
     r.latitude = atof(row[5].c_str());
-    r.longtitude = atof(row[6].c_str());
+    r.longitude = atof(row[6].c_str());
     r.speed = atoi(row[7].c_str());
     r.orientation = atof(row[8].c_str());
     r.gpstime = row[9];
@@ -209,48 +209,89 @@ static string DoubleToStr(double f) {
 
 bool Test_Data5000()
 {
+    const int TOP = 1000;
     const char *infile = "Data\\TEST_DATA_5000.data.csv";
-    const char *outfile = "Data\\TEST_DATA_5000\\data.csv";
+    const char *outfile = "Data\\TEST_DATA_5000.data.out.csv";
 
     cout << "Enter Test_Data5000()\n";
     std::ifstream in(infile);
     if (!in.good()) {
-        cout << "Cannot open file " << infile << endl;
+        cout << "Test_Data5000: cannot open file " << infile << " for reading." << endl;
         return false;
     }
     remove(outfile);
     std::ofstream out(outfile);
+    if (!out.good()) {
+        cout << "Test_Data5000: cannot open file " << infile << " for writing." << endl;
+        return false;
+    }
 
+    int count = 0;
     int diff_count = 0;
+    int no_hit_count = 0;
+    int rev1_count = 0;
+    int rev2_count = 0;
+
     std::string line;
     while (GetLine(in, line)) {
         VEHICLE_RECORD record;
         if (true == ParseRecord(line, record)) {
+            count++;
+
             COORDINATE_T coord;
-            coord.lng = record.longtitude;
+            coord.lng = record.longitude;
             coord.lat = record.latitude;
+
+            int assigned_seg_id1_rev_flag = 0;
             SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            if (INVALID_SEG_ID == assigned_seg_id1) {
+                assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.orientation + 180 + 0.5));
+                if (assigned_seg_id1 != INVALID_SEG_ID) {
+                    assigned_seg_id1_rev_flag = 1;
+                    rev1_count++;
+                }
+            }
+
+            int assigned_seg_id2_rev_flag = 0;
             SEG_ID_T assigned_seg_id2 = gSquareManager.AssignSegment(coord, (int)(record.orientation + 0.5));
+            if (INVALID_SEG_ID == assigned_seg_id2) {
+                assigned_seg_id2 = gSquareManager.AssignSegment(coord, (int)(record.orientation + 180 + 0.5));
+                if (assigned_seg_id2 != INVALID_SEG_ID) {
+                    assigned_seg_id2_rev_flag = 1;
+                    rev2_count++;
+                }
+            }
 
             out << record.gpsdata_id << ',' << record.devid << ',' << '"'
                 << record.stime << '"' << ','
                 << record.alarmflag << ',' << record.state << ','
-                << DoubleToStr(record.latitude) << ',' << DoubleToStr(record.longtitude) << ','
+                << DoubleToStr(record.latitude) << ',' << DoubleToStr(record.longitude) << ','
                 << DoubleToStr(record.speed) << ',' << DoubleToStr(record.orientation) << ','
                 << '"' << record.gpstime << '"' << ','
                 << record.odometer << ',' << record.oilgauge << ','
-                << assigned_seg_id1;
+                << assigned_seg_id1 << ',' << assigned_seg_id1_rev_flag;
 
-            // Comment out the line below for generation of 5000 records for accuracy verification
-            out << ',' << assigned_seg_id2 << ',' << int(assigned_seg_id1 == assigned_seg_id2);
+            // Comment out the lines below for generation of 5000 records for accuracy verification
+            out << ',' << assigned_seg_id2 << ',' << assigned_seg_id2_rev_flag;
 
             out << endl;
-            if (assigned_seg_id1 != assigned_seg_id2) {
+
+            if (assigned_seg_id2 == INVALID_SEG_ID) {
+                no_hit_count++;
+            }
+            if (assigned_seg_id1 != assigned_seg_id2 || assigned_seg_id1_rev_flag != assigned_seg_id2_rev_flag) {
                 diff_count++;
+            }
+
+            if (TOP > 0 && count == TOP) {
+                break;
             }
         }
     }
-    cout << "Exit Test_Data5000(), diff count = " << diff_count << endl;
+
+    cout << "Exit Test_Data5000(), total count = " << count
+         << ", diff count = " << diff_count << " , hit failure count = " << no_hit_count
+         << ", reverse 1 = " << rev1_count << ", reverse 2 = " << rev2_count <<endl;
     return true;
 }
 
