@@ -54,12 +54,13 @@ int main()
     //gTileManager.SaveToHanaExportFiles("Data\\Tiles-Z17");
     //printf("%s: Tiles for zoom level %d saved to file Data\\Tiles-Z17\\\n", ElapsedTimeStr().c_str(), TILE_ZOOM_LEVEL);
 
-
+#if 0
     gSquareManager.BuildSquareMap_Multi(gSegManager, gTileManager, 8);
     printf("\n%s: Generated %d squares, %d records.\n", ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
-
+#else
     gSquareManager.BuildSquareMap_FromCsv(gSegManager, gTileManager, "Data\\HEB_SQUARES\\index\\HEB_OSM\\HE\\HEB_SQUARES\\data.csv");
     printf("\n%s: Got %d squares, %d records from CSV file.\n", ElapsedTimeStr().c_str(), gSquareManager.GetSquareCount(), gSquareManager.CalcCsvLineCount());
+#endif
 
     Test_Main();
 
