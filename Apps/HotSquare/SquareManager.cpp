@@ -396,8 +396,10 @@ bool SquareManager::BuildSquareMap_Multi(SegManager &segMgr, TileManager &tileMg
 bool SquareManager::SaveToCsvFile(const char *filename)
 {
     std::ofstream out(filename);
-    if (!out.good())
+    if (!out.good()) {
+        printf("Error: cannot open %s for writing!\n", filename);
         return false;
+    }
 
 	for (SQUARE_MAP_T::iterator it = mSquareMap.begin(); it != mSquareMap.end(); it++) {
         SQUARE_T *pSq = &it->second;
@@ -438,6 +440,9 @@ bool SquareManager::BuildSquareMap_FromCsv(SegManager &segMgr, TileManager &tile
     mSquareMap.clear();
     std::string line;
 
+    SQUARE_T sq;
+    sq.square_id = INVALID_SEG_ID;
+
     int rec_count = 0;
     while (GetLine(infile, line)) {
         rec_count++;
@@ -458,6 +463,20 @@ bool SquareManager::BuildSquareMap_FromCsv(SegManager &segMgr, TileManager &tile
             htos.seg_id = seg_id;
 
             SQUARE_ID_T square_id = (SQUARE_ID_T)sqlngid | ((SQUARE_ID_T)sqlatid << 32);
+
+            if (sq.square_id == INVALID_SEG_ID) {
+                sq.square_id = square_id;
+            }
+
+            if (square_id != sq.square_id) {
+                mSquareMap.insert(SQUARE_MAP_T::value_type(sq.square_id, sq));
+
+                sq.square_id = square_id;
+                sq.arr_headings_seg_id.clear();
+            }
+            sq.arr_headings_seg_id.push_back(htos);
+
+#if 0
             SQUARE_T *pSq = GetSquareById(square_id);
             if (pSq) {
                 pSq->arr_headings_seg_id.push_back(htos);
@@ -467,10 +486,16 @@ bool SquareManager::BuildSquareMap_FromCsv(SegManager &segMgr, TileManager &tile
                 sq.arr_headings_seg_id.push_back(htos);
                 mSquareMap.insert(SQUARE_MAP_T::value_type(square_id, sq));
             }
+#endif
         } else {
             printf("Warning: incorrect line in CSV: %s\n", line.c_str());
         }
     }
+    // Insert the last square
+    if (sq.square_id != INVALID_SEG_ID && sq.arr_headings_seg_id.size() > 0) {
+        mSquareMap.insert(SQUARE_MAP_T::value_type(sq.square_id, sq));
+    }
+
     PrintCsvReadStatus(rec_count);
 
     infile.close();

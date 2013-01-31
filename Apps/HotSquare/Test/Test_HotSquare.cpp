@@ -209,7 +209,7 @@ static string DoubleToStr(double f) {
 
 bool Test_Data5000()
 {
-    const int TOP = 1000;
+    const int TOP = 0;
     const char *infile = "Data\\TEST_DATA_5000.data.csv";
     const char *outfile = "Data\\TEST_DATA_5000.data.out.csv";
 
