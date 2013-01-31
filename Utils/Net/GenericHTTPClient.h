@@ -16,7 +16,8 @@
 #ifndef __GENERIC_HTTP_CLIENT
 #define __GENERIC_HTTP_CLIENT
 
-#include <afxwin.h>
+//#include <afxwin.h>
+#include <windows.h>
 #include <tchar.h>
 #include <wininet.h>
 

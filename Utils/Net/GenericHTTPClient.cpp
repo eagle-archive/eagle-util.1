@@ -7,6 +7,40 @@
 #include "GenericHTTPClient.h"
 #include <winreg.h>
 
+#ifdef _DEBUG
+static void MyDebug_Trace(LPCTSTR szFormat, ...)
+{
+    va_list args;
+    va_start(args, szFormat);
+
+    TCHAR szBuffer[MAX_PATH * 2] = {0};
+    int nBuf = _vstprintf(szBuffer, szFormat, args);
+
+    if (nBuf < (sizeof(szBuffer) / sizeof(szBuffer[0]) - 1))
+        OutputDebugString(szBuffer);
+    else
+        OutputDebugString(szFormat);
+
+    va_end(args);
+}
+
+#define TRACE                    ::MyDebug_Trace
+#define TRACE0(sz)              ::MyDebug_Trace(_T("%s"), _T(sz))
+#define TRACE1(sz, p1)          ::MyDebug_Trace(_T(sz), p1)
+#define TRACE2(sz, p1, p2)      ::MyDebug_Trace(_T(sz), p1, p2)
+#define TRACE3(sz, p1, p2, p3)  ::MyDebug_Trace(_T(sz), p1, p2, p3)
+
+#else
+
+inline static void MyDebug_Trace(LPCTSTR, ...) { }
+#define TRACE              1 ? (void)0 : ::MyDebug_Trace
+#define TRACE0(sz)
+#define TRACE1(sz, p1)
+#define TRACE2(sz, p1, p2)
+#define TRACE3(sz, p1, p2, p3)
+
+#endif
+
 GenericHTTPClient::GenericHTTPClient(){
     _hHTTPOpen=_hHTTPConnection=_hHTTPRequest=NULL;
 }
@@ -25,11 +59,11 @@ GenericHTTPClient::TypePostArgument GenericHTTPClient::GetPostArgumentType(int n
 
 BOOL GenericHTTPClient::Connect(LPCSTR szAddress, LPCSTR szAgent, unsigned short nPort, LPCSTR szUserAccount, LPCSTR szPassword){
 
-    _hHTTPOpen=::InternetOpenA(szAgent,												// agent name
+    _hHTTPOpen=::InternetOpenA(szAgent,	// agent name
         INTERNET_OPEN_TYPE_PRECONFIG,	// proxy option
-        "",														// proxy
-        "",												// proxy bypass
-        0);					// flags
+        "",								// proxy
+        "",								// proxy bypass
+        0);					            // flags
 
     if(!_hHTTPOpen){
         _dwError=::GetLastError();
@@ -46,7 +80,7 @@ BOOL GenericHTTPClient::Connect(LPCSTR szAddress, LPCSTR szAgent, unsigned short
         LocalFree(lpMsgBuffer);		
 #endif
         return FALSE;
-    }	
+    }
 
     _hHTTPConnection=::InternetConnectA(	_hHTTPOpen,	// internet opened handle
         szAddress, // server name
@@ -142,7 +176,7 @@ BOOL GenericHTTPClient::RequestOfURI(LPCSTR szURI, int nMethod){
 
     BOOL bReturn=TRUE;
 
-    try{
+//  try{
         switch(nMethod){
         case	GenericHTTPClient::RequestGetMethod:
         default:
@@ -155,6 +189,7 @@ BOOL GenericHTTPClient::RequestOfURI(LPCSTR szURI, int nMethod){
             bReturn=RequestPostMultiPartsFormData(szURI);
             break;
         }
+/*
     }catch(CException *e){
 #ifdef	_DEBUG
         TRACE(_T("\nEXCEPTION\n"));
@@ -163,7 +198,7 @@ BOOL GenericHTTPClient::RequestOfURI(LPCSTR szURI, int nMethod){
         TRACE(szERROR);
 #endif
     }
-
+*/
 
     return bReturn;
 }

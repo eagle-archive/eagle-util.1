@@ -1,4 +1,5 @@
-#include "afxwin.h"
+//#include "afxwin.h"
+#include "windows.h"
 #include <iostream>
 #include <fstream>
 #include <string>
