@@ -548,11 +548,12 @@ bool SquareManager::SaveToHanaExportFiles(const char *folder, const char *schema
     return true;
 }
 
-void SquareManager::GetSquareSpansInMeter(double *pLngSpan, double *pLatSpan)
+void SquareManager::GetSquareSpansInMeter(double lat, double *pLngSpan, double *pLatSpan)
 {
     COORDINATE_T coord;
-    coord.lng = 126.602420;
-    coord.lat = 45.720608;
+    coord.lng = 125;
+    coord.lat = lat; // 45.720608 is for ha-er-bin
+
     int square_lng_id, square_lat_id;
     this->CoordinateToSquareIds(coord, &square_lng_id, &square_lat_id);
 
@@ -563,9 +564,11 @@ void SquareManager::GetSquareSpansInMeter(double *pLngSpan, double *pLatSpan)
     lat2 = LatIdToLat(square_lat_id + 1);
 
     if (pLngSpan) {
+        //*pLngSpan = GetDistanceInMeter(lat1, lng1, lat1, lng2);
         *pLngSpan = GetDistanceSameLngInMeter(lat1, lat2);
     }
     if (pLatSpan) {
+        //*pLatSpan = GetDistanceInMeter(lat1, lng1, lat2, lng1);
         *pLatSpan = GetDistanceSameLatInMeter(coord.lat, lng1, lng2);
     }
 }

@@ -80,7 +80,7 @@ public:
         double n = M_PI - 2.0 * M_PI * latId / (double)mfTotalSqNum;
         return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
     };
-    void GetSquareSpansInMeter(double *pLngSpan, double *pLatSpan);
+    void GetSquareSpansInMeter(double lat, double *pLngSpan, double *pLatSpan);
 
 private:
     SegManager  *mpSegMgr;

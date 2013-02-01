@@ -23,7 +23,7 @@
 #define R_EARTH     6371004 // in meters
 #define LAT_METERS_PER_DEGREE   (111194.99646)  // R_EARTH * 2 * PI / 360
 
-#define SQUARE_ZOOM_LEVEL  21.4142821   // Zoom level 21.4142821 is for 10M x 10M square
+#define SQUARE_ZOOM_LEVEL  21.4142821   // Zoom level 21.4142821 (HA ER BIN) is for 10M x 10M square
 
 // Device [0, 360) into some heading levels
 // E.g., for 8 heading levels: 0: [-22.5, 22.5), Level 1: [22.5, 45+22.5), ...

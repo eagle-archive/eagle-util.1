@@ -233,9 +233,9 @@ SEG_ID_T TileManager::AssignSegment(const COORDINATE_T &coord, int nHeading)
     double distanceMin = DBL_MAX;
     int minIndex = -1;
 
-    const int MAX = 512;
+    const int MAX = 512 * 4;
     if (arrSegs.size() > MAX) {
-        printf("BUFFER SIZE TOO SMALL!!!\n");
+        printf("BUFFER SIZE TOO SMALL!!!, SEGMENTS NUMBER IS %d\n", (int)arrSegs.size());
         *(int*)0 = 1; // to crash
     }
 	bool aIsSameDir[MAX];
