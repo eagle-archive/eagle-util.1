@@ -33,7 +33,7 @@
 #define TILE_ZOOM_LEVEL  17
 #define TOTAL_TILE_NUM  (2 << (TILE_ZOOM_LEVEL - 1))
 
-#define SEG_ASSIGN_DISTANCE_MAX     120 // in meter
+#define SEG_ASSIGN_DISTANCE_MAX     50 // in meter
 
 // Check if there is C++11 support
 #if !(defined(_MSC_VER) && _MSC_VER < 1600)
