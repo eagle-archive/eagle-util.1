@@ -2,7 +2,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include <Windows.h>
 #include <string>
 #include <direct.h>
 #include <io.h>
@@ -27,7 +26,7 @@ bool GetLine(std::ifstream &fs, std::string &line) {
     return false;
 }
 
-std::string FormatTimeStr(unsigned int uTimeMs)
+std::string FormatTimeStr(unsigned long uTimeMs)
 {
     char buff[64];
     sprintf(buff, "%2d:%02d:%03d",
@@ -38,12 +37,6 @@ std::string FormatTimeStr(unsigned int uTimeMs)
 static unsigned int g_dwStart = ::GetTickCount();
 std::string ElapsedTimeStr() {
     return FormatTimeStr(::GetTickCount() - g_dwStart);
-}
-
-
-static inline double rad(double d)
-{
-    return d * M_PI / 180.0;
 }
 
 // Get the distance on earth surface between two points
@@ -172,4 +165,23 @@ void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
     }
 
     TrimLeftAndPushBack(record, curstring);
+}
+
+bool read_ini_int(dictionary *dict, const char*section, int &value) {
+    value = iniparser_getint(dict, section, 0xCDCDCDCD);
+    if ((unsigned int)value == 0xCDCDCDCD) {
+        printf("ERROR: cannot find %s in config file!\n", section);
+        return false;
+    }
+    return true;
+}
+
+bool read_ini_string(dictionary *dict, const char*section, std::string &str) {
+    char *value = iniparser_getstring(dict, section, NULL);
+    if (NULL == value) {
+        printf("ERROR: cannot find %s in config file!\n", section);
+        return false;
+    }
+    str = value;
+    return true;
 }

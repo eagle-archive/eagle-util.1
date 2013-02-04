@@ -9,14 +9,43 @@
 #include "HotSquare.h"
 #include "SquareManager.h"
 
-
 using namespace std;
 
 extern bool Test_Main();
 
+// Global Settings
+int SEG_ASSIGN_DISTANCE_MAX = 120;
+double SQUARE_ZOOM_LEVEL = 21.4142821;   // Zoom level 21.4142821 (HA ER BIN) is for 10M x 10M square
+
+
 SegManager gSegManager;
 TileManager gTileManager;
 SquareManager gSquareManager;
+
+
+static
+bool read_configs_from_ini(const char *config_file) {
+    dictionary *dict = iniparser_load(config_file);
+    if (NULL == dict) {
+        printf("ERROR: cannot open config file: %s\n", config_file);
+        return false;
+    }
+
+    if (false == read_ini_int(dict, "ASSIGNMENT:SEG_ASSIGN_DISTANCE_MAX", SEG_ASSIGN_DISTANCE_MAX)) {
+        iniparser_freedict(dict);
+        return false;
+    }
+
+    string str;
+    if (false == read_ini_string(dict, "ASSIGNMENT:SQUARE_ZOOM_LEVEL", str)) {
+        iniparser_freedict(dict);
+        return false;
+    }
+    SQUARE_ZOOM_LEVEL = atof(str.c_str());
+
+    iniparser_freedict(dict);
+    return true;
+}
 
 bool CheckSettings()
 {
@@ -24,7 +53,11 @@ bool CheckSettings()
         printf("Error: invalid HEADING_LEVEL_NUM: %d\n", HEADING_LEVEL_NUM);
         return false;
     }
-    
+
+    if (!read_configs_from_ini(CONFIG_FILE)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -33,9 +66,6 @@ int main()
     if (false == CheckSettings()) {
         return 1;
     }
-
-    int main_nanjing();
-    return main_nanjing();
 
     gSquareManager.SetZoomLevel(SQUARE_ZOOM_LEVEL);
     double fLngSpan, fLatSpan;
