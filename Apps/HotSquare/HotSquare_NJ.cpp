@@ -19,15 +19,20 @@ using namespace std;
 
 typedef struct {
     string      vechid;
-    string      lng;
-    string      lat;
-    string      speed;
-    short       heading; // double
+    double      lng;
+    double      lat;
+    double      speed;
+    double      heading; // double in original DB
     string      gpstime;
     short       inload;
     short       inservice;
 } VEHICLE_RECORD_NJ;
 
+static string ToDoubleStr(double f) {
+    char buff[32];
+    sprintf(buff, "%9.7lf", f);
+    return buff;
+}
 
 static 
 bool ParseRecord(string &line, VEHICLE_RECORD_NJ &r) {
@@ -40,10 +45,10 @@ bool ParseRecord(string &line, VEHICLE_RECORD_NJ &r) {
         return false;
     }
     r.vechid = buffs[0];
-    r.lng = buffs[1];
-    r.lat = buffs[2];
-    r.speed = buffs[3];
-    r.heading = atoi(buffs[4]);
+    r.lng = atof(buffs[1]);
+    r.lat = atof(buffs[2]);
+    r.speed = atof(buffs[3]);
+    r.heading = atof(buffs[4]);
     r.gpstime = buffs[5];
     r.inload = atoi(buffs[6]);
     r.inservice = atoi(buffs[7]);
@@ -107,19 +112,19 @@ static bool NanjingAssign_UsingTileManager()
             count++;
 
             COORDINATE_T coord;
-            coord.lng = atof(record.lng.c_str());
-            coord.lat = atof(record.lat.c_str());
+            coord.lng = record.lng;
+            coord.lat = record.lat;
 
-            SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, record.heading);
+            SEG_ID_T assigned_seg_id1 = gTileManager.AssignSegment(coord, (int)(record.heading + 0.5));
             if (INVALID_SEG_ID == assigned_seg_id1) {
                 no_hit_count++;
             }
             int time_slot = GetTimeSlot(record.gpstime);
 
             char buff[1024 * 4];
-            sprintf(buff, "%s,%s,%s,%s,%d,\"%s\",%d,%d,%lld,%d\n",
-                record.vechid.c_str(), record.lng.c_str(), record.lat.c_str(), record.speed.c_str(),
-                (int)record.heading, record.gpstime.c_str(), (int)record.inload, (int)record.inservice,
+            sprintf(buff, "%s,%s,%s,%s,%s,\"%s\",%d,%d,%lld,%d\n",
+                record.vechid.c_str(), ToDoubleStr(record.lng).c_str(), ToDoubleStr(record.lat).c_str(), ToDoubleStr(record.speed).c_str(),
+                ToDoubleStr(record.heading).c_str(), record.gpstime.c_str(), (int)record.inload, (int)record.inservice,
                 assigned_seg_id1, time_slot);
             out << buff;
             if (TOP > 0 && count == TOP) {

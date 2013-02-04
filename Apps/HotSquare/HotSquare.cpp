@@ -67,6 +67,8 @@ int main()
         return 1;
     }
 
+    extern int main_nanjing(); return main_nanjing();
+
     gSquareManager.SetZoomLevel(SQUARE_ZOOM_LEVEL);
     double fLngSpan, fLatSpan;
     gSquareManager.GetSquareSpansInMeter(45.720608, &fLngSpan, &fLatSpan);

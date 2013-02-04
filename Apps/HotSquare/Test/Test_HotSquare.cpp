@@ -172,9 +172,7 @@ void Test_GetTileSize()
 
     double span_lat2 = GetDistanceSameLngInMeter(north, south);
     double span_lng2 = GetDistanceSameLatInMeter(north, east, west);
-
 }
-
 
 static 
 bool ParseRecord(string &line, VEHICLE_RECORD &r) {
