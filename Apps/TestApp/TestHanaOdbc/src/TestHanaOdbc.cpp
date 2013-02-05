@@ -13,6 +13,6 @@ int main()
         return 10;
     }
 
-    bulk_insert();
+    bulk_insert(GLOBALS.CSV_PATH.c_str());
 	return 0;
 }

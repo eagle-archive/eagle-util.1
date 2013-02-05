@@ -128,6 +128,21 @@ void VehicleRecords_Col::CopyFrom(const VehicleRecords_Col& from) {
 	ARR_TIME_SLOT = from.ARR_TIME_SLOT;
 }
 
+bool VehicleRecords_Col::ReadFrom(std::ifstream &is, int count) {
+	Clear();
+
+    std::string line;
+    for (int i = 0; i < count; i++) {
+        if (!GetLine(is, line)) {
+            break;
+        }
+
+        // TODO: ...
+    }
+
+    return (mCount > 0);
+}
+
 // Generate random records
 void VehicleRecords_Col::GenerateRecords(int count) {
 	Clear();

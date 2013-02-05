@@ -45,6 +45,7 @@ public:
     void Reserve(int count);
     void CopyFrom(const VehicleRecords_Col& from);
     void GenerateRecords(int count);
+    bool ReadFrom(std::ifstream &is, int count);
     int  GetCount() {return mCount;};
 
 public:

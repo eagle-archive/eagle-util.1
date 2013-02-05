@@ -16,6 +16,7 @@
 
 struct UTIL_GLOBALS {
     // config
+    std::string DSN;
     std::string USER;
     std::string PASSWORD;
     std::string TABLE_NAME;
@@ -24,8 +25,7 @@ struct UTIL_GLOBALS {
     int  N_RECORDS;
     int  RATE;
 
-    int  USE_REAL_DATA;
-    std::string REAL_DATA_PATH;
+    std::string CSV_PATH;
 
     // status
     long start_time;
@@ -40,7 +40,6 @@ extern UTIL_GLOBALS GLOBALS;
 
 bool init_globals(const char *config_file);
 void update_rate_status();
-void show_ODBC_error(const char* msg, SQLRETURN r, SQLHSTMT hstmt);
 long get_time_in_ms();
 
 bool init_real_data_buffer();

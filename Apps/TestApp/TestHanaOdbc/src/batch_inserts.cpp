@@ -57,16 +57,15 @@ bool bulk_insert_init() {
     //rc = SQLSetConnectAttr(g_hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)20, 0);
 
 #ifndef FAKE_DB_CONN
-#if 0
+#if 1
     /* Connect to the database */
-    rc = SQLConnect(g_hdbc, (SQLCHAR*)"HD5", SQL_NTS,
+    rc = SQLConnect(g_hdbc, (SQLCHAR*)GLOBALS.DSN.c_str(), SQL_NTS,
         (SQLCHAR*)GLOBALS.USER.c_str(), SQL_NTS,
         (SQLCHAR*)GLOBALS.PASSWORD.c_str(), SQL_NTS);
-#endif
-#if 1
+#else
     SQLSMALLINT bufsize=0;
     unsigned char connStrOut[256] = {'\0', };;
-    rc = SQLDriverConnect(g_hdbc, NULL, (SQLCHAR*)"DRIVER=HDBODBC;servernode=sap05:30015;UID=I078212;PWD=Dy1sok,yes;", SQL_NTS, 
+    rc = SQLDriverConnect(g_hdbc, NULL, (SQLCHAR*)"DRIVER=HDBODBC;servernode=sap05:30015;UID=I078212;PWD=******;", SQL_NTS, 
         connStrOut, 256, &bufsize, SQL_DRIVER_NOPROMPT);
 #endif
     if (rc == SQL_ERROR) {
@@ -205,7 +204,8 @@ void *insert_executor(void *arg) {
     return NULL;
 }
 
-bool bulk_insert(const char *csv) {
+bool bulk_insert(const char *csv)
+{
     
     if (false == bulk_insert_init()) {
         bulk_insert_destory();

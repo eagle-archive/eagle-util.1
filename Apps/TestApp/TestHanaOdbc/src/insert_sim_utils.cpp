@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS // Disable security warning message on MSVC
+#endif
+
 #include <time.h>
 #ifndef _WIN32
 #include <sys/time.h>
@@ -41,6 +45,11 @@ bool read_configs_from_ini(const char *config_file, UTIL_GLOBALS *p_globals) {
         return false;
     }
 
+    if (false == read_ini_string(dict, "DB:DSN", p_globals->DSN)) {
+        iniparser_freedict(dict);
+        return false;
+    }
+
     if (false == read_ini_string(dict, "DB:USER", p_globals->USER)) {
         iniparser_freedict(dict);
         return false;
@@ -78,15 +87,9 @@ bool read_configs_from_ini(const char *config_file, UTIL_GLOBALS *p_globals) {
         return false;
     }
 
-    if (false == read_ini_int(dict, "main:USE_REAL_DATA", p_globals->USE_REAL_DATA)) {
+    if (false == read_ini_string(dict, "main:CSV_PATH", p_globals->CSV_PATH)) {
         iniparser_freedict(dict);
         return false;
-    }
-    if (p_globals->USE_REAL_DATA) {
-        if (false == read_ini_string(dict, "main:REAL_DATA_PATH", p_globals->REAL_DATA_PATH)) {
-            iniparser_freedict(dict);
-            return false;
-        }
     }
 
     iniparser_freedict(dict);
@@ -98,25 +101,6 @@ bool init_globals(const char *config_file) {
         return false;
 
     return true;
-}
-
-void show_ODBC_error(const char* msg, SQLRETURN r, SQLHSTMT hstmt) {
-    SQLCHAR Error[1024 * 2];
-    SQLCHAR State[10];
-    SQLSMALLINT ErrLen;
-    SQLSMALLINT i = 1;
-    SQLINTEGER NativeErr;
-    printf("\n ERROR %s  %d \n", msg, r);
-
-    SQLRETURN rc;
-    do {
-        rc = SQLGetDiagRec(SQL_HANDLE_STMT, hstmt, i, State, &NativeErr, Error,
-                sizeof(Error), &ErrLen);
-        if (rc == SQL_NO_DATA)
-            break;
-        printf("ODBC ERROR: (%d): hstmt: %d: %s\n", i, rc, Error);
-        i++;
-    } while (rc == SQL_SUCCESS);
 }
 
 long get_time_in_ms() {
