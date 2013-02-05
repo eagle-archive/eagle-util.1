@@ -6,10 +6,7 @@
 #endif
 #include "sqlext.h"
 #include <string>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <fstream>
 
 // for debug purpose only, comment it out for real DB connection
 //#define FAKE_DB_CONN
@@ -36,10 +33,6 @@ struct UTIL_GLOBALS {
     long long last_insert_count;
     long last_check_time;
     long actual_rate;
-
-    // threads info and control
-    //int ins_threads_end_flag;
-    //int ins_threads_ended;
 };
 
 
@@ -53,7 +46,8 @@ long get_time_in_ms();
 bool init_real_data_buffer();
 void real_data_buffer_destory();
 
-#ifdef __cplusplus
-}
-#endif
+bool GetLine(std::ifstream &fs, std::string &line);
+std::string FormatTimeStr(unsigned long uTimeMs);
+std::string ElapsedTimeStr();
+
 #endif // __INSERT_SIM_UTILS_H_

@@ -147,60 +147,66 @@ void *insert_executor(void *arg) {
     SQLRETURN rc;
     long t_index = (long)arg;
 
-    SQLHSTMT hstmt = g_hstmt;
-    SQLHDBC hdbc = g_hdbc;
+    while(true) {
+        SQLHSTMT hstmt = g_hstmt;
+        SQLHDBC hdbc = g_hdbc;
 
-/*
-    rc = SQLExecDirect(hstmt, (SQLCHAR*)"ALTER SESSION DISABLE LOG FLUSH", SQL_NTS);
-    if (rc == SQL_ERROR) {
-        show_error(SQL_HANDLE_STMT, hstmt);
-    }
-*/
+        /*
+            rc = SQLExecDirect(hstmt, (SQLCHAR*)"ALTER SESSION DISABLE LOG FLUSH", SQL_NTS);
+            if (rc == SQL_ERROR) {
+                show_error(SQL_HANDLE_STMT, hstmt);
+            }
+        */
 
-    SQLCHAR Statement[1024];
-    snprintf((char *)Statement, sizeof(Statement),
-            "INSERT INTO %s (VECHID, LNG, LAT, SPEED, HEADING, GPSTIME, INLOAD, INSERVICE, SEGMENT_ID, TIME_SLOT) "\
-            "VALUES (?,?,?,?,?,?,?,?,?,?)", GLOBALS.TABLE_NAME.c_str());
-    rc = SQLPrepare(hstmt, Statement, SQL_NTS);
-    if (rc == SQL_ERROR) {
-        show_error(SQL_HANDLE_STMT, hstmt);
-    }
+        SQLCHAR Statement[1024];
+        snprintf((char *)Statement, sizeof(Statement),
+                "INSERT INTO %s (VECHID, LNG, LAT, SPEED, HEADING, GPSTIME, INLOAD, INSERVICE, SEGMENT_ID, TIME_SLOT) "\
+                "VALUES (?,?,?,?,?,?,?,?,?,?)", GLOBALS.TABLE_NAME.c_str());
+        rc = SQLPrepare(hstmt, Statement, SQL_NTS);
+        if (rc == SQL_ERROR) {
+            show_error(SQL_HANDLE_STMT, hstmt);
+        }
 
-    /* Prepare rows to insert */
-    VehicleRecords_Col records;
-    get_data(records, GLOBALS.N_RECORDS);
+        /* Prepare rows to insert */
+        VehicleRecords_Col records;
+        get_data(records, GLOBALS.N_RECORDS);
+        if (records.GetCount() == 0) {
+            return NULL;
+        }
 
-    /* Set statement attributes for batch processing with column-wise binding */
-    SQLULEN ParamsProcessed;
-    rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAM_BIND_TYPE, (SQLPOINTER)SQL_PARAM_BIND_BY_COLUMN, 0);
-    rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)GLOBALS.N_RECORDS, 0);
-    rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMS_PROCESSED_PTR, &ParamsProcessed, 0);
+        /* Set statement attributes for batch processing with column-wise binding */
+        SQLULEN ParamsProcessed;
+        rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAM_BIND_TYPE, (SQLPOINTER)SQL_PARAM_BIND_BY_COLUMN, 0);
+        rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)GLOBALS.N_RECORDS, 0);
+        rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMS_PROCESSED_PTR, &ParamsProcessed, 0);
 
-    /* Bind the parameters in the column-wise fashion. */
-    rc = bind_all_columns(hstmt, records);
-    if (!SQL_SUCCEEDED(rc)) {
-        show_error(SQL_HANDLE_STMT, hstmt);
-        exit(-1);
-    }
+        /* Bind the parameters in the column-wise fashion. */
+        rc = bind_all_columns(hstmt, records);
+        if (!SQL_SUCCEEDED(rc)) {
+            show_error(SQL_HANDLE_STMT, hstmt);
+            return NULL;
+        }
 
 #ifndef FAKE_DB_CONN
-    rc = SQLExecute(hstmt);
+        rc = SQLExecute(hstmt);
 #endif
-    if (!SQL_SUCCEEDED(rc)) {
-        show_error(SQL_HANDLE_STMT, hstmt);
-        exit(-1);
-    }
+        if (!SQL_SUCCEEDED(rc)) {
+            show_error(SQL_HANDLE_STMT, hstmt);
+            return NULL;
+        }
 
-    rc = SQLEndTran(SQL_HANDLE_DBC, hdbc, SQL_COMMIT);
-    if (!SQL_SUCCEEDED(rc)) {
-        show_error(SQL_HANDLE_STMT, hstmt);
-        exit(-1);
+        rc = SQLEndTran(SQL_HANDLE_DBC, hdbc, SQL_COMMIT);
+        if (!SQL_SUCCEEDED(rc)) {
+            show_error(SQL_HANDLE_STMT, hstmt);
+            return NULL;
+        }
     }
 
     return NULL;
 }
 
-bool bulk_insert() {
+bool bulk_insert(const char *csv) {
+    
     if (false == bulk_insert_init()) {
         bulk_insert_destory();
         return false;

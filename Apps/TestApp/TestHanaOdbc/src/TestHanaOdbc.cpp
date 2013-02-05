@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "insert_sim_utils.h"
 
-bool bulk_insert();
+bool bulk_insert(const char *csv);
 
 int main()
 {

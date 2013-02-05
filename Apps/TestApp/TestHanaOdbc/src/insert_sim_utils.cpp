@@ -155,3 +155,31 @@ void update_rate_status() {
                 hour, min, sec, fraction, GLOBALS.insert_count, GLOBALS.actual_rate);
     }
 }
+
+bool GetLine(std::ifstream &fs, std::string &line) {
+    line.clear();
+    do{
+        if(getline(fs, line)) {
+            if(fs.good() && line.empty()){
+                continue;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } while(true);
+    return false;
+}
+
+std::string FormatTimeStr(unsigned long uTimeMs)
+{
+    char buff[64];
+    sprintf(buff, "%2d:%02d:%03d",
+        (uTimeMs/60000), (uTimeMs/1000) % 60, uTimeMs % 1000);
+    return buff;
+}
+
+static unsigned int g_dwStart = ::GetTickCount();
+std::string ElapsedTimeStr() {
+    return FormatTimeStr(::GetTickCount() - g_dwStart);
+}
