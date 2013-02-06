@@ -6,7 +6,7 @@ using namespace hdb;
 
 bool TestHdb_Main()
 {
-    int size = sizeof(DATA_TYPE_T);
+    int size = sizeof(DATA_ATTR_T);
     assert(size == 4);
 
     TynyIntCol ticol("aaa");

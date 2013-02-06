@@ -159,7 +159,8 @@ bool ParseRecord(const string &line, VEHICLE_RECORD &r) {
       3851423651,118.8744010,33.3007390,0.0000000,0.0000000,"2011-11-29 15:01:34.0000000",1,1,-1,90
     */
     char buffs[10][64];
-    if (10 != sscanf(line.c_str(), "%[^,],%[^,],%[^,],%[^,],%[^,],\"%[^\"]\",%[^,],%[^,],%[^,],%s", buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9])) {
+    if (10 != sscanf(line.c_str(), "%[^,],%[^,],%[^,],%[^,],%[^,],\"%[^\"]\",%[^,],%[^,],%[^,],%s",
+        buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7], buffs[8], buffs[9])) {
         return false;
     }
     r.vechid = _atoi64(buffs[0]);
@@ -196,7 +197,7 @@ bool VehicleRecords_Col::ReadFrom(std::ifstream &is, size_t count) {
     recs.reserve(count);
 
     std::string line;
-    for (int i = 0; i < count;) {
+    for (size_t i = 0; i < count;) {
         if (!GetLine(is, line)) {
             break;
         }

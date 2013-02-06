@@ -65,8 +65,7 @@ public:
     size_t GetCount() {return mCount;};
 
 public:
-    // For double type, const DBL_MIN is used to represent DB "null"
-    std::vector<SQLUBIGINT>             ARR_VECHID;
+    std::vector<SQLBIGINT>              ARR_VECHID;
     std::vector<SQLDOUBLE>              ARR_LNG;
     std::vector<SQLDOUBLE>              ARR_LAT;
     std::vector<SQLDOUBLE>              ARR_SPEED;

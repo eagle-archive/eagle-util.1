@@ -78,8 +78,8 @@ SQLRETURN bind_all_columns(SQLHSTMT hstmt, VehicleRecords_Col &records) {
     SQLRETURN rc;
 
     SQLUSMALLINT ParaNum = 1;
-    rc = SQLBindParameter(hstmt, ParaNum++, SQL_PARAM_INPUT, SQL_C_UBIGINT, SQL_BIGINT,
-            sizeof(SQLUBIGINT), 0, (SQLPOINTER)records.ARR_VECHID.data(), 0, 0);
+    rc = SQLBindParameter(hstmt, ParaNum++, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT,
+            sizeof(SQLBIGINT), 0, (SQLPOINTER)records.ARR_VECHID.data(), 0, 0);
     if (!SQL_SUCCEEDED(rc)) return rc;
 
 
