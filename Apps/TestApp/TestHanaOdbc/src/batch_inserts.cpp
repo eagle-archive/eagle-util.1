@@ -136,6 +136,19 @@ void get_data(VehicleRecords_Col &records, std::ifstream &is, int num) {
     records.ReadFrom(is, num);
 }
 
+
+static void PrintStatus(size_t rec_count)
+{
+    static CONSOLE_SCREEN_BUFFER_INFO sConsoleInfo;
+    static size_t s_total_count = 0;
+    if (sConsoleInfo.dwSize.X == 0) {
+        ::GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &sConsoleInfo);
+    }
+    ::SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), sConsoleInfo.dwCursorPosition);
+    s_total_count += rec_count;
+    printf("\r%s: processing #%lld\n", ElapsedTimeStr().c_str(), (long long)s_total_count);
+}
+
 static
 void *insert_executor(void *arg) {
     SQLRETURN rc;
@@ -167,11 +180,13 @@ void *insert_executor(void *arg) {
         if (records.GetCount() == 0) {
             return NULL;
         }
+        PrintStatus(records.GetCount());
 
         /* Set statement attributes for batch processing with column-wise binding */
         SQLULEN ParamsProcessed;
         rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAM_BIND_TYPE, (SQLPOINTER)SQL_PARAM_BIND_BY_COLUMN, 0);
-        rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)GLOBALS.N_RECORDS, 0);
+        int n_record = (int)records.GetCount();
+        rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)n_record, 0);
         rc = SQLSetStmtAttr(hstmt, SQL_ATTR_PARAMS_PROCESSED_PTR, &ParamsProcessed, 0);
 
         /* Bind the parameters in the column-wise fashion. */
@@ -206,6 +221,10 @@ bool bulk_insert(const char *csv)
         printf("Error: cannot open file %s\n", csv);
         return false;
     }
+#if 0 // TEST CODE
+    VehicleRecords_Col vr;
+    vr.ReadFrom(g_is_csv, 10);
+#endif
 
     if (false == bulk_insert_init()) {
         bulk_insert_destory();
