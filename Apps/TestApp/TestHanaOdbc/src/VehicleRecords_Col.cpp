@@ -99,7 +99,7 @@ void VehicleRecords_Col::Clear() {
 	this->ARR_TIME_SLOT.clear();
 }
 
-void VehicleRecords_Col::Reserve(int count) {
+void VehicleRecords_Col::Reserve(size_t count) {
 	this->ARR_VECHID.reserve(count);
 	this->ARR_LNG.reserve(count);
 	this->ARR_LAT.reserve(count);
@@ -110,6 +110,69 @@ void VehicleRecords_Col::Reserve(int count) {
 	this->ARR_INSERVICE.reserve(count);
 	this->ARR_SEGMENT_ID.reserve(count);
 	this->ARR_TIME_SLOT.reserve(count);
+}
+
+bool VehicleRecords_Col::FromRecords(std::vector<VEHICLE_RECORD> &recs)
+{
+	Clear();
+    mCount = recs.size();
+	Reserve(mCount);
+
+    for (size_t i = 0; i < mCount; i++) {
+        const VEHICLE_RECORD &r = recs[i];
+
+        this->ARR_VECHID.push_back(r.vechid);
+        this->ARR_LNG.push_back(r.lng);
+        this->ARR_LAT.push_back(r.lat);
+        this->ARR_SPEED.push_back(r.speed);
+        this->ARR_HEADING.push_back(r.heading);
+        this->ARR_GPSTIME.push_back(r.gpstime);
+        this->ARR_INLOAD.push_back((SQLCHAR)r.inload);
+        this->ARR_INSERVICE.push_back((SQLCHAR)r.inservice);
+        this->ARR_SEGMENT_ID.push_back(r.segment_id);
+        this->ARR_TIME_SLOT.push_back(r.time_slot);
+    }
+    return (mCount > 0);
+}
+
+static
+SQL_TIMESTAMP_STRUCT ParseTimeStamp(const char *time_str) {
+    SQL_TIMESTAMP_STRUCT ts = {0,};
+
+    int year, month, day, hour, minute, second, fraction;
+    year = month = day = hour = minute = second = fraction = 0;
+    sscanf(time_str, "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction);
+    ts.year = year;
+    ts.month = month;
+    ts.day = day;
+    ts.hour = hour;
+    ts.minute = minute;
+    ts.second = second;
+    ts.fraction = fraction;
+    return ts;
+}
+
+static 
+bool ParseRecord(const string &line, VEHICLE_RECORD &r) {
+    /*
+      Input line example:
+      3851423651,118.8744010,33.3007390,0.0000000,0.0000000,"2011-11-29 15:01:34.0000000",1,1,-1,90
+    */
+    char buffs[10][64];
+    if (8 != sscanf(line.c_str(), "%[^,],%[^,],%[^,],%[^,],%[^,],\"%[^\"]\",%[^,],%[^,],%[^,],%s", buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7])) {
+        return false;
+    }
+    r.vechid = _atoi64(buffs[0]);
+    r.lng = atof(buffs[1]);
+    r.lat = atof(buffs[2]);
+    r.speed = atof(buffs[3]);
+    r.heading = atof(buffs[4]);
+    r.gpstime = ParseTimeStamp(buffs[5]);
+    r.inload = atoi(buffs[6]);
+    r.inservice = atoi(buffs[7]);
+    r.segment_id = atoi(buffs[8]);
+    r.time_slot = atoi(buffs[8]);
+    return true;
 }
 
 void VehicleRecords_Col::CopyFrom(const VehicleRecords_Col& from) {
@@ -128,19 +191,26 @@ void VehicleRecords_Col::CopyFrom(const VehicleRecords_Col& from) {
 	ARR_TIME_SLOT = from.ARR_TIME_SLOT;
 }
 
-bool VehicleRecords_Col::ReadFrom(std::ifstream &is, int count) {
-	Clear();
+bool VehicleRecords_Col::ReadFrom(std::ifstream &is, size_t count) {
+    vector<VEHICLE_RECORD> recs;
+    recs.reserve(count);
 
     std::string line;
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count;) {
         if (!GetLine(is, line)) {
             break;
         }
 
-        // TODO: ...
+        VEHICLE_RECORD r;
+        if (!ParseRecord(line, r)) {
+            break;
+        }
+
+        recs.push_back(r);
+        i++;
     }
 
-    return (mCount > 0);
+    return FromRecords(recs);
 }
 
 // Generate random records

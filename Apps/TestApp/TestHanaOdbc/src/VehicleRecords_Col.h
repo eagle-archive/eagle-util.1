@@ -27,6 +27,21 @@ CREATE COLUMN TABLE GPS29 (
     "TIME_SLOT" INTEGER CS_INT)
 */
 
+
+typedef struct {
+    long long   vechid;
+    double      lng;
+    double      lat;
+    double      speed;
+    double      heading; // double in original DB
+    SQL_TIMESTAMP_STRUCT    gpstime;
+    short       inload;
+    short       inservice;
+
+    long long   segment_id;
+    int         time_slot;
+} VEHICLE_RECORD;
+
 /*
     Class for vehicle records in column mode
 */
@@ -42,11 +57,12 @@ public:
 
 public:
     void Clear();
-    void Reserve(int count);
+    void Reserve(size_t count);
     void CopyFrom(const VehicleRecords_Col& from);
     void GenerateRecords(int count);
-    bool ReadFrom(std::ifstream &is, int count);
-    int  GetCount() {return mCount;};
+    bool FromRecords(std::vector<VEHICLE_RECORD> &recs);
+    bool ReadFrom(std::ifstream &is, size_t count);
+    size_t GetCount() {return mCount;};
 
 public:
     // For double type, const DBL_MIN is used to represent DB "null"
@@ -62,7 +78,7 @@ public:
     std::vector<SQLINTEGER>             ARR_TIME_SLOT;
 
 protected:
-    int mCount;
+    size_t mCount;
 };
 
 #ifdef __cplusplus

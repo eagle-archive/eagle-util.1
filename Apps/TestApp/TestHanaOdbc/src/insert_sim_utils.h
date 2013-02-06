@@ -35,7 +35,6 @@ struct UTIL_GLOBALS {
     long actual_rate;
 };
 
-
 extern UTIL_GLOBALS GLOBALS;
 
 bool init_globals(const char *config_file);

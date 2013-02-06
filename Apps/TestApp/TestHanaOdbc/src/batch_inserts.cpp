@@ -19,6 +19,7 @@ using namespace std;
 static SQLHENV g_henv = NULL;
 static SQLHDBC g_hdbc = NULL;
 static SQLHSTMT g_hstmt = NULL;
+static std::ifstream g_is_csv;
 
 int bulk_insert_destory() {
     if (g_hstmt) {
@@ -42,7 +43,7 @@ void show_error(SQLSMALLINT handletype, const SQLHANDLE& handle){
     SQLCHAR sqlstate[1024];
     SQLCHAR message[1024];
     if(SQL_SUCCESS == SQLGetDiagRec(handletype, handle, 1, sqlstate, NULL, message, 1024, NULL))
-    cout<<"Message: "<<message<<"\nSQLSTATE: "<<sqlstate<<endl;
+    cout<< "Message: " << message << " SQLSTATE: " << sqlstate << endl;
 }
 
 bool bulk_insert_init() {
@@ -57,17 +58,10 @@ bool bulk_insert_init() {
     //rc = SQLSetConnectAttr(g_hdbc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)20, 0);
 
 #ifndef FAKE_DB_CONN
-#if 1
     /* Connect to the database */
     rc = SQLConnect(g_hdbc, (SQLCHAR*)GLOBALS.DSN.c_str(), SQL_NTS,
         (SQLCHAR*)GLOBALS.USER.c_str(), SQL_NTS,
         (SQLCHAR*)GLOBALS.PASSWORD.c_str(), SQL_NTS);
-#else
-    SQLSMALLINT bufsize=0;
-    unsigned char connStrOut[256] = {'\0', };;
-    rc = SQLDriverConnect(g_hdbc, NULL, (SQLCHAR*)"DRIVER=HDBODBC;servernode=sap05:30015;UID=I078212;PWD=******;", SQL_NTS, 
-        connStrOut, 256, &bufsize, SQL_DRIVER_NOPROMPT);
-#endif
     if (rc == SQL_ERROR) {
         show_error(SQL_HANDLE_DBC, g_hdbc);
         printf("Error in SQLConnect()\n");
@@ -137,8 +131,9 @@ SQLRETURN bind_all_columns(SQLHSTMT hstmt, VehicleRecords_Col &records) {
 }
 
 static
-void get_data(VehicleRecords_Col &records, int num) {
-    records.GenerateRecords(num);
+void get_data(VehicleRecords_Col &records, std::ifstream &is, int num) {
+    // records.GenerateRecords(num);
+    records.ReadFrom(is, num);
 }
 
 static
@@ -168,7 +163,7 @@ void *insert_executor(void *arg) {
 
         /* Prepare rows to insert */
         VehicleRecords_Col records;
-        get_data(records, GLOBALS.N_RECORDS);
+        get_data(records, g_is_csv, GLOBALS.N_RECORDS);
         if (records.GetCount() == 0) {
             return NULL;
         }
@@ -206,7 +201,12 @@ void *insert_executor(void *arg) {
 
 bool bulk_insert(const char *csv)
 {
-    
+    g_is_csv.open(csv);
+    if (!g_is_csv.good()) {
+        printf("Error: cannot open file %s\n", csv);
+        return false;
+    }
+
     if (false == bulk_insert_init()) {
         bulk_insert_destory();
         return false;
@@ -214,6 +214,6 @@ bool bulk_insert(const char *csv)
 
     long t = 0;
     insert_executor(&t);
-
+    bulk_insert_destory();
     return true;
 }
