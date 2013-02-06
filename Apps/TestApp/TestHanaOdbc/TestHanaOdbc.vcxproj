@@ -21,12 +21,15 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\External\iniparser\src\dictionary.h" />
     <ClInclude Include="..\..\..\External\iniparser\src\iniparser.h" />
+    <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_utils.h" />
     <ClInclude Include="src\insert_sim_utils.h" />
     <ClInclude Include="src\VehicleRecords_Col.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\External\iniparser\src\dictionary.c" />
     <ClCompile Include="..\..\..\External\iniparser\src\iniparser.c" />
+    <ClCompile Include="..\..\..\Utils\DB\Hana\hdb_utils.cpp" />
+    <ClCompile Include="..\..\..\Utils\DB\Hana\Test\test_hdb.cpp" />
     <ClCompile Include="src\batch_inserts.cpp" />
     <ClCompile Include="src\insert_sim_utils.cpp" />
     <ClCompile Include="src\TestHanaOdbc.cpp" />

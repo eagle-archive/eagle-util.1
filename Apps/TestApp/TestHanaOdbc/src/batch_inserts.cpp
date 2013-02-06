@@ -221,10 +221,6 @@ bool bulk_insert(const char *csv)
         printf("Error: cannot open file %s\n", csv);
         return false;
     }
-#if 0 // TEST CODE
-    VehicleRecords_Col vr;
-    vr.ReadFrom(g_is_csv, 10);
-#endif
 
     if (false == bulk_insert_init()) {
         bulk_insert_destory();
@@ -234,5 +230,6 @@ bool bulk_insert(const char *csv)
     long t = 0;
     insert_executor(&t);
     bulk_insert_destory();
+    g_is_csv.close();
     return true;
 }

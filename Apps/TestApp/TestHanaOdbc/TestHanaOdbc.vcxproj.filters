@@ -12,6 +12,9 @@
     <Filter Include="iniparser">
       <UniqueIdentifier>{57cd624d-d841-4f45-aae4-7fdaefc22486}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hana">
+      <UniqueIdentifier>{dba46fbb-0c9f-4268-9483-03b796e11083}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VehicleRecords_Col.h">
@@ -25,6 +28,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\External\iniparser\src\iniparser.h">
       <Filter>iniparser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_utils.h">
+      <Filter>Hana</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -45,6 +51,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\External\iniparser\src\iniparser.c">
       <Filter>iniparser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Utils\DB\Hana\hdb_utils.cpp">
+      <Filter>Hana</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Utils\DB\Hana\Test\test_hdb.cpp">
+      <Filter>Hana</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
