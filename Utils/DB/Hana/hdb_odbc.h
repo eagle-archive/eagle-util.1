@@ -18,7 +18,7 @@ std::string GetOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle);
 class OdbcConn {
 public:
     OdbcConn(const char *dsn, const char *user, const char *password) 
-        : mHenv(NULL), mHdbc(NULL)
+        : mHenv(NULL), mHdbc(NULL), mConnected(false)
     {
         mDsn = dsn;
         mUser = user;
@@ -26,11 +26,16 @@ public:
     };
     ~OdbcConn() {
         if (mHdbc) {
-            SQLDisconnect(mHdbc);
+            if (mConnected) {
+                SQLDisconnect(mHdbc);
+                mConnected = false;
+            }
             SQLFreeHandle(SQL_HANDLE_DBC, mHdbc);
+            mHdbc = NULL;
         }
         if (mHenv) {
             SQLFreeHandle(SQL_HANDLE_ENV, mHenv);
+            mHenv = NULL;
         }
     };
     SQLHENV GetHEnv() const {
@@ -43,13 +48,17 @@ public:
         return GetOdbcError(SQL_HANDLE_DBC, mHdbc);
     };
     bool Connect();
+    bool IsConnected() const {
+        return mConnected;
+    };
 
 protected:
-    SQLHENV mHenv;
-    SQLHDBC mHdbc;
     std::string mDsn;
     std::string mUser;
     std::string mPassword;
+    SQLHENV mHenv;
+    SQLHDBC mHdbc;
+    bool mConnected;
 };
 
 class InsertExecutor {
@@ -71,7 +80,8 @@ public:
     std::string GetErrorStr() const {
         return GetOdbcError(SQL_HANDLE_STMT, mHstmt);
     };
-    bool Insert(ColRecords *pRecords);
+    bool PrepareInsStmt(std::vector<BaseColumn *> pCols, const char *table_name);
+    bool ExecuteInsert(ColRecords *pRecords);
 
 protected:
     OdbcConn *mpConn;

@@ -77,4 +77,11 @@ SQLRETURN ColRecords::SqlBindAllColumns(SQLHSTMT hstmt)
     return rc;
 }
 
+// Add one line of CSV
+bool ColRecords::AddRow(const char *line)
+{
+    // TODO: implementation
+    return true;
+}
+
 } // end of namespace hdb

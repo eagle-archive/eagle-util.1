@@ -82,7 +82,9 @@ public:
     virtual void GenerateFakeData(size_t count) {
         mDataVec.clear();
         mDataVec.reserve(count);
-
+        // Based on OO design, it is not recommended to use switch-case here. The recommended way is
+        // to implement all the virtual function in sub-classes, which is too tedious and will generate
+        // too much code.
         switch(mDataAttr.type) {
         case T_TYNYINT:
             {
@@ -298,6 +300,9 @@ public:
     BaseColumn *GetColumn(size_t index) {
         return mPtrCols[index];
     };
+    std::vector<BaseColumn *> &GetColumns() {
+        return mPtrCols;
+    };
     bool AddCol(const char *col_name, DATA_TYPE_T type, bool null_able = false) {
         return AddCol(col_name, GenDataAttr(type, null_able, 0, 0));
     };
@@ -309,6 +314,7 @@ public:
         return AddCol(col_name, GenDataAttr(T_DECIMAL_PS, null_able, p, s));
     };
     SQLRETURN SqlBindAllColumns(SQLHSTMT hstmt);
+    bool AddRow(const char *line); // one line of CSV
 
 protected:
     bool AddCol(const char *col_name, const DATA_ATTR_T &col_type);
