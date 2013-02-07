@@ -12,7 +12,7 @@
     <Filter Include="iniparser">
       <UniqueIdentifier>{57cd624d-d841-4f45-aae4-7fdaefc22486}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hana">
+    <Filter Include="HDB">
       <UniqueIdentifier>{dba46fbb-0c9f-4268-9483-03b796e11083}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -30,7 +30,16 @@
       <Filter>iniparser</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_utils.h">
-      <Filter>Hana</Filter>
+      <Filter>HDB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_types.h">
+      <Filter>HDB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_columns.h">
+      <Filter>HDB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Utils\DB\Hana\hdb_odbc.h">
+      <Filter>HDB</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -53,10 +62,16 @@
       <Filter>iniparser</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Utils\DB\Hana\hdb_utils.cpp">
-      <Filter>Hana</Filter>
+      <Filter>HDB</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Utils\DB\Hana\Test\test_hdb.cpp">
-      <Filter>Hana</Filter>
+      <Filter>HDB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Utils\DB\Hana\hdb_columns.cpp">
+      <Filter>HDB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Utils\DB\Hana\hdb_odbc.cpp">
+      <Filter>HDB</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
