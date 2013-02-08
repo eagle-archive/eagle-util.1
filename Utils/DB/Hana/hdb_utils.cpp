@@ -86,4 +86,47 @@ void GetCurTime(SQL_TIME_STRUCT &time) {
 	time.second = stm.tm_sec;
 };
 
+bool StrToValue(const char *s, SQL_DATE_STRUCT &v)
+{
+    if (s == NULL || *s == '\0') return false;
+    int year, month, day;
+    if (3 == sscanf(s, "%d-%d-%d", &year, &month, &day)) {
+        v.year = year;
+        v.month = month;
+        v.day = day;
+        return true;
+    }
+    return false;
+}
+
+bool StrToValue(const char *s, SQL_TIME_STRUCT &v)
+{
+    if (s == NULL || *s == '\0') return false;
+    int hour, minute, second;
+    if (3 == sscanf(s, "%d:%d:%d", &hour, &minute, &second)) {
+        v.hour = hour;
+        v.minute = minute;
+        v.second = second;
+        return true;
+    }
+    return false;
+}
+
+bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
+{
+    if (s == NULL || *s == '\0') return false;
+    int year, month, day, hour, minute, second, fraction;
+    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d:%d", &year, &month, &day, &hour, &minute, &second, &fraction)) {
+        v.year = year;
+        v.month = month;
+        v.day = day;
+        v.hour = hour;
+        v.minute = minute;
+        v.second = second;
+        v.fraction = fraction;
+        return true;
+    }
+    return false;
+}
+
 } // end of namespace hdb

@@ -10,6 +10,7 @@
 #include <sqlext.h>
 #include <time.h>
 #include "hdb_types.h"
+#include "hdb_odbc.h"
 
 namespace hdb {
 
@@ -32,7 +33,7 @@ public:
             mNullVec.reserve(count);
         }
     };
-    virtual size_t GetCount() = 0;
+    virtual size_t GetCount() const = 0;
     const char *GetColName() const {
         return mColName.c_str();
     };
@@ -42,8 +43,10 @@ public:
         mNullVec = col.mNullVec;
     };
     virtual void *GetData() = 0;
+    virtual const void *GetData() const = 0;
     virtual void GenerateFakeData(size_t count) = 0;
-    virtual SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) = 0;
+    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
+    virtual bool AddFromStr(const char *str) = 0;
 
 protected:
     DATA_ATTR_T mDataAttr;
@@ -66,7 +69,7 @@ public:
         BaseColumn::Reserve(count);
         mDataVec.reserve(count);
     };
-    virtual size_t GetCount() {
+    virtual size_t GetCount() const {
         return mDataVec.size();
     };
     void CopyFrom(ColT<T, data_type> &col) {
@@ -77,6 +80,9 @@ public:
         mDataVec.push_back(val);
     };
     virtual void *GetData() {
+        return mDataVec.data();
+    };
+    virtual const void *GetData() const {
         return mDataVec.data();
     };
     virtual void GenerateFakeData(size_t count) {
@@ -185,61 +191,16 @@ public:
             return;
         };
     };
-
-    virtual SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) {
-        SQLRETURN rc;
-        switch(mDataAttr.type) {
-        case T_TYNYINT:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TINYINT, SQL_TINYINT,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_SMALLINT:
-            assert(false);
-            break;
-        case T_INTEGER:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_BIGINT:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_REAL:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_REAL,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_DOUBLE:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_DATE:
-            assert(false);
-            break;
-        case T_TIME:
-            assert(false);
-            break;
-        case T_TIMESTAMP:
-            rc = SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP,
-                0, 0, (SQLPOINTER)mDataVec.data(), 0, 0);
-            break;
-        case T_SECONDDATE:
-        case T_CHAR:
-        case T_NCHAR:
-        case T_VARCHAR:
-        case T_NVARCHAR:
-        case T_SMALLDECIMAL:
-        case T_DECIMAL:
-        case T_DECIMAL_PS:
-        case T_BINARY:
-        case T_VARBINARY:
-        case T_BLOB:
-        case T_TEXT:
-            // TODO: to implement later
-        default:
-            assert(false);
-            return false;
-        };
-        return rc;
+    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
+        return SqlBindParam(hstmt, ipar, *this);
+    };
+    virtual bool AddFromStr(const char *str) {
+        T value;
+        bool ok = StrToValue(str, value);
+        if (ok) {
+            mDataVec.push_back(value);
+        }
+        return ok;
     };
 
 protected:
@@ -313,8 +274,9 @@ public:
     bool AddDecimalPs(const char *col_name, unsigned char p, unsigned char s, bool null_able = false) {
         return AddCol(col_name, GenDataAttr(T_DECIMAL_PS, null_able, p, s));
     };
-    SQLRETURN SqlBindAllColumns(SQLHSTMT hstmt);
-    bool AddRow(const char *line); // one line of CSV
+    SQLRETURN BindAllColumns(SQLHSTMT hstmt) const;
+    bool AddRow(const char *line, char delimiter = ','); // one line of CSV
+    int AddRows(std::ifstream &is_csv, int num, char delimiter = ',');
 
 protected:
     bool AddCol(const char *col_name, const DATA_ATTR_T &col_type);

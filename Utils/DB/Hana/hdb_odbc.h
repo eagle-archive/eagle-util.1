@@ -6,13 +6,28 @@
 #include <windows.h> // required by sqlext.h for WIN32
 #endif
 #include <sqlext.h>
+#include "hdb_columns.h"
 #include "hdb_odbc.h"
 
 namespace hdb {
 
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void PrintOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle);
 std::string GetOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle);
+
+template<class T, DATA_TYPE_T data_type> class ColT;
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TYNYINT> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<short, T_SMALLINT> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<int, T_INTEGER> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLBIGINT, T_BIGINT> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<float, T_REAL> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_DOUBLE> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_DATE_STRUCT, T_DATE> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIME_STRUCT, T_TIME> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> &col);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class OdbcConn {
@@ -61,6 +76,8 @@ protected:
     bool mConnected;
 };
 
+class BaseColumn;
+class ColRecords;
 class InsertExecutor {
 public:
     InsertExecutor(OdbcConn *pConn) {
@@ -80,8 +97,9 @@ public:
     std::string GetErrorStr() const {
         return GetOdbcError(SQL_HANDLE_STMT, mHstmt);
     };
-    bool PrepareInsStmt(std::vector<BaseColumn *> pCols, const char *table_name);
-    bool ExecuteInsert(ColRecords *pRecords);
+    static bool GetInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name, std::string &stmt);
+    bool PrepareInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name) const;
+    bool ExecuteInsert(const ColRecords &records) const;
 
 protected:
     OdbcConn *mpConn;
