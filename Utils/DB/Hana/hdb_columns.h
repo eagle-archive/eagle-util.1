@@ -233,8 +233,7 @@ typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
 
 class ColRecords {
 public:
-    ColRecords() {
-        mCount = 0;
+    ColRecords() : mRowCount(0) {
     };
     virtual ~ColRecords() {
         Clear();
@@ -253,7 +252,7 @@ public:
         }
     };
     size_t GetRowCount() const {
-        return mCount;
+        return mRowCount;
     };
     size_t GetColCount() const {
         return mPtrCols.size();
@@ -271,9 +270,11 @@ public:
         assert(type == T_CHAR || type == T_NCHAR);
         return AddCol(col_name, GenDataAttr(type, null_able, num, 0));
     };
-    bool AddDecimalPs(const char *col_name, unsigned char p, unsigned char s, bool null_able = false) {
+    bool AddColDecimalPs(const char *col_name, unsigned char p, unsigned char s, bool null_able = false) {
         return AddCol(col_name, GenDataAttr(T_DECIMAL_PS, null_able, p, s));
     };
+    bool AddColsFromCreateSql(const char *create_sql);
+
     SQLRETURN BindAllColumns(SQLHSTMT hstmt) const;
     bool AddRow(const char *line, char delimiter = ','); // one line of CSV
     int AddRows(std::ifstream &is_csv, int num, char delimiter = ',');
@@ -282,7 +283,7 @@ protected:
     bool AddCol(const char *col_name, const DATA_ATTR_T &col_type);
 
 protected:
-    size_t mCount;
+    size_t mRowCount;
     std::vector<BaseColumn *> mPtrCols;
 };
 

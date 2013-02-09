@@ -11,60 +11,6 @@ using namespace std;
 
 namespace hdb {
 
-static
-void csvline_populate(vector<string> &record, const char *line, char delimiter)
-{
-    int linepos = 0;
-    bool inquotes = false;
-    char c;
-    int linemax = (int)strlen(line);
-    string curstring;
-    record.clear();
-
-    while(line[linepos]!=0 && linepos < linemax)
-    {
-        c = line[linepos];
-
-        if (!inquotes && curstring.length()==0 && c=='"')
-        {
-            //beginquotechar
-            inquotes=true;
-        }
-        else if (inquotes && c=='"')
-        {
-            //quotechar
-            if ( (linepos+1 <linemax) && (line[linepos+1]=='"') ) 
-            {
-                //encountered 2 double quotes in a row (resolves to 1 double quote)
-                curstring.push_back(c);
-                linepos++;
-            }
-            else
-            {
-                //endquotechar
-                inquotes=false; 
-            }
-        }
-        else if (!inquotes && c==delimiter)
-        {
-            //end of field
-            record.push_back( curstring );
-            curstring="";
-        }
-        else if (!inquotes && (c=='\r' || c=='\n') )
-        {
-            record.push_back( curstring );
-            return;
-        }
-        else
-        {
-            curstring.push_back(c);
-        }
-        linepos++;
-    }
-    record.push_back( curstring );
-    return;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -139,13 +85,33 @@ bool ColRecords::AddRow(const char *line, char delimiter)
     size_t count = this->GetColCount();
     vector<string> strs;
     strs.reserve(count);
-    csvline_populate(strs, line, delimiter);
+    CsvLinePopulate(strs, line, delimiter);
     if (strs.size() < count) {
         return false;
     }
 
     for (size_t i = 0; i < count; i++) {
         if (false == mPtrCols[i]->AddFromStr(strs[i].c_str())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ColRecords::AddColsFromCreateSql(const char *create_sql)
+{
+    PARSED_TABLE_T parsed_table;
+    if (!ParseTableFromSql(create_sql, parsed_table)) {
+        return false;
+    }
+    size_t col_count = parsed_table.col_names.size();
+    if (col_count == 0) {
+        return false;
+    }
+
+    Clear();
+    for (size_t i = 0; i < col_count; i++) {
+        if (false == this->AddCol(parsed_table.col_names[i].c_str(), parsed_table.col_attrs[i])) {
             return false;
         }
     }

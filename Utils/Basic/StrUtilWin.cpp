@@ -51,4 +51,40 @@ void StringReplace(string &strBase, const string &strSrc, const string &strDes)
     }
 }
 
+// "    too much\t   \tspace\t\t\t  " => "too much\t   \tspace"
+std::string &TrimStr(std::string& str, const char *whitespace /*= " \t"*/)
+{
+    const size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos) {
+        str.clear(); // no content
+    } else {
+        const size_t strEnd = str.find_last_not_of(whitespace);
+        const size_t strRange = strEnd - strBegin + 1;
+        str = str.substr(strBegin, strRange);
+    }
+    return str;
+}
+
+// "    too much\t   \tspace\t\t\t  " => "too-much-space" if fill is "-"
+std::string &ReduceStr(std::string& str, const char *fill/*= " "*/, const char *whitespace /*=" \t"*/)
+{
+    // trim first
+    TrimStr(str, whitespace);
+
+    // replace sub ranges
+    auto beginSpace = str.find_first_of(whitespace);
+    while (beginSpace != std::string::npos)
+    {
+        const auto endSpace = str.find_first_not_of(whitespace, beginSpace);
+        const auto range = endSpace - beginSpace;
+
+        str.replace(beginSpace, range, fill);
+
+        const auto newStart = beginSpace + strlen(fill);
+        beginSpace = str.find_first_of(whitespace, newStart);
+    }
+
+    return str;
+}
+
 }

@@ -129,4 +129,133 @@ bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
     return false;
 }
 
+// "    too much\t   \tspace\t\t\t  " => "too much\t   \tspace"
+std::string &TrimStr(std::string& str, const char *whitespace /*= " \t"*/)
+{
+    const size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos) {
+        str.clear(); // no content
+    } else {
+        const size_t strEnd = str.find_last_not_of(whitespace);
+        const size_t strRange = strEnd - strBegin + 1;
+        str = str.substr(strBegin, strRange);
+    }
+    return str;
+}
+
+// "    too much\t   \tspace\t\t\t  " => "too-much-space" if fill is "-"
+std::string &ReduceStr(std::string& str, const char *fill/*= " "*/, const char *whitespace /*=" \t"*/)
+{
+    // trim first
+    TrimStr(str, whitespace);
+
+    // replace sub ranges
+    auto beginSpace = str.find_first_of(whitespace);
+    while (beginSpace != std::string::npos)
+    {
+        const auto endSpace = str.find_first_not_of(whitespace, beginSpace);
+        const auto range = endSpace - beginSpace;
+
+        str.replace(beginSpace, range, fill);
+
+        const auto newStart = beginSpace + strlen(fill);
+        beginSpace = str.find_first_of(whitespace, newStart);
+    }
+
+    return str;
+}
+
+void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
+{
+    int linepos = 0;
+    bool inquotes = false;
+    char c;
+    int linemax = (int)strlen(line);
+    string curstring;
+    record.clear();
+
+    while(line[linepos]!=0 && linepos < linemax)
+    {
+        c = line[linepos];
+
+        if (!inquotes && curstring.length()==0 && c=='"')
+        {
+            //beginquotechar
+            inquotes=true;
+        }
+        else if (inquotes && c=='"')
+        {
+            //quotechar
+            if ( (linepos+1 <linemax) && (line[linepos+1]=='"') ) 
+            {
+                //encountered 2 double quotes in a row (resolves to 1 double quote)
+                curstring.push_back(c);
+                linepos++;
+            }
+            else
+            {
+                //endquotechar
+                inquotes=false; 
+            }
+        }
+        else if (!inquotes && c==delimiter)
+        {
+            //end of field
+            record.push_back( curstring );
+            curstring="";
+        }
+        else if (!inquotes && (c=='\r' || c=='\n') )
+        {
+            record.push_back( curstring );
+            return;
+        }
+        else
+        {
+            curstring.push_back(c);
+        }
+        linepos++;
+    }
+    record.push_back( curstring );
+    return;
+}
+
+bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
+{
+    if (create_sql == NULL) return false;
+
+    PARSED_TABLE_T parsed_table;
+    parsed_table.create_sql = create_sql;
+    parsed_table.column = false;
+
+    const char *s_begin = strchr(create_sql, '(');
+    if (s_begin == NULL) return false;
+    s_begin++;
+
+    string str(s_begin);
+    const char *s_end = strchr(s_begin, ')');
+    if (!s_end) {
+        return false;
+    }
+    str.erase(s_end - s_begin);
+
+    CsvLinePopulate(parsed_table.col_strs, str.c_str(), ',');
+    size_t col_count = parsed_table.col_strs.size();
+    if (col_count == 0) {
+        return false;
+    }
+    for (size_t i = 0; i < col_count; i++) {
+        string &col_str = parsed_table.col_strs[i];
+        ReduceStr(col_str);
+
+        vector<string> subs;
+        CsvLinePopulate(subs, col_str.c_str(), ' ');
+        if (subs.size() < 2) {
+            return false;
+        }
+    }
+
+    table = parsed_table;
+    return true;
+}
+
 } // end of namespace hdb
