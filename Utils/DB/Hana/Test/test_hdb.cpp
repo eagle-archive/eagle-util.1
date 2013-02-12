@@ -3,14 +3,30 @@
 #include "../hdb_utils.h"
 
 using namespace hdb;
+using namespace std;
+
+bool Test_Types()
+{
+    assert(string("UNKNOWN") == DataTypeToStr((DATA_TYPE_T)-1));
+    assert(string("TINYINT") == DataTypeToStr(T_TINYINT));
+    assert(string("TEXT") == DataTypeToStr(T_TEXT));
+
+    assert(StrToDataType("AAAA") == T_UNKNOWN);
+    assert(StrToDataType("UNKNOWN") == T_UNKNOWN);
+    assert(StrToDataType("TINYINT") == T_TINYINT);
+    assert(StrToDataType("TEXT") == T_TEXT);
+    return true;
+}
 
 bool TestHdb_Main()
 {
+    Test_Types();
+
     bool ok;
     int size = sizeof(DATA_ATTR_T);
     assert(size == 4);
 
-    TynyIntCol ticol("aaa");
+    TinyIntCol ticol("aaa");
     SmallIntCol sicol("bbb");
     IntCol icol("ccc");
     DoubleCol dcol("ddd");

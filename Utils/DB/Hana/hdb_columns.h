@@ -92,9 +92,9 @@ public:
         // to implement all the virtual function in sub-classes, which is too tedious and will generate
         // too much code.
         switch(mDataAttr.type) {
-        case T_TYNYINT:
+        case T_TINYINT:
             {
-                TynyIntCol *pcol = (TynyIntCol *)this;
+                TinyIntCol *pcol = (TinyIntCol *)this;
                 for (size_t i = 0; i < count; i++) {
                     pcol->PushBack((char)(rand() % 128));
                 }
@@ -207,7 +207,7 @@ protected:
     std::vector<T> mDataVec;
 };
 
-typedef ColT<char, T_TYNYINT> TynyIntCol;
+typedef ColT<char, T_TINYINT> TinyIntCol;
 typedef ColT<short, T_SMALLINT> SmallIntCol;
 typedef ColT<int, T_INTEGER> IntCol;
 typedef ColT<SQLBIGINT, T_BIGINT> BigIntCol;

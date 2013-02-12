@@ -6,7 +6,7 @@ namespace hdb {
 typedef enum
 {
     T_UNKNOWN = 0,
-    T_TYNYINT = 1,
+    T_TINYINT = 1,
     T_SMALLINT,
     T_INTEGER,
     T_BIGINT,
@@ -27,6 +27,7 @@ typedef enum
     T_VARBINARY,
     T_BLOB,
     T_TEXT,
+    T_MAX = T_TEXT
 } DATA_TYPE_T;
 
 typedef struct {
@@ -41,7 +42,8 @@ typedef struct {
 
 
 DATA_ATTR_T GenDataAttr(DATA_TYPE_T type, bool null_able, int param1, int param2);
-const char *DateTypeToStr(DATA_TYPE_T type);
+const char *DataTypeToStr(DATA_TYPE_T type);
+DATA_TYPE_T StrToDataType(const char *type_str);
 
 static inline bool StrToValue(const char *s, char &v) {
     if (s == NULL || *s == '\0') return false;

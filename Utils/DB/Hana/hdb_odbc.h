@@ -19,7 +19,7 @@ void PrintOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle);
 std::string GetOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle);
 
 template<class T, DATA_TYPE_T data_type> class ColT;
-SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TYNYINT> &col);
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TINYINT> &col);
 SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<short, T_SMALLINT> &col);
 SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<int, T_INTEGER> &col);
 SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLBIGINT, T_BIGINT> &col);

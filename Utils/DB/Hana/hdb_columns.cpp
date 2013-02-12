@@ -20,8 +20,8 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &col_type)
     BaseColumn *pCol = NULL;
 
     switch(col_type.type) {
-    case T_TYNYINT:
-        pCol = new TynyIntCol(col_name, col_type.null_able);
+    case T_TINYINT:
+        pCol = new TinyIntCol(col_name, col_type.null_able);
         break;
     case T_SMALLINT:
         pCol = new SmallIntCol(col_name, col_type.null_able);

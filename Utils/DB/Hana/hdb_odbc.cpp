@@ -30,7 +30,7 @@ std::string GetOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle)
     return "";
 }
 
-SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TYNYINT> &col)
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TINYINT> &col)
 {
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TINYINT, SQL_TINYINT,
         0, 0, (SQLPOINTER)col.GetData(), 0, 0);

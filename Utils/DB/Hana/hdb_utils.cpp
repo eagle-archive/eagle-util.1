@@ -2,12 +2,38 @@
 #define _CRT_SECURE_NO_WARNINGS // Disable security warning message on MSVC
 #endif
 
+#include <algorithm>
 #include "hdb_utils.h"
 
 using namespace hdb;
 using namespace std;
 
 namespace hdb {
+
+static const char *TYPE_STRS[] = {
+    "UNKNOWN",
+    "TINYINT",
+    "SMALLINT",
+    "INTEGER",
+    "BIGINT",
+    "REAL",
+    "DOUBLE",
+    "DATE",
+    "TIME",
+    "TIMESTAMP",
+    "SECONDDATE",
+    "CHAR",
+    "NCHAR",
+    "VARCHAR",
+    "NVARCHAR",
+    "SMALLDECIMAL",
+    "DECIMAL",
+    "DECIMAL_PS",
+    "BINARY",
+    "VARBINARY",
+    "BLOB",
+    "TEXT",
+};
 
 DATA_ATTR_T GenDataAttr(DATA_TYPE_T type, bool null_able, int param1, int param2)
 {
@@ -19,33 +45,32 @@ DATA_ATTR_T GenDataAttr(DATA_TYPE_T type, bool null_able, int param1, int param2
     return t;
 };
 
-const char *DateTypeToStr(DATA_TYPE_T type)
+const char *DataTypeToStr(DATA_TYPE_T type)
 {
-    switch(type)
-    {
-    case T_TYNYINT: return "TYNYINT";
-    case T_SMALLINT: return "SMALLINT";
-    case T_INTEGER: return "INTEGER";
-    case T_BIGINT: return "BIGINT";
-    case T_REAL: return "REAL";
-    case T_DOUBLE: return "DOUBLE";
-    case T_DATE: return "DATE";
-    case T_TIME: return "TIME";
-    case T_TIMESTAMP: return "TIMESTAMP";
-    case T_SECONDDATE: return "SECONDDATE";
-    case T_CHAR: return "CHAR";
-    case T_NCHAR: return "NCHAR";
-    case T_VARCHAR: return "VARCHAR";
-    case T_NVARCHAR: return "NVARCHAR";
-    case T_SMALLDECIMAL: return "SMALLDECIMAL";
-    case T_DECIMAL: return "DECIMAL";
-    case T_DECIMAL_PS: return "DECIMAL_PS";
-    case T_BINARY: return "BINARY";
-    case T_VARBINARY: return "VARBINARY";
-    case T_BLOB: return "BLOB";
-    case T_TEXT: return "TEXT";
-    default: return "UNKNOWN";
+    return ((unsigned int)type > T_MAX) ? TYPE_STRS[0] : TYPE_STRS[(unsigned int)type];
+}
+
+DATA_TYPE_T StrToDataType(const char *type_str)
+{
+    for (int i = 0; i <= T_MAX; i++) {
+        if (_stricmp(type_str, TYPE_STRS[i]) == 0) {
+            return (DATA_TYPE_T)i;
+        }
     }
+
+    static const struct {
+        char *type_str;
+        DATA_TYPE_T type;
+    } MORE_TYPE_STRS[] = {
+        {"LONGDATE",    T_TIMESTAMP},
+    };
+    for (int i = 0; i < sizeof(MORE_TYPE_STRS)/sizeof(MORE_TYPE_STRS[0]); i++) {
+        if (_stricmp(type_str, MORE_TYPE_STRS[i].type_str) == 0) {
+            return MORE_TYPE_STRS[i].type;
+        }
+    }
+
+    return T_UNKNOWN;
 }
 
 void GetCurTm(struct tm &stm) {
@@ -165,6 +190,16 @@ std::string &ReduceStr(std::string& str, const char *fill/*= " "*/, const char *
     return str;
 }
 
+void StrToUpper(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+}
+
+void StrToLower(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+}
+
 void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 {
     int linepos = 0;
@@ -229,8 +264,39 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 
     const char *s_begin = strchr(create_sql, '(');
     if (s_begin == NULL) return false;
-    s_begin++;
 
+    {
+        string create(create_sql);
+        create.erase(s_begin - 1 - create_sql);
+        ReduceStr(create); // Now, e.g., create = CREATE COLUMN TABLE "I078212"."GPS29"
+        vector<string> subs;
+        CsvLinePopulate(subs, create.c_str(), ' ');
+
+        size_t sub_count = subs.size();
+        if (sub_count < 3) {
+            return false;
+        }
+        if (sub_count > 3 && !_stricmp(subs[1].c_str(), "COLUMN")) {
+            parsed_table.column = true;
+        }
+
+        {
+            vector<string> strs;
+            CsvLinePopulate(strs, subs[sub_count - 1].c_str(), '.');
+            if (strs.size() == 1) {
+                parsed_table.table_name = strs[0];
+            } else if (strs.size() == 2) {
+                parsed_table.schema = strs[0];
+                parsed_table.table_name = strs[1];
+            } else {
+                return false;
+            }
+            StrToUpper(parsed_table.schema);
+            StrToUpper(parsed_table.table_name);
+        }
+    }
+
+    s_begin++;
     string str(s_begin);
     const char *s_end = strchr(s_begin, ')');
     if (!s_end) {
@@ -252,6 +318,19 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
         if (subs.size() < 2) {
             return false;
         }
+        parsed_table.col_names.push_back(subs[0]);
+
+        StrToUpper(subs[1]);
+        parsed_table.col_str_types.push_back(subs[1]);
+
+        DATA_TYPE_T type = StrToDataType(subs[1].c_str());
+        if (T_UNKNOWN == type) {
+            return false;
+        }
+        parsed_table.col_types.push_back(type);
+
+        parsed_table.col_attrs.push_back(GenDataAttr(type, false, 0, 0));
+
     }
 
     table = parsed_table;
