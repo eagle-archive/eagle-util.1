@@ -16,7 +16,7 @@ namespace hdb {
 
 bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &col_type)
 {
-    assert(col_name != NULL);
+    assert(col_name != NULL && col_name[0] != '\0');
     BaseColumn *pCol = NULL;
 
     switch(col_type.type) {
@@ -95,6 +95,7 @@ bool ColRecords::AddRow(const char *line, char delimiter)
             return false;
         }
     }
+    mRowCount++;
     return true;
 }
 
@@ -148,7 +149,17 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
             total++;
         }
     }
+    mRowCount = num;
     return total;
+}
+
+void ColRecords::GenerateFakeData(size_t row_count)
+{
+    size_t col_count = this->GetColCount();
+    for (size_t col = 0; col < col_count; col++) {
+        mPtrCols[col]->GenerateFakeData(row_count);
+    }
+    mRowCount = row_count;
 }
 
 } // end of namespace hdb

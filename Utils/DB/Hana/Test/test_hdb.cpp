@@ -44,5 +44,7 @@ bool TestHdb_Main()
     assert(ok);
     assert(recs.GetColCount() == 10);
 
+    recs.GenerateFakeData(15);
+
     return true;
 };

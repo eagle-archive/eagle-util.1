@@ -61,12 +61,14 @@ DATA_TYPE_T StrToDataType(const char *type_str)
     static const struct {
         char *type_str;
         DATA_TYPE_T type;
-    } MORE_TYPE_STRS[] = {
+    } MORE_TYPES[] = {
+        {"DAYDATE",     T_DATE},
+        {"SECONDTIME",  T_TIME},
         {"LONGDATE",    T_TIMESTAMP},
     };
-    for (int i = 0; i < sizeof(MORE_TYPE_STRS)/sizeof(MORE_TYPE_STRS[0]); i++) {
-        if (_stricmp(type_str, MORE_TYPE_STRS[i].type_str) == 0) {
-            return MORE_TYPE_STRS[i].type;
+    for (int i = 0; i < sizeof(MORE_TYPES)/sizeof(MORE_TYPES[0]); i++) {
+        if (_stricmp(type_str, MORE_TYPES[i].type_str) == 0) {
+            return MORE_TYPES[i].type;
         }
     }
 

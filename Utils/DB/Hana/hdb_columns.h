@@ -18,6 +18,7 @@ namespace hdb {
 class BaseColumn {
 public:
     BaseColumn(const char *col_name, const DATA_ATTR_T &attr) {
+        SetColName(col_name);
         memcpy(&mDataAttr, &attr, sizeof(DATA_ATTR_T));
     };
     virtual ~BaseColumn() {};
@@ -36,6 +37,9 @@ public:
     virtual size_t GetCount() const = 0;
     const char *GetColName() const {
         return mColName.c_str();
+    };
+    void SetColName(const char *name) {
+        mColName = (name != NULL) ? name : "";
     };
     void CopyFrom(const BaseColumn &col) {
         mDataAttr = col.mDataAttr;
@@ -58,12 +62,14 @@ template<class T, DATA_TYPE_T data_type>
 class ColT : public BaseColumn
 {
 public:
-    ColT(const char *col_name, bool null_able = false) 
+    ColT(const char *col_name = NULL, bool null_able = false) 
         : BaseColumn(col_name, GenDataAttr(data_type, null_able, 0, 0))
     {};
     ColT(const char *col_name, DATA_ATTR_T attr) 
         : BaseColumn(col_name, attr)
-    {};
+    {
+        mDataAttr.type = data_type;
+    };
     virtual ~ColT() {};
     virtual void Reserve(size_t count) {
         BaseColumn::Reserve(count);
@@ -278,6 +284,7 @@ public:
     SQLRETURN BindAllColumns(SQLHSTMT hstmt) const;
     bool AddRow(const char *line, char delimiter = ','); // one line of CSV
     int AddRows(std::ifstream &is_csv, int num, char delimiter = ',');
+    void GenerateFakeData(size_t row_count);
 
 protected:
     bool AddCol(const char *col_name, const DATA_ATTR_T &col_type);
