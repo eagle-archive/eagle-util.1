@@ -84,6 +84,12 @@ SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIMESTA
         0, 0, (SQLPOINTER)col.GetData(), 0, 0);
 }
 
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_DECIMAL_PS> &col)
+{
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
+        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+}
+
 bool OdbcConn::Connect()
 {
     SQLRETURN rc = SQL_SUCCESS;

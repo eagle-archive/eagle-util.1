@@ -14,56 +14,75 @@ namespace hdb {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &col_type)
+bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
 {
     assert(col_name != NULL && col_name[0] != '\0');
     BaseColumn *pCol = NULL;
 
-    switch(col_type.type) {
+    switch(attr.type) {
     case T_TINYINT:
-        pCol = new TinyIntCol(col_name, col_type.null_able);
+        pCol = new TinyIntCol(col_name, attr.null_able);
         break;
     case T_SMALLINT:
-        pCol = new SmallIntCol(col_name, col_type.null_able);
+        pCol = new SmallIntCol(col_name, attr.null_able);
         break;
     case T_INTEGER:
-        pCol = new IntCol(col_name, col_type.null_able);
+        pCol = new IntCol(col_name, attr.null_able);
         break;
     case T_BIGINT:
-        pCol = new BigIntCol(col_name, col_type.null_able);
+        pCol = new BigIntCol(col_name, attr.null_able);
         break;
     case T_REAL:
-        pCol = new RealCol(col_name, col_type.null_able);
+        pCol = new RealCol(col_name, attr.null_able);
         break;
     case T_DOUBLE:
-        pCol = new DoubleCol(col_name, col_type.null_able);
+        pCol = new DoubleCol(col_name, attr.null_able);
         break;
     case T_DATE:
-        pCol = new DateCol(col_name, col_type.null_able);
+        pCol = new DateCol(col_name, attr.null_able);
         break;
     case T_TIME:
-        pCol = new TimeCol(col_name, col_type.null_able);
+        pCol = new TimeCol(col_name, attr.null_able);
         break;
     case T_TIMESTAMP:
-        pCol = new TimeStampCol(col_name, col_type.null_able);
+        pCol = new TimeStampCol(col_name, attr.null_able);
         break;
     case T_SECONDDATE:
+        assert(false);
+        break;
     case T_CHAR:
+        assert(false);
+        break;
     case T_NCHAR:
+        assert(false);
+        break;
     case T_VARCHAR:
+        assert(false);
+        break;
     case T_NVARCHAR:
+        assert(false);
+        break;
     case T_SMALLDECIMAL:
+        assert(false);
+        break;
     case T_DECIMAL:
         assert(false);
         break;
     case T_DECIMAL_PS:
-        assert(false);
+        pCol = new DecimalPsCol(col_name, attr);
         break;
     case T_BINARY:
+        assert(false);
+        break;
     case T_VARBINARY:
+        assert(false);
+        break;
     case T_BLOB:
+        assert(false);
+        break;
     case T_TEXT:
-        // TODO: to implement later
+        assert(false);
+        break;
     default:
         assert(false);
         return false;

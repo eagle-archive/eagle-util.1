@@ -75,10 +75,18 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         }
     }
 
-    if (typestr.find("DECIMAL(") != string::npos) {
-        return T_DECIMAL_PS;
+    static const struct {
+        char *type_str_sub;
+        DATA_TYPE_T type;
+    } MORE_TYPES_BEGIN_WITH[] = {
+        {"VARCHAR(",    T_VARCHAR},
+        {"DECIMAL(",    T_DECIMAL_PS},
+    };
+    for (int i = 0; i < sizeof(MORE_TYPES_BEGIN_WITH)/sizeof(MORE_TYPES_BEGIN_WITH[0]); i++) {
+        if (typestr.find(MORE_TYPES_BEGIN_WITH[i].type_str_sub) == 0) {
+            return MORE_TYPES_BEGIN_WITH[i].type;
+        }
     }
-
     return T_UNKNOWN;
 }
 
@@ -269,10 +277,14 @@ static void SplitParams(vector<string> &record, const char *params)
 
     for (size_t i = 0; i < record.size(); i++) {
         if (record[i].find('(') != string::npos) {
-            if (i + 1 < record.size()) {
-                record[i] += ',';
-                record[i] += record[i+1];
-                record.erase(record.begin() + i + 1);
+            string upper(record[i]);
+            StrToUpper(upper);
+            if (upper.find("DECIMAL(") != string::npos) {
+                if (i + 1 < record.size()) {
+                    record[i] += ',';
+                    record[i] += record[i+1];
+                    record.erase(record.begin() + i + 1);
+                }
             }
         }
     }
@@ -293,6 +305,11 @@ static void ParseParamStr(const string &param, int &p1, int &p2)
             if (s2) {
                 p2 = atoi(s2+1);
             }
+        }
+    } else if (T_CHAR == type || T_NCHAR == type || T_VARCHAR == type || T_NVARCHAR == type) {
+        const char *s1 = strchr(param.c_str(), '(');
+        if (s1) {
+            p1 = atoi(s1+1);
         }
     }
 }
@@ -341,11 +358,16 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 
     s_begin++;
     string str(s_begin);
-    const char *s_end = strrchr(s_begin, ')');
+    // strip the sub-string after "PARTITION BY"
+    size_t partition_by_pos = str.find("PARTITION BY");
+    if (partition_by_pos != string::npos) {
+        str.resize(partition_by_pos);
+    }
+    const char *s_end = strrchr(str.c_str(), ')');
     if (!s_end) {
         return false;
     }
-    str.erase(s_end - s_begin);
+    str.erase(s_end - str.c_str());
 
     SplitParams(parsed_table.col_strs, str.c_str());
     size_t col_count = parsed_table.col_strs.size();
@@ -371,7 +393,8 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
         assert(T_UNKNOWN != type);
         parsed_table.col_types.push_back(type);
 
-        if (T_DECIMAL_PS == type) {
+        if (T_DECIMAL_PS == type || T_CHAR == type || T_NCHAR == type || 
+            T_VARCHAR == type || T_NVARCHAR == type) {
             ParseParamStr(subs[1], p1, p2);
         }
         parsed_table.col_attrs.push_back(GenDataAttr(type, false, p1, p2));

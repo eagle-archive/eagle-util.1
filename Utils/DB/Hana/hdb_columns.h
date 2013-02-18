@@ -234,7 +234,7 @@ typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
 // T_NVARCHAR
 // T_SMALLDECIMAL
 // T_DECIMAL
-// T_DECIMAL_PS
+typedef ColT<double, T_DECIMAL_PS> DecimalPsCol;
 // T_BINARY
 // T_VARBINARY
 // T_BLOB
@@ -299,7 +299,7 @@ public:
     void GenerateFakeData(size_t row_count);
 
 protected:
-    bool AddCol(const char *col_name, const DATA_ATTR_T &col_type);
+    bool AddCol(const char *col_name, const DATA_ATTR_T &attr);
 
 protected:
     size_t mRowCount;
