@@ -19,7 +19,7 @@ struct UTIL_GLOBALS {
     std::string DSN;
     std::string USER;
     std::string PASSWORD;
-    std::string TABLE_NAME;
+    std::string CREATE_TABLE_SQL;
 
     int  N_THREADS;
     int  N_RECORDS;

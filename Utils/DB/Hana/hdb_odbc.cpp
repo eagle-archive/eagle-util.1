@@ -127,7 +127,7 @@ bool InsertExecutor::GetInsStmt(const std::vector<BaseColumn *> &pCols, const ch
         strncat(ins_into, pCols[i]->GetColName(), sizeof(ins_into));
         if (i == size - 1) {
             strncat(ins_into, ") ", sizeof(ins_into));
-            strncat(values, ")", sizeof(values));
+            strncat(values, "?)", sizeof(values));
         } else {
             strncat(ins_into, ", ", sizeof(ins_into));
             strncat(values, "?,", sizeof(values));

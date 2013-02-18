@@ -71,7 +71,7 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &col_type)
 
 SQLRETURN ColRecords::BindAllColumns(SQLHSTMT hstmt) const
 {
-    SQLRETURN rc;
+    SQLRETURN rc = SQL_SUCCESS;
     for (size_t i = 0; i < mPtrCols.size(); i++) {
         rc = mPtrCols[i]->BindParam(hstmt, (SQLUSMALLINT)(i+1));
         if (!SQL_SUCCEEDED(rc)) return rc;
@@ -110,7 +110,7 @@ bool ColRecords::AddColsFromCreateSql(const char *create_sql)
         return false;
     }
 
-    Clear();
+    ClearAllCols();
     for (size_t i = 0; i < col_count; i++) {
         if (false == this->AddCol(parsed_table.col_names[i].c_str(), parsed_table.col_attrs[i])) {
             return false;
@@ -147,9 +147,11 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
         if (!GetLine(is_csv, line)) break;
         if (AddRow(line.c_str(), delimiter)) {
             total++;
+        } else {
+            printf("Warning: cannot parse: %s\n", line.c_str());
         }
     }
-    mRowCount = num;
+    mRowCount = total;
     return total;
 }
 

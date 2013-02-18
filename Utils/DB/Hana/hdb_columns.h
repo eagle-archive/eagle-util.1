@@ -51,6 +51,7 @@ public:
     virtual void GenerateFakeData(size_t count) = 0;
     virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
     virtual bool AddFromStr(const char *str) = 0;
+    virtual void RemoveAllRows() = 0;
 
 protected:
     DATA_ATTR_T mDataAttr;
@@ -208,6 +209,10 @@ public:
         }
         return ok;
     };
+    virtual void RemoveAllRows() {
+        mDataVec.clear();
+        mNullVec.clear();
+    };
 
 protected:
     std::vector<T> mDataVec;
@@ -242,15 +247,22 @@ public:
     ColRecords() : mRowCount(0) {
     };
     virtual ~ColRecords() {
-        Clear();
+        ClearAllCols();
     };
 
 public:
-    void Clear() {
+    void ClearAllCols() {
+        mRowCount = 0;
         for (size_t i = 0; i < mPtrCols.size(); i++) {
             delete mPtrCols[i];
         }
         mPtrCols.clear();
+    };
+    void ClearAllRows() {
+        mRowCount = 0;
+        for (size_t i = 0; i < mPtrCols.size(); i++) {
+            mPtrCols[i]->RemoveAllRows();
+        }
     };
     void Reserve(size_t count) {
         for (size_t i = 0; i < mPtrCols.size(); i++) {

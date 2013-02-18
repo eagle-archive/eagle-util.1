@@ -143,7 +143,7 @@ bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
 {
     if (s == NULL || *s == '\0') return false;
     int year, month, day, hour, minute, second, fraction;
-    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d:%d", &year, &month, &day, &hour, &minute, &second, &fraction)) {
+    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction)) {
         v.year = year;
         v.month = month;
         v.day = day;

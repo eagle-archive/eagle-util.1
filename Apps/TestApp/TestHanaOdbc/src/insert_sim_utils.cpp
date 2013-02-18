@@ -60,7 +60,7 @@ bool read_configs_from_ini(const char *config_file, UTIL_GLOBALS *p_globals) {
         return false;
     }
 
-    if (false == read_ini_string(dict, "DB:TABLE_NAME", p_globals->TABLE_NAME)) {
+    if (false == read_ini_string(dict, "DB:CREATE_TABLE_SQL", p_globals->CREATE_TABLE_SQL)) {
         iniparser_freedict(dict);
         return false;
     }
