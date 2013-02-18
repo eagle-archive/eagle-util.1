@@ -65,24 +65,7 @@ bool read_configs_from_ini(const char *config_file, UTIL_GLOBALS *p_globals) {
         return false;
     }
 
-    p_globals->N_THREADS = iniparser_getint(dict, "main:N_THREADS", 0xCDCDCDCD);
-    if (0xCDCDCDCD == (unsigned int)GLOBALS.N_THREADS) {
-        printf("ERROR: cannot find N_THREADS in config file\n");
-        iniparser_freedict(dict);
-        return false;
-    }
-
-    if (false == read_ini_int(dict, "main:N_THREADS", p_globals->N_THREADS)) {
-        iniparser_freedict(dict);
-        return false;
-    }
-
     if (false == read_ini_int(dict, "main:N_RECORDS", p_globals->N_RECORDS)) {
-        iniparser_freedict(dict);
-        return false;
-    }
-
-    if (false == read_ini_int(dict, "main:RATE", p_globals->RATE)) {
         iniparser_freedict(dict);
         return false;
     }
@@ -111,48 +94,6 @@ long get_time_in_ms() {
     gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 #endif
-}
-
-void update_rate_status() {
-    long cur = get_time_in_ms();
-    if (cur - GLOBALS.last_check_time >= 1000) {
-        long count_diff =  (long)(GLOBALS.insert_count - GLOBALS.last_insert_count);
-        long time_diff = cur - GLOBALS.last_check_time;
-        long actual_rate = (long)(count_diff / (time_diff/1000.0) + 0.5);
-
-#ifdef _WIN32
-        InterlockedExchange(&GLOBALS.actual_rate, actual_rate);
-        InterlockedExchange(&GLOBALS.last_check_time, cur);
-        InterlockedExchange64(&GLOBALS.last_insert_count, GLOBALS.insert_count);
-#else
-        __sync_lock_test_and_set(&GLOBALS.actual_rate, actual_rate);
-        __sync_lock_test_and_set(&GLOBALS.last_check_time, cur);
-        __sync_lock_test_and_set(&GLOBALS.last_insert_count, GLOBALS.insert_count);
-#endif
-
-        int up_time = (int)(cur - GLOBALS.start_time);
-        int fraction = up_time % 1000;
-        int sec = (up_time / 1000) % 100;
-        int min = (up_time / 1000 / 60) % 100;
-        int hour = (up_time / 1000 / 60 / 60) % 100;
-        printf("%02d:%02d:%02d:%03d - total inserts: %lld, actual rate: %ld\n",
-                hour, min, sec, fraction, GLOBALS.insert_count, GLOBALS.actual_rate);
-    }
-}
-
-bool GetLine(std::ifstream &fs, std::string &line) {
-    line.clear();
-    do{
-        if(getline(fs, line)) {
-            if(fs.good() && line.empty()){
-                continue;
-            }
-            return true;
-        } else {
-            return false;
-        }
-    } while(true);
-    return false;
 }
 
 std::string FormatTimeStr(unsigned long uTimeMs)

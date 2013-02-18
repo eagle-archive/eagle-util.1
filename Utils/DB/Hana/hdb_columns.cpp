@@ -54,7 +54,11 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &col_type)
     case T_NVARCHAR:
     case T_SMALLDECIMAL:
     case T_DECIMAL:
+        assert(false);
+        break;
     case T_DECIMAL_PS:
+        assert(false);
+        break;
     case T_BINARY:
     case T_VARBINARY:
     case T_BLOB:
@@ -121,7 +125,6 @@ bool ColRecords::AddColsFromCreateSql(const char *create_sql)
 
 static bool GetLine(std::ifstream &fs, std::string &line)
 {
-    line.clear();
     do{
         if(getline(fs, line)) {
             if(fs.good() && line.empty()){
@@ -148,7 +151,7 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
         if (AddRow(line.c_str(), delimiter)) {
             total++;
         } else {
-            printf("Warning: cannot parse: %s\n", line.c_str());
+            printf("Warning: cannot parse CSV line: %s\n", line.c_str());
         }
     }
     mRowCount = total;

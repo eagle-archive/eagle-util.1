@@ -52,8 +52,11 @@ const char *DataTypeToStr(DATA_TYPE_T type)
 
 DATA_TYPE_T StrToDataType(const char *type_str)
 {
+    string typestr(type_str);
+    StrToUpper(typestr);
+
     for (int i = 0; i <= T_MAX; i++) {
-        if (_stricmp(type_str, TYPE_STRS[i]) == 0) {
+        if (typestr == TYPE_STRS[i]) {
             return (DATA_TYPE_T)i;
         }
     }
@@ -67,9 +70,13 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"LONGDATE",    T_TIMESTAMP},
     };
     for (int i = 0; i < sizeof(MORE_TYPES)/sizeof(MORE_TYPES[0]); i++) {
-        if (_stricmp(type_str, MORE_TYPES[i].type_str) == 0) {
+        if (typestr == MORE_TYPES[i].type_str) {
             return MORE_TYPES[i].type;
         }
+    }
+
+    if (typestr.find("DECIMAL(") != string::npos) {
+        return T_DECIMAL_PS;
     }
 
     return T_UNKNOWN;
@@ -256,6 +263,40 @@ void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
     return;
 }
 
+static void SplitParams(vector<string> &record, const char *params)
+{
+    CsvLinePopulate(record, params, ',');
+
+    for (size_t i = 0; i < record.size(); i++) {
+        if (record[i].find('(') != string::npos) {
+            if (i + 1 < record.size()) {
+                record[i] += ',';
+                record[i] += record[i+1];
+                record.erase(record.begin() + i + 1);
+            }
+        }
+    }
+}
+
+static void ParseParamStr(const string &param, int &p1, int &p2)
+{
+    DATA_TYPE_T type = StrToDataType(param.c_str());
+    assert(T_UNKNOWN != type);
+
+    if (type == T_DECIMAL_PS) {
+        const char *s1 = strchr(param.c_str(), '(');
+        if (s1) {
+            s1++;
+            p1 = atoi(s1);
+
+            const char *s2 = strchr(s1, ',');
+            if (s2) {
+                p2 = atoi(s2+1);
+            }
+        }
+    }
+}
+
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 {
     if (create_sql == NULL) return false;
@@ -300,13 +341,13 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 
     s_begin++;
     string str(s_begin);
-    const char *s_end = strchr(s_begin, ')');
+    const char *s_end = strrchr(s_begin, ')');
     if (!s_end) {
         return false;
     }
     str.erase(s_end - s_begin);
 
-    CsvLinePopulate(parsed_table.col_strs, str.c_str(), ',');
+    SplitParams(parsed_table.col_strs, str.c_str());
     size_t col_count = parsed_table.col_strs.size();
     if (col_count == 0) {
         return false;
@@ -325,13 +366,15 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
         StrToUpper(subs[1]);
         parsed_table.col_str_types.push_back(subs[1]);
 
+        int p1 = 0, p2 = 0;
         DATA_TYPE_T type = StrToDataType(subs[1].c_str());
-        if (T_UNKNOWN == type) {
-            return false;
-        }
+        assert(T_UNKNOWN != type);
         parsed_table.col_types.push_back(type);
 
-        parsed_table.col_attrs.push_back(GenDataAttr(type, false, 0, 0));
+        if (T_DECIMAL_PS == type) {
+            ParseParamStr(subs[1], p1, p2);
+        }
+        parsed_table.col_attrs.push_back(GenDataAttr(type, false, p1, p2));
 
     }
 

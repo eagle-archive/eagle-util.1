@@ -86,7 +86,7 @@ void *insert_executor(void *arg) {
 
         /* Prepare rows to insert */
         records.ClearAllRows();
-        if (0 == records.AddRows(gInCsv, 20)) {
+        if (0 == records.AddRows(gInCsv, GLOBALS.N_RECORDS)) {
             break;
         }
         PrintStatus(records.GetRowCount());
