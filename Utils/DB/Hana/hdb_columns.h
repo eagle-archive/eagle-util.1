@@ -29,11 +29,7 @@ public:
     const bool NullAble() const {
         return mDataAttr.null_able;
     };
-    virtual void Reserve(size_t count) {
-        if (NullAble()) {
-            mNullVec.reserve(count);
-        }
-    };
+    virtual void Reserve(size_t count) = 0;
     virtual size_t GetCount() const = 0;
     const char *GetColName() const {
         return mColName.c_str();
@@ -44,7 +40,6 @@ public:
     void CopyFrom(const BaseColumn &col) {
         mDataAttr = col.mDataAttr;
         mColName = col.mColName;
-        mNullVec = col.mNullVec;
     };
     virtual void *GetData() = 0;
     virtual const void *GetData() const = 0;
@@ -56,7 +51,6 @@ public:
 protected:
     DATA_ATTR_T mDataAttr;
     std::string mColName;
-    std::vector<bool> mNullVec;
 };
 
 template<class T, DATA_TYPE_T data_type>
@@ -74,20 +68,21 @@ public:
     virtual ~ColT() {};
 
     virtual void Reserve(size_t count) {
-        BaseColumn::Reserve(count);
         mDataVec.reserve(count);
+        mStrLenOrIndVec.reserve(count);
     };
     virtual size_t GetCount() const {
-        return mDataVec.size();
+        return mStrLenOrIndVec.size();
     };
     void CopyFrom(ColT<T, data_type> &col) {
         BaseColumn::CopyFrom(col);
         mDataVec = col.mDataVec;
+        mStrLenOrIndVec = col.mStrLenOrIndVec;
     };
     void PushBack(const T &val) {
         mDataVec.push_back(val);
+        mStrLenOrIndVec.push_back(0);
     };
-
     virtual void *GetData() {
         return mDataVec.data();
     };
@@ -205,19 +200,25 @@ public:
     };
     virtual bool AddFromStr(const char *str) {
         T value;
-        bool ok = StrToValue(str, value);
-        if (ok) {
-            mDataVec.push_back(value);
+        if (false == StrToValue(str, value)) {
+            return false;
         }
-        return ok;
+        mDataVec.push_back(value);
+        if (*str == '\0' && NullAble()) {
+            mStrLenOrIndVec.push_back(SQL_NULL_DATA);
+        } else {
+            mStrLenOrIndVec.push_back(0);
+        }
+        return true;
     };
     virtual void RemoveAllRows() {
         mDataVec.clear();
-        mNullVec.clear();
+        mStrLenOrIndVec.clear();
     };
 
 protected:
     std::vector<T> mDataVec;
+    std::vector<SQLLEN> mStrLenOrIndVec;
 };
 
 typedef ColT<char, T_TINYINT> TinyIntCol;
@@ -252,13 +253,11 @@ public:
     VarCharCol(const char *col_name, int n, bool null_able = false)
         : ColT<SQLCHAR, T_VARCHAR>(col_name, GenDataAttr(T_VARCHAR, null_able, n, 0))
     {
-        #error: to implement
     };
+    virtual ~VarCharCol() {};
 
-    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
-        // TODO: to implement
-        return 0;
-    };
+    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const;
+    virtual bool AddFromStr(const char *str);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

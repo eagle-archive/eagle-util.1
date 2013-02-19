@@ -25,6 +25,29 @@ bool StrToValue(const char *s, SQLCHAR &v)
     return false;
 }
 
+SQLRETURN VarCharCol::BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const
+{
+    SQLULEN ColumnSize = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
+    SQLLEN BufferLength = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR,
+        ColumnSize, 0, (SQLPOINTER)GetData(), BufferLength, (SQLLEN *)mStrLenOrIndVec.data());
+}
+
+bool VarCharCol::AddFromStr(const char *str)
+{
+    if (*str == '\0'  && NullAble()) {
+        mStrLenOrIndVec.push_back(SQL_NULL_DATA);
+    } else {
+        mStrLenOrIndVec.push_back(SQL_NTS);
+    }
+
+    size_t len = mDataVec.size();
+    mDataVec.resize(len +  mDataAttr.a);
+
+    strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
