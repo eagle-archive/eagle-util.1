@@ -11,6 +11,19 @@ using namespace std;
 
 namespace hdb {
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Dummy functions for class VarCharCol
+
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_VARCHAR> &col)
+{
+    assert(false); // should never hit here
+    return 0;
+};
+bool StrToValue(const char *s, SQLCHAR &v)
+{
+    assert(false); // should never hit here
+    return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,7 +70,7 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
         assert(false);
         break;
     case T_VARCHAR:
-        assert(false);
+        pCol = new VarCharCol(col_name, attr.a, attr.null_able);
         break;
     case T_NVARCHAR:
         assert(false);

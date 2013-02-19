@@ -63,7 +63,7 @@ template<class T, DATA_TYPE_T data_type>
 class ColT : public BaseColumn
 {
 public:
-    ColT(const char *col_name = NULL, bool null_able = false) 
+    ColT(const char *col_name = NULL, bool null_able = false)
         : BaseColumn(col_name, GenDataAttr(data_type, null_able, 0, 0))
     {};
     ColT(const char *col_name, DATA_ATTR_T attr) 
@@ -72,6 +72,7 @@ public:
         mDataAttr.type = data_type;
     };
     virtual ~ColT() {};
+
     virtual void Reserve(size_t count) {
         BaseColumn::Reserve(count);
         mDataVec.reserve(count);
@@ -86,6 +87,7 @@ public:
     void PushBack(const T &val) {
         mDataVec.push_back(val);
     };
+
     virtual void *GetData() {
         return mDataVec.data();
     };
@@ -230,7 +232,7 @@ typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
 // T_SECONDDATE ?
 // T_CHAR
 // T_NCHAR
-// T_VARCHAR
+class VarCharCol;
 // T_NVARCHAR
 // T_SMALLDECIMAL
 // T_DECIMAL
@@ -239,6 +241,25 @@ typedef ColT<double, T_DECIMAL_PS> DecimalPsCol;
 // T_VARBINARY
 // T_BLOB
 // T_TEXT
+
+// Dummy functions for class VarCharCol
+SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_VARCHAR> &col);
+bool StrToValue(const char *s, SQLCHAR &v);
+
+class VarCharCol : public ColT<SQLCHAR, T_VARCHAR>
+{
+public:
+    VarCharCol(const char *col_name, int n, bool null_able = false)
+        : ColT<SQLCHAR, T_VARCHAR>(col_name, GenDataAttr(T_VARCHAR, null_able, n, 0))
+    {
+        #error: to implement
+    };
+
+    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
+        // TODO: to implement
+        return 0;
+    };
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
