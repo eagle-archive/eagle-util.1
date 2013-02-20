@@ -314,16 +314,22 @@ static void ParseParamStr(const string &param, int &p1, int &p2)
     }
 }
 
-bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
+bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str)
 {
-    if (create_sql == NULL) return false;
+    if (create_sql == NULL) {
+        err_str = "Null pointer for passed in SQL!";
+        return false;
+    }
 
     PARSED_TABLE_T parsed_table;
     parsed_table.create_sql = create_sql;
     parsed_table.column = false;
 
     const char *s_begin = strchr(create_sql, '(');
-    if (s_begin == NULL) return false;
+    if (s_begin == NULL) {
+        err_str = "Not found '(' in SQL passed in.";
+        return false;
+    }
 
     {
         string create(create_sql);
@@ -334,6 +340,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 
         size_t sub_count = subs.size();
         if (sub_count < 3) {
+            err_str = "Too few items in \"" + create + '\"';
             return false;
         }
         if (sub_count > 3 && !_stricmp(subs[1].c_str(), "COLUMN")) {
@@ -344,11 +351,13 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
             vector<string> strs;
             CsvLinePopulate(strs, subs[sub_count - 1].c_str(), '.');
             if (strs.size() == 1) {
+                parsed_table.schema.clear();
                 parsed_table.table_name = strs[0];
             } else if (strs.size() == 2) {
                 parsed_table.schema = strs[0];
                 parsed_table.table_name = strs[1];
             } else {
+                err_str = "Too few items in \"" + create + '\"';
                 return false;
             }
             StrToUpper(parsed_table.schema);
@@ -365,6 +374,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
     }
     const char *s_end = strrchr(str.c_str(), ')');
     if (!s_end) {
+        err_str = "Not found ')' in SQL passed in.";
         return false;
     }
     str.erase(s_end - str.c_str());
@@ -381,6 +391,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
         vector<string> subs;
         CsvLinePopulate(subs, col_str.c_str(), ' ');
         if (subs.size() < 2) {
+            err_str = "Error in parsing: " + col_str + ": too few items!";
             return false;
         }
         parsed_table.col_names.push_back(subs[0]);
@@ -390,7 +401,10 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table)
 
         int p1 = 0, p2 = 0;
         DATA_TYPE_T type = StrToDataType(subs[1].c_str());
-        assert(T_UNKNOWN != type);
+        if (T_UNKNOWN == type) {
+            err_str = "Unknown type: " + subs[1];
+            return false;
+        }
         parsed_table.col_types.push_back(type);
 
         if (T_DECIMAL_PS == type || T_CHAR == type || T_NCHAR == type || 

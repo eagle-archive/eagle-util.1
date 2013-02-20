@@ -44,7 +44,7 @@ public:
     virtual void *GetData() = 0;
     virtual const void *GetData() const = 0;
     virtual void GenerateFakeData(size_t count) = 0;
-    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
+    virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
     virtual bool AddFromStr(const char *str) = 0;
     virtual void RemoveAllRows() = 0;
 
@@ -72,16 +72,7 @@ public:
         mStrLenOrIndVec.reserve(count);
     };
     virtual size_t GetCount() const {
-        return mStrLenOrIndVec.size();
-    };
-    void CopyFrom(ColT<T, data_type> &col) {
-        BaseColumn::CopyFrom(col);
-        mDataVec = col.mDataVec;
-        mStrLenOrIndVec = col.mStrLenOrIndVec;
-    };
-    void PushBack(const T &val) {
-        mDataVec.push_back(val);
-        mStrLenOrIndVec.push_back(0);
+        return mDataVec.size();
     };
     virtual void *GetData() {
         return mDataVec.data();
@@ -178,13 +169,27 @@ public:
             }
             break;
         case T_SECONDDATE:
+            assert(false);
+            break;
         case T_CHAR:
         case T_NCHAR:
         case T_VARCHAR:
         case T_NVARCHAR:
+            assert(false); // should not reach here!
+            break;
         case T_SMALLDECIMAL:
         case T_DECIMAL:
+            assert(false);
+            break;
         case T_DECIMAL_PS:
+            {
+                DoubleCol *pcol = (DoubleCol *)this;
+                for (size_t i = 0; i < count; i++) {
+			        double t = ((double) rand() / RAND_MAX * 9999999);
+                    pcol->PushBack(t);
+                }
+            }
+            break;
         case T_BINARY:
         case T_VARBINARY:
         case T_BLOB:
@@ -195,8 +200,8 @@ public:
             return;
         };
     };
-    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
-        return SqlBindParam(hstmt, ipar, *this);
+    virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
+        return SqlBindInParam(hstmt, ipar, *this);
     };
     virtual bool AddFromStr(const char *str) {
         T value;
@@ -204,10 +209,9 @@ public:
             return false;
         }
         mDataVec.push_back(value);
-        if (*str == '\0' && NullAble()) {
+
+        if (NullAble() && *str == '\0') {
             mStrLenOrIndVec.push_back(SQL_NULL_DATA);
-        } else {
-            mStrLenOrIndVec.push_back(0);
         }
         return true;
     };
@@ -216,9 +220,61 @@ public:
         mStrLenOrIndVec.clear();
     };
 
+public:
+    void CopyFrom(ColT<T, data_type> &col) {
+        BaseColumn::CopyFrom(col);
+        mDataVec = col.mDataVec;
+        mStrLenOrIndVec = col.mStrLenOrIndVec;
+    };
+    void PushBack(const T &val) {
+        assert(mDataAttr.type != T_CHAR && mDataAttr.type != T_NCHAR && mDataAttr.type != T_VARCHAR && mDataAttr.type != T_NVARCHAR);
+        mDataVec.push_back(val);
+        mStrLenOrIndVec.push_back(0);
+    };
+
 protected:
     std::vector<T> mDataVec;
     std::vector<SQLLEN> mStrLenOrIndVec;
+};
+
+template<class T, DATA_TYPE_T data_type>
+class CharColT : public ColT<T, data_type>
+{
+public:
+    CharColT(const char *col_name, int n, bool null_able = false)
+        : ColT<T, data_type>(col_name, GenDataAttr(data_type, null_able, n, 0))
+    {
+    };
+    virtual ~CharColT() {};
+    virtual void Reserve(size_t count) {
+        mDataVec.reserve(count * mDataAttr.a);
+        mStrLenOrIndVec.reserve(count);
+    };
+    virtual size_t GetCount() const {
+        return mDataVec.size() / mDataAttr.a;
+    }
+    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
+        SQLULEN ColumnSize = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
+        SQLLEN BufferLength = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
+        return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR,
+            ColumnSize, 0, (SQLPOINTER)GetData(), BufferLength, (SQLLEN *)mStrLenOrIndVec.data());
+    };
+    virtual bool AddFromStr(const char *str) {
+        mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
+        size_t len = mDataVec.size();
+        mDataVec.resize(len +  mDataAttr.a);
+#ifdef _WIN32
+        strncpy_s((char *)mDataVec.data() + len, mDataAttr.a, str, mDataAttr.a);
+#else
+        strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
+#endif
+        return true;        
+    };
+
+public:
+    void PushBack(const T *var) {
+        AddFromStr(var);
+    };
 };
 
 typedef ColT<char, T_TINYINT> TinyIntCol;
@@ -231,34 +287,22 @@ typedef ColT<SQL_DATE_STRUCT, T_DATE> DateCol;
 typedef ColT<SQL_TIME_STRUCT, T_TIME> TimeCol;
 typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
 // T_SECONDDATE ?
-// T_CHAR
-// T_NCHAR
-class VarCharCol;
-// T_NVARCHAR
-// T_SMALLDECIMAL
-// T_DECIMAL
-typedef ColT<double, T_DECIMAL_PS> DecimalPsCol;
-// T_BINARY
-// T_VARBINARY
-// T_BLOB
-// T_TEXT
+typedef CharColT<SQLCHAR, T_CHAR> CharCol;
+// T_NCHAR ?
+typedef CharColT<SQLVARCHAR, T_VARCHAR> VarCharCol;
+// T_NVARCHAR ?
+// T_SMALLDECIMAL ?
+// T_DECIMAL ?
+typedef ColT<double, T_DECIMAL_PS> DecimalPsCol; // NOTE: map double to decimal may not be precise!
+// T_BINARY ?
+// T_VARBINARY ?
+// T_BLOB ?
+// T_TEXT ?
 
-// Dummy functions for class VarCharCol
-SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_VARCHAR> &col);
+// Dummy functions for CharColT derived classes
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_CHAR> &col);
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLVARCHAR, T_VARCHAR> &col);
 bool StrToValue(const char *s, SQLCHAR &v);
-
-class VarCharCol : public ColT<SQLCHAR, T_VARCHAR>
-{
-public:
-    VarCharCol(const char *col_name, int n, bool null_able = false)
-        : ColT<SQLCHAR, T_VARCHAR>(col_name, GenDataAttr(T_VARCHAR, null_able, n, 0))
-    {
-    };
-    virtual ~VarCharCol() {};
-
-    virtual SQLRETURN BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const;
-    virtual bool AddFromStr(const char *str);
-};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -288,6 +332,9 @@ public:
         for (size_t i = 0; i < mPtrCols.size(); i++) {
             mPtrCols[i]->Reserve(count);
         }
+    };
+    const char *GetErrStr() const {
+        return mErrStr.c_str();
     };
     size_t GetRowCount() const {
         return mRowCount;
@@ -324,6 +371,7 @@ protected:
 protected:
     size_t mRowCount;
     std::vector<BaseColumn *> mPtrCols;
+    std::string mErrStr;
 };
 
 

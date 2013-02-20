@@ -30,8 +30,12 @@ int bulk_insert_destory() {
 bool bulk_insert_init() {
     bulk_insert_destory();
 
-    if (!ParseTableFromSql(GLOBALS.CREATE_TABLE_SQL.c_str(), gParsedTable)) {
+    string err;
+    if (!ParseTableFromSql(GLOBALS.CREATE_TABLE_SQL.c_str(), gParsedTable, err)) {
         printf("Error in parsing SQL: %s\n", GLOBALS.CREATE_TABLE_SQL.c_str());
+        if (!err.empty()) {
+            printf("Error: %s\n", err.c_str());
+        }
         return false;
     }
 

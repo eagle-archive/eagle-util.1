@@ -31,6 +31,9 @@ bool TestHdb_Main()
     IntCol icol("ccc");
     DoubleCol dcol("ddd");
 
+    CharCol charcol("CHAR", 5);
+    VarCharCol vcharcol("VARCHAR", 10);
+
     ColRecords recs;
     ok = recs.AddCol("INT", T_INTEGER);
     assert(ok);
@@ -38,23 +41,55 @@ bool TestHdb_Main()
     assert(ok);
     assert(recs.GetColCount() == 2);
 
-    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE \"I078212\".\"GPS29\" (\"VECHID\" BIGINT  CS_FIXED, \"LNG\" DOUBLE CS_DOUBLE, \"LAT\" DOUBLE CS_DOUBLE, "\
-        "\"SPEED\" DOUBLE CS_DOUBLE, \"HEADING\" DOUBLE CS_DOUBLE, \"GPSTIME\" LONGDATE CS_LONGDATE, \"INLOAD\" TINYINT CS_INT, \"INSERVICE\" TINYINT CS_INT, "\
-        "\"SEGMENT_ID\" BIGINT CS_FIXED, \"TIME_SLOT\" INTEGER CS_INT)");
+    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE \"I078212\".\"GPS29\" ("\
+        "\"VECHID\" BIGINT  CS_FIXED, "\
+        "\"LNG\" DOUBLE CS_DOUBLE, "\
+        "\"LAT\" DOUBLE CS_DOUBLE, "\
+        "\"SPEED\" DOUBLE CS_DOUBLE, "\
+        "\"HEADING\" DOUBLE CS_DOUBLE, "\
+        "\"GPSTIME\" LONGDATE CS_LONGDATE, "\
+        "\"INLOAD\" TINYINT CS_INT, "\
+        "\"INSERVICE\" TINYINT CS_INT, "\
+        "\"SEGMENT_ID\" BIGINT CS_FIXED, "\
+        "\"TIME_SLOT\" INTEGER CS_INT)");
     assert(ok);
     assert(recs.GetColCount() == 10);
     recs.GenerateFakeData(15);
 
-    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE \"HEB_OSM\".\"WAY_SEGMENTS\" (\"ID\" DECIMAL(19,0) CS_FIXED, \"FROM_LAT\" DOUBLE CS_DOUBLE, \"FROM_LNG\" "\
-        "DOUBLE CS_DOUBLE, \"TO_LAT\" DOUBLE CS_DOUBLE, \"TO_LNG\" DOUBLE CS_DOUBLE, \"WAY_ID\" DECIMAL(19,0) CS_FIXED, \"ONE_WAY\" INTEGER CS_INT, \"LENGTH\" "\
-        "DOUBLE CS_DOUBLE, \"WEIGHT\" DOUBLE CS_DOUBLE)");
+    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE \"HEB_OSM\".\"WAY_SEGMENTS\" ("\
+        "\"ID\" DECIMAL(19,0) CS_FIXED, "\
+        "\"FROM_LAT\" DOUBLE CS_DOUBLE, "\
+        "\"FROM_LNG\" DOUBLE CS_DOUBLE, "\
+        "\"TO_LAT\" DOUBLE CS_DOUBLE, "\
+        "\"TO_LNG\" DOUBLE CS_DOUBLE, "\
+        "\"WAY_ID\" DECIMAL(19,0) CS_FIXED, "\
+        "\"ONE_WAY\" INTEGER CS_INT, "\
+        "\"LENGTH\" DOUBLE CS_DOUBLE, "\
+        "\"WEIGHT\" DOUBLE CS_DOUBLE)");
     assert(recs.GetColCount() == 9);
     assert(ok);
 
-    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE PROTO_ODBC_MULTI (GPSDATA_ID BIGINT, DEVID VARCHAR(20), STIME TIMESTAMP, ALARMFLAG INTEGER, STATE INTEGER, "\
-        "LATITUDE DOUBLE, LONGTITUDE DOUBLE, SPEED DOUBLE, ORIENTATION DOUBLE, GPSTIME TIMESTAMP, ODOMETER DOUBLE, OILGAUGE DOUBLE) PARTITION BY HASH (DEVID, STIME) PARTITIONS GET_NUM_SERVERS();");
+    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE PROTO_ODBC_MULTI ("\
+        "GPSDATA_ID BIGINT, "\
+        "DEVID VARCHAR(20), "\
+        "STIME TIMESTAMP, "\
+        "ALARMFLAG INTEGER, "\
+        "STATE INTEGER, "\
+        "LATITUDE DOUBLE, "\
+        "LONGTITUDE DOUBLE, "\
+        "SPEED DOUBLE, "\
+        "ORIENTATION DOUBLE, "\
+        "GPSTIME TIMESTAMP, "\
+        "ODOMETER DOUBLE, "\
+        "OILGAUGE DOUBLE) "\
+        "PARTITION BY HASH (DEVID, STIME) PARTITIONS GET_NUM_SERVERS();");
     assert(ok);
     assert(recs.GetColCount() == 12);
+
+    ok = recs.AddColsFromCreateSql("CREATE COLUMN TABLE \"HEB_OSM\".\"WAY_SEGMENTS\" ("\
+        "GPSDATA_ID ABCD_TYPE, "\
+        "\"WEIGHT\" DOUBLE CS_DOUBLE)");
+    assert(!ok);
 
     return true;
 };

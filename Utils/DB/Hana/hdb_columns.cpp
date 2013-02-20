@@ -12,40 +12,25 @@ using namespace std;
 namespace hdb {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// Dummy functions for class VarCharCol
 
-SQLRETURN SqlBindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_VARCHAR> &col)
+// Dummy functions for template class CharT<...>
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_CHAR> &col)
 {
     assert(false); // should never hit here
     return 0;
-};
+}
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLVARCHAR, T_VARCHAR> &col)
+{
+    assert(false); // should never hit here
+    return 0;
+}
+
 bool StrToValue(const char *s, SQLCHAR &v)
 {
     assert(false); // should never hit here
     return false;
-}
-
-SQLRETURN VarCharCol::BindParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const
-{
-    SQLULEN ColumnSize = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
-    SQLLEN BufferLength = mDataAttr.a; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
-    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR,
-        ColumnSize, 0, (SQLPOINTER)GetData(), BufferLength, (SQLLEN *)mStrLenOrIndVec.data());
-}
-
-bool VarCharCol::AddFromStr(const char *str)
-{
-    if (*str == '\0'  && NullAble()) {
-        mStrLenOrIndVec.push_back(SQL_NULL_DATA);
-    } else {
-        mStrLenOrIndVec.push_back(SQL_NTS);
-    }
-
-    size_t len = mDataVec.size();
-    mDataVec.resize(len +  mDataAttr.a);
-
-    strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +117,7 @@ SQLRETURN ColRecords::BindAllColumns(SQLHSTMT hstmt) const
 {
     SQLRETURN rc = SQL_SUCCESS;
     for (size_t i = 0; i < mPtrCols.size(); i++) {
-        rc = mPtrCols[i]->BindParam(hstmt, (SQLUSMALLINT)(i+1));
+        rc = mPtrCols[i]->BindInParam(hstmt, (SQLUSMALLINT)(i+1));
         if (!SQL_SUCCEEDED(rc)) return rc;
     }
     return rc;
@@ -161,11 +146,18 @@ bool ColRecords::AddRow(const char *line, char delimiter)
 bool ColRecords::AddColsFromCreateSql(const char *create_sql)
 {
     PARSED_TABLE_T parsed_table;
-    if (!ParseTableFromSql(create_sql, parsed_table)) {
+    string err;
+    if (!ParseTableFromSql(create_sql, parsed_table, err)) {
+        if (!err.empty()) {
+            mErrStr = err;
+        } else {
+            mErrStr = string("Error in parsing: ") + create_sql;
+        }
         return false;
     }
     size_t col_count = parsed_table.col_names.size();
     if (col_count == 0) {
+        mErrStr = string("Error in parsing: ") + create_sql;
         return false;
     }
 
