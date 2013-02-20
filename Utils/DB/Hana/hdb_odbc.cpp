@@ -90,6 +90,22 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T
         0, 0, (SQLPOINTER)col.GetData(), 0, 0);
 }
 
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCHAR, T_CHAR> &col)
+{
+    SQLULEN ColumnSize = col.GetDataAttr().a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
+    SQLLEN BufferLength = col.GetDataAttr().a; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
+        ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
+}
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLVARCHAR, T_VARCHAR> &col)
+{
+    SQLULEN ColumnSize = col.GetDataAttr().a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
+    SQLLEN BufferLength = col.GetDataAttr().a; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR,
+        ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
+}
+
 bool OdbcConn::Connect()
 {
     SQLRETURN rc = SQL_SUCCESS;
@@ -168,7 +184,7 @@ bool InsertExecutor::ExecuteInsert(const ColRecords &records) const
 
     /* Bind the parameters in the column-wise fashion. */
     if (SQL_SUCCEEDED(rc)) {
-        rc = records.BindAllColumns(mHstmt);
+        rc = records.BindAllInColumns(mHstmt);
     }
 
 #ifndef FAKE_DB_CONN

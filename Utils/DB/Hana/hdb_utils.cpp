@@ -26,6 +26,7 @@ static const char *TYPE_STRS[] = {
     "NCHAR",
     "VARCHAR",
     "NVARCHAR",
+    "ALPHANUM",
     "SMALLDECIMAL",
     "DECIMAL",
     "DECIMAL_PS",
@@ -79,8 +80,12 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         char *type_str_sub;
         DATA_TYPE_T type;
     } MORE_TYPES_BEGIN_WITH[] = {
-        {"VARCHAR(",    T_VARCHAR},
         {"DECIMAL(",    T_DECIMAL_PS},
+        {"VARCHAR(",    T_VARCHAR},
+        {"NVARCHAR(",   T_NVARCHAR},
+        {"CHAR(",       T_CHAR},
+        {"NCHAR(",      T_NCHAR},
+        {"ALPHANUM(",   T_ALPHANUM},
     };
     for (int i = 0; i < sizeof(MORE_TYPES_BEGIN_WITH)/sizeof(MORE_TYPES_BEGIN_WITH[0]); i++) {
         if (typestr.find(MORE_TYPES_BEGIN_WITH[i].type_str_sub) == 0) {
@@ -306,7 +311,7 @@ static void ParseParamStr(const string &param, int &p1, int &p2)
                 p2 = atoi(s2+1);
             }
         }
-    } else if (T_CHAR == type || T_NCHAR == type || T_VARCHAR == type || T_NVARCHAR == type) {
+    } else if (T_CHAR == type || T_NCHAR == type || T_VARCHAR == type || T_NVARCHAR == type || T_ALPHANUM == type) {
         const char *s1 = strchr(param.c_str(), '(');
         if (s1) {
             p1 = atoi(s1+1);
@@ -408,11 +413,24 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         parsed_table.col_types.push_back(type);
 
         if (T_DECIMAL_PS == type || T_CHAR == type || T_NCHAR == type || 
-            T_VARCHAR == type || T_NVARCHAR == type) {
+            T_VARCHAR == type || T_NVARCHAR == type || T_ALPHANUM == type) {
             ParseParamStr(subs[1], p1, p2);
         }
-        parsed_table.col_attrs.push_back(GenDataAttr(type, false, p1, p2));
 
+        // check null-able for the parameter
+        bool null_able = true;
+        if (subs.size() > 2) {
+            string rest;
+            for (size_t i = 2; i < subs.size(); i++) {
+                rest += subs[i];
+                rest += ' ';
+            }
+            StrToUpper(rest);
+            if (NULL != strstr(rest.c_str(), "NOT NULL ")) {
+                null_able = false;
+            }
+        }
+        parsed_table.col_attrs.push_back(GenDataAttr(type, null_able, p1, p2));
     }
 
     table = parsed_table;

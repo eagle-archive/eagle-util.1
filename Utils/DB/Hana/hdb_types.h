@@ -18,8 +18,9 @@ typedef enum
     T_SECONDDATE,
     T_CHAR,     // CHAR(a)
     T_NCHAR,    // NCHAR(a)
-    T_VARCHAR,
-    T_NVARCHAR,
+    T_VARCHAR,  // VARCHAR(a)
+    T_NVARCHAR, // NVARCHAR(a)
+    T_ALPHANUM, // ALPHANUM(a)
     T_SMALLDECIMAL,
     T_DECIMAL,
     T_DECIMAL_PS,  // DECIMAL(p,s)

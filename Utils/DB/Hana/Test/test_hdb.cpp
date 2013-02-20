@@ -18,22 +18,26 @@ bool Test_Types()
     return true;
 }
 
-bool TestHdb_Main()
+bool Test_Cols()
 {
-    Test_Types();
-
-    bool ok;
-    int size = sizeof(DATA_ATTR_T);
-    assert(size == 4);
-
     TinyIntCol ticol("aaa");
     SmallIntCol sicol("bbb");
     IntCol icol("ccc");
+    BigIntCol bigcol("bigint");
     DoubleCol dcol("ddd");
 
     CharCol charcol("CHAR", 5);
+    NCharCol ncharcol("nchar", 8);
     VarCharCol vcharcol("VARCHAR", 10);
+    NVarCharCol nvarchar("nvarchar", 20);
+    AlphaNumCol alphanumcol("AlphaNum", 12);
 
+    return true;
+}
+
+bool Test_Records()
+{
+    bool ok;
     ColRecords recs;
     ok = recs.AddCol("INT", T_INTEGER);
     assert(ok);
@@ -90,6 +94,73 @@ bool TestHdb_Main()
         "GPSDATA_ID ABCD_TYPE, "\
         "\"WEIGHT\" DOUBLE CS_DOUBLE)");
     assert(!ok);
+
+    return true;
+}
+
+OdbcConn *Test_CreateConn(const char *dsn, const char *user, const char *passwd)
+{
+    OdbcConn *pConn = NULL;
+
+    pConn = new OdbcConn(dsn, user, passwd);
+    assert(pConn);
+
+    bool ok = pConn->Connect();
+    if (!ok) {
+        printf("Error in SQLConnect(): %s\n", pConn->GetDbcErrorStr().c_str());
+    }
+    assert(ok);
+
+    return pConn;
+}
+
+void Test_CharColInsert(OdbcConn *pConn)
+{
+    bool ok;
+    InsertExecutor ins_exe(pConn);
+    ColRecords records;
+    PARSED_TABLE_T parsed_table;
+
+    const char *table_create = 
+        "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 VARCHAR(2), NAME6 ALPHANUM(7) CS_ALPHANUM)";
+    ok = records.AddColsFromCreateSql(table_create);
+    if (!ok) {
+        printf("Error in parsing create table SQL: %s\n", records.GetErrStr());
+    }
+    assert(ok);
+    assert(records.GetColCount() == 6);
+
+    std::string ins_stmt, err;
+    ParseTableFromSql(table_create, parsed_table, err);
+    assert(!parsed_table.schema.empty());
+    assert(!parsed_table.table_name.empty());
+
+    ok = ins_exe.PrepareInsStmt(records.GetColumns(), (parsed_table.schema + '.' + parsed_table.table_name).c_str());
+    assert(ok);
+
+    records.ClearAllRows();
+    records.GenerateFakeData(3);
+    assert(records.GetRowCount() == 3);
+
+    ok = ins_exe.ExecuteInsert(records);
+    assert(ok);
+}
+
+bool TestHdb_Main()
+{
+    int size = sizeof(DATA_ATTR_T);
+    assert(size == 4);
+
+    Test_Types();
+    Test_Cols();
+    Test_Records();
+
+#if 1
+    OdbcConn *pConn = Test_CreateConn("HD5", "I078212", "Sprint6800");
+    Test_CharColInsert(pConn);
+    delete pConn;
+    pConn = NULL;
+#endif
 
     return true;
 };
