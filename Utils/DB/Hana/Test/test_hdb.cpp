@@ -136,6 +136,9 @@ void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_
     assert(!parsed_table.table_name.empty());
 
     ok = ins_exe.PrepareInsStmt(records.GetColumns(), (parsed_table.schema + '.' + parsed_table.table_name).c_str());
+    if (!ok) {
+        printf("Error in InsertExecutor::PrepareInsStmt(): %s\n", ins_exe.GetErrorStr().c_str());
+    }
     assert(ok);
 
     records.ClearAllRows();
@@ -152,6 +155,9 @@ void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_
     }
 
     ok = ins_exe.ExecuteInsert(records);
+    if (!ok) {
+        printf("Error in InsertExecutor::ExecuteInsert(): %s\n", ins_exe.GetErrorStr().c_str());
+    }
     assert(ok);
 }
 
@@ -163,11 +169,10 @@ void Test_Inserts()
         char *create_table;
         char *csv_lines;
     } test_params[] = {
-        /*
         {
-            "CREATE COLUMN TABLE I078212.TEST_DECIMAL (NAME1 DECIMAL, NAME2 SMALLDECIMAL, NAME3 DECIMAL(4,10), NAME4 DECIMAL(4,-6), NAME5 DECIMAL(12, 0));",
+            "CREATE COLUMN TABLE I078212.TEST_DECIMAL (NAME1 DEC, NAME2 SMALLDECimal, NAME3 DEC (4,10), NAME4 DECIMAL (4,-6), NAME5 DECIMAL(12, 0));",
             NULL
-        },*/
+        },
         {
             "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)",
             "\"A7613\",\"A498550370\",\"N23838\",\"A6042970\",\"N78\",A368724\n"\

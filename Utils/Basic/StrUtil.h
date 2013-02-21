@@ -7,6 +7,7 @@ namespace utils {
 
 bool WideStrToAnsiStr(std::string &str, const WCHAR * wstr);
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
+void ReplaceCharInStr(std::string& str, char ch1, char ch2);
 
 std::wstring s2ws(const std::string& s);
 std::string ws2s(const std::wstring& s);

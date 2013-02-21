@@ -38,6 +38,8 @@ std::string &ReduceStr(std::string& str, const char *fill= " ", const char *whit
 void StrToUpper(std::string& str);
 void StrToLower(std::string& str);
 std::wstring StrToWStr(const char *str);
+void ReplaceCharInStr(std::string& str, char ch1, char ch2);
+void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 
 void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter);
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str);

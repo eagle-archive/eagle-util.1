@@ -71,6 +71,11 @@ void StringReplace(string &strBase, const string &strSrc, const string &strDes)
     }
 }
 
+void ReplaceCharInStr(std::string& str, char ch1, char ch2)
+{
+    std::replace(str.begin(), str.end(), ch1, ch2);
+}
+
 // "    too much\t   \tspace\t\t\t  " => "too much\t   \tspace"
 std::string &TrimStr(std::string& str, const char *whitespace /*= " \t"*/)
 {

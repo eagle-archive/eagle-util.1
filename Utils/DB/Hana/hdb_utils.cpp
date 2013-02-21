@@ -71,6 +71,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         char *type_str;
         DATA_TYPE_T type;
     } MORE_TYPES[] = {
+        {"DEC",         T_DECIMAL},
         {"DAYDATE",     T_DATE},
         {"SECONDTIME",  T_TIME},
         {"LONGDATE",    T_TIMESTAMP},
@@ -87,6 +88,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
     } MORE_TYPES_BEGIN_WITH[] = {
         {"FLOAT(",      T_FLOAT},
         {"DECIMAL(",    T_DECIMAL_PS},
+        {"DEC(",        T_DECIMAL_PS},
         {"VARCHAR(",    T_VARCHAR},
         {"NVARCHAR(",   T_NVARCHAR},
         {"CHAR(",       T_CHAR},
@@ -252,11 +254,28 @@ static std::string ws2s(const std::wstring& s)
 
 std::wstring StrToWStr(const char *str)
 {
-#ifndef _WIN32
-    return wstr(str, str + strlen(str));
-#else
+#ifdef _WIN32
     return s2ws(str);
+#else
+    return wstring(str, str + strlen(str));
 #endif
+}
+
+void ReplaceCharInStr(std::string& str, char ch1, char ch2)
+{
+    std::replace(str.begin(), str.end(), ch1, ch2);
+}
+
+void StringReplace(string &strBase, const string &strSrc, const string &strDes)
+{
+    string::size_type pos = 0;
+    string::size_type srcLen = strSrc.size();
+    string::size_type desLen = strDes.size();
+    pos = strBase.find(strSrc, pos); 
+    while ((pos != string::npos)) {
+        strBase.replace(pos, srcLen, strDes);
+        pos=strBase.find(strSrc, (pos+desLen));
+    }
 }
 
 void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
@@ -321,7 +340,7 @@ static void SplitParams(vector<string> &record, const char *params)
         if (record[i].find('(') != string::npos) {
             string upper(record[i]);
             StrToUpper(upper);
-            if (upper.find("DECIMAL(") != string::npos) {
+            if (upper.find("DECIMAL(") != string::npos || upper.find("DEC(") != string::npos) {
                 if (i + 1 < record.size()) {
                     record[i] += ',';
                     record[i] += record[i+1];
@@ -420,6 +439,10 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         return false;
     }
     str.erase(s_end - str.c_str());
+    std::replace(str.begin(), str.end(), '\t', ' ');
+    while(str.find(" (") != string::npos) {
+        StringReplace(str, " (", "(");
+    }
 
     SplitParams(parsed_table.col_strs, str.c_str());
     size_t col_count = parsed_table.col_strs.size();
