@@ -41,6 +41,8 @@ void StrToLower(std::string& str);
 void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter);
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str);
 
+void UnImplemented();
+
 }// namespace hdb
 
 #endif // _HDB_UTILS_H

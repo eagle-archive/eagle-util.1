@@ -32,7 +32,11 @@ typedef enum
 } DATA_TYPE_T;
 
 typedef struct {
+#ifdef _DEBUG
+    DATA_TYPE_T type;
+#else
     unsigned char type; // DATA_TYPE_T
+#endif
     union {
         unsigned char a; // for CHAR(a) and NCHAR(a)
         unsigned char p; // p,s for DECIMAL(p,s)

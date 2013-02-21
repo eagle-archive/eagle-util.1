@@ -437,4 +437,9 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
     return true;
 }
 
+void UnImplemented()
+{
+    *(int *)0 = 0; // to crash!
+}
+
 } // end of namespace hdb

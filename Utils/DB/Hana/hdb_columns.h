@@ -266,7 +266,7 @@ public:
     };
     virtual ~CharColT() {};
     virtual void Reserve(size_t count) {
-        mDataVec.reserve(count * mDataAttr.a);
+        mDataVec.reserve(count * (mDataAttr.a + 1));
         mStrLenOrIndVec.reserve(count);
     };
     virtual size_t GetCount() const {
@@ -278,9 +278,9 @@ public:
     virtual bool AddFromStr(const char *str) {
         mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
         size_t len = mDataVec.size();
-        mDataVec.resize(len +  mDataAttr.a);
+        mDataVec.resize(len +  mDataAttr.a + 1);
 #ifdef _WIN32
-        strncpy_s((char *)mDataVec.data() + len, mDataAttr.a, str, mDataAttr.a);
+        strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
 #else
         strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
 #endif
@@ -295,20 +295,34 @@ public:
         case T_VARCHAR:
         case T_ALPHANUM:
             {
-			    long t = (long) ((double) rand() / RAND_MAX * 999999999);
                 string buff;
                 buff.resize(mDataAttr.a + 1);
+                for (size_t i = 0; i < count; i++) {
+			        long t = (long) ((double) rand() / RAND_MAX * 999999999);
 #ifdef _WIN32
-			    _snprintf_s((char*)buff.data(), buff.size(), mDataAttr.a, "01%09ld", t);
+			        _snprintf_s((char*)buff.data(), buff.size(), mDataAttr.a, "%09ld", t);
 #else
-                snprintf((char*)buff.data(), mDataAttr.a, "01%09ld", t);
+                    snprintf((char*)buff.data(), mDataAttr.a, "%09ld", t);
 #endif
-                AddFromStr((const char *)buff.c_str());
+                    AddFromStr((const char *)buff.c_str());
+                }
             }
             break;
         case T_NCHAR:
         case T_NVARCHAR:
-            assert(false);
+            {
+                wstring buff;
+                buff.resize(mDataAttr.a + 1);
+                for (size_t i = 0; i < count; i++) {
+			        long t = (long) ((double) rand() / RAND_MAX * 999999999);
+#ifdef _WIN32
+			        _snwprintf_s((wchar_t*)buff.data(), buff.size(), mDataAttr.a, L"%09ld", t);
+#else
+                    UnImplemented();
+#endif
+                    PushBack((T*)buff.c_str());
+                }
+            }
             break;
         default:
             assert(false); // should not reach here!
@@ -317,8 +331,19 @@ public:
     };
 
 public:
-    void PushBack(const T *var) {
-        AddFromStr((const char *)var);
+    void PushBack(const T *str) {
+        if (T_NCHAR == mDataAttr.type || T_NVARCHAR == mDataAttr.type) {
+            mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
+            size_t len = mDataVec.size();
+            mDataVec.resize(len +  mDataAttr.a + 1);
+    #ifdef _WIN32
+            wcsncpy_s((wchar_t *)mDataVec.data() + len, mDataAttr.a + 1, (wchar_t *)str, mDataAttr.a);
+    #else
+            UnImplemented();
+    #endif
+        } else {
+            AddFromStr((const char *)str);
+        }
     };
 };
 
@@ -345,14 +370,14 @@ typedef ColT<double, T_DECIMAL_PS> DecimalPsCol; // NOTE: map double to decimal 
 // T_BLOB ?
 // T_TEXT ?
 
-// Dummy functions for CharColT derived classes
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_CHAR> &col);
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NCHAR> &col);
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLVARCHAR, T_VARCHAR> &col);
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col);
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col);
-bool StrToValue(const char *s, SQLCHAR &v);
-bool StrToValue(const char *s, SQLWCHAR &v);
+// Dummy functions for CharColT derived classes, do not use them!
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_CHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLVARCHAR, T_VARCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col) {return 0;};
+static inline bool StrToValue(const char *s, SQLCHAR &v) {return 0;};
+static inline bool StrToValue(const char *s, SQLWCHAR &v) {return 0;};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

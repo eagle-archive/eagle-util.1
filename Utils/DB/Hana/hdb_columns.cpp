@@ -13,52 +13,6 @@ namespace hdb {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Dummy functions for template class CharT<...>
-
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_CHAR> &col)
-{
-    assert(false); // should never hit here
-    return 0;
-}
-
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NCHAR> &col)
-{
-    assert(false); // should never hit here
-    return 0;
-}
-
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLVARCHAR, T_VARCHAR> &col)
-{
-    assert(false); // should never hit here
-    return 0;
-}
-
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col)
-{
-    assert(false); // should never hit here
-    return 0;
-}
-
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col)
-{
-    assert(false); // should never hit here
-    return 0;
-}
-
-bool StrToValue(const char *s, SQLCHAR &v)
-{
-    assert(false); // should never hit here
-    return false;
-}
-
-bool StrToValue(const char *s, SQLWCHAR &v)
-{
-    assert(false); // should never hit here
-    return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
 {
     assert(col_name != NULL && col_name[0] != '\0');

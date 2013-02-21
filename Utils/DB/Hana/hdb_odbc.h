@@ -30,6 +30,9 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T
 template<class T, DATA_TYPE_T data_type> class CharColT;
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCHAR, T_CHAR> &col);
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLVARCHAR, T_VARCHAR> &col);
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLWCHAR, T_NCHAR> &col);
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLWCHAR, T_NVARCHAR> &col);
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCHAR, T_ALPHANUM> &col);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class OdbcConn {

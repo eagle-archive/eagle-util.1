@@ -122,7 +122,7 @@ void Test_CharColInsert(OdbcConn *pConn)
     PARSED_TABLE_T parsed_table;
 
     const char *table_create = 
-        "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 VARCHAR(2), NAME6 ALPHANUM(7) CS_ALPHANUM)";
+        "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)";
     ok = records.AddColsFromCreateSql(table_create);
     if (!ok) {
         printf("Error in parsing create table SQL: %s\n", records.GetErrStr());
@@ -148,9 +148,6 @@ void Test_CharColInsert(OdbcConn *pConn)
 
 bool TestHdb_Main()
 {
-    int size = sizeof(DATA_ATTR_T);
-    assert(size == 4);
-
     Test_Types();
     Test_Cols();
     Test_Records();
