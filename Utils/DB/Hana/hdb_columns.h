@@ -279,17 +279,25 @@ public:
         mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
         size_t len = mDataVec.size();
         mDataVec.resize(len +  mDataAttr.a + 1);
+        if (T_NCHAR == mDataAttr.type || T_NVARCHAR == mDataAttr.type) {
+            wstring wstr(str, str + strlen(str));
 #ifdef _WIN32
-        strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
+            wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
-        strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
+            UnImplemented();
 #endif
+        } else {
+#ifdef _WIN32
+            strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
+#else
+            strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
+#endif
+        }
         return true;
     };
     virtual void GenerateFakeData(size_t count) {
         RemoveAllRows();
         Reserve(count);
-
         switch(mDataAttr.type) {
         case T_CHAR:
         case T_VARCHAR:
@@ -300,9 +308,9 @@ public:
                 for (size_t i = 0; i < count; i++) {
 			        long t = (long) ((double) rand() / RAND_MAX * 999999999);
 #ifdef _WIN32
-			        _snprintf_s((char*)buff.data(), buff.size(), mDataAttr.a, "%09ld", t);
+			        _snprintf_s((char*)buff.data(), buff.size(), mDataAttr.a, "A%09ld", t);
 #else
-                    snprintf((char*)buff.data(), mDataAttr.a, "%09ld", t);
+                    snprintf((char*)buff.data(), mDataAttr.a, "A%09ld", t);
 #endif
                     AddFromStr((const char *)buff.c_str());
                 }
@@ -316,7 +324,7 @@ public:
                 for (size_t i = 0; i < count; i++) {
 			        long t = (long) ((double) rand() / RAND_MAX * 999999999);
 #ifdef _WIN32
-			        _snwprintf_s((wchar_t*)buff.data(), buff.size(), mDataAttr.a, L"%09ld", t);
+			        _snwprintf_s((SQLWCHAR*)buff.data(), buff.size(), mDataAttr.a, L"N%09ld", t);
 #else
                     UnImplemented();
 #endif
@@ -336,11 +344,11 @@ public:
             mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
             size_t len = mDataVec.size();
             mDataVec.resize(len +  mDataAttr.a + 1);
-    #ifdef _WIN32
-            wcsncpy_s((wchar_t *)mDataVec.data() + len, mDataAttr.a + 1, (wchar_t *)str, mDataAttr.a);
-    #else
+#ifdef _WIN32
+            wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)str, mDataAttr.a);
+#else
             UnImplemented();
-    #endif
+#endif
         } else {
             AddFromStr((const char *)str);
         }

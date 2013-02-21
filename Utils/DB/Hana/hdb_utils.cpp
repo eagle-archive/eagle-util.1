@@ -8,6 +8,10 @@
 using namespace hdb;
 using namespace std;
 
+#ifndef _COUNOF
+#define _COUNOF(a)  sizeof(a)/sizeof(*a)
+#endif
+
 namespace hdb {
 
 static const char *TYPE_STRS[] = {
@@ -70,7 +74,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"SECONDTIME",  T_TIME},
         {"LONGDATE",    T_TIMESTAMP},
     };
-    for (int i = 0; i < sizeof(MORE_TYPES)/sizeof(MORE_TYPES[0]); i++) {
+    for (int i = 0; i < _COUNOF(MORE_TYPES); i++) {
         if (typestr == MORE_TYPES[i].type_str) {
             return MORE_TYPES[i].type;
         }
@@ -87,7 +91,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"NCHAR(",      T_NCHAR},
         {"ALPHANUM(",   T_ALPHANUM},
     };
-    for (int i = 0; i < sizeof(MORE_TYPES_BEGIN_WITH)/sizeof(MORE_TYPES_BEGIN_WITH[0]); i++) {
+    for (int i = 0; i < _COUNOF(MORE_TYPES_BEGIN_WITH); i++) {
         if (typestr.find(MORE_TYPES_BEGIN_WITH[i].type_str_sub) == 0) {
             return MORE_TYPES_BEGIN_WITH[i].type;
         }

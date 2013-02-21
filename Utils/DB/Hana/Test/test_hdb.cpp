@@ -114,16 +114,14 @@ OdbcConn *Test_CreateConn(const char *dsn, const char *user, const char *passwd)
     return pConn;
 }
 
-void Test_CharColInsert(OdbcConn *pConn)
+void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_lines)
 {
     bool ok;
     InsertExecutor ins_exe(pConn);
     ColRecords records;
     PARSED_TABLE_T parsed_table;
 
-    const char *table_create = 
-        "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)";
-    ok = records.AddColsFromCreateSql(table_create);
+    ok = records.AddColsFromCreateSql(table_create_sql);
     if (!ok) {
         printf("Error in parsing create table SQL: %s\n", records.GetErrStr());
     }
@@ -131,7 +129,7 @@ void Test_CharColInsert(OdbcConn *pConn)
     assert(records.GetColCount() == 6);
 
     std::string ins_stmt, err;
-    ParseTableFromSql(table_create, parsed_table, err);
+    ParseTableFromSql(table_create_sql, parsed_table, err);
     assert(!parsed_table.schema.empty());
     assert(!parsed_table.table_name.empty());
 
@@ -139,11 +137,45 @@ void Test_CharColInsert(OdbcConn *pConn)
     assert(ok);
 
     records.ClearAllRows();
-    records.GenerateFakeData(3);
-    assert(records.GetRowCount() == 3);
+    if (csv_lines) {
+        vector<string> lines;
+        CsvLinePopulate(lines, csv_lines, '\n');
+        for (size_t i = 0; i < lines.size(); i++) {
+            records.AddRow(lines[i].c_str());
+        }
+    }
+    if (records.GetRowCount() == 0) {
+        records.GenerateFakeData(1000);
+        assert(records.GetRowCount() == 3);
+    }
 
     ok = ins_exe.ExecuteInsert(records);
     assert(ok);
+}
+
+void Test_Inserts()
+{
+    OdbcConn *pConn = Test_CreateConn("HD5", "I078212", "Sprint6800");
+
+    static const struct {
+        char *create_table;
+        char *csv_lines;
+    } test_params[] = {
+        {
+            "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)",
+            "\"A7613\",\"A498550370\",\"N23838\",\"A6042970\",\"N78\",A368724\n"\
+            "A7613,A498550370,N23838,A6042970,N78,A368724\n"\
+            ",,,A6042970,N78,A368724\n"\
+            "\"A8394\",\"A559617907\",\"N86199\",\"A5988647\",\"N05\",A427991",
+        }
+    };
+
+    for (int i = 0; i < sizeof(test_params)/sizeof(*test_params); i++) {
+        Test_Insert(pConn, test_params[i].create_table, test_params[i].csv_lines);
+    }
+
+    delete pConn;
+    pConn = NULL;
 }
 
 bool TestHdb_Main()
@@ -151,13 +183,7 @@ bool TestHdb_Main()
     Test_Types();
     Test_Cols();
     Test_Records();
-
-#if 1
-    OdbcConn *pConn = Test_CreateConn("HD5", "I078212", "Sprint6800");
-    Test_CharColInsert(pConn);
-    delete pConn;
-    pConn = NULL;
-#endif
+    Test_Inserts();
 
     return true;
 };
