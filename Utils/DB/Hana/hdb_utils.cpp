@@ -22,6 +22,7 @@ static const char *TYPE_STRS[] = {
     "BIGINT",
     "REAL",
     "DOUBLE",
+    "FLOAT",
     "DATE",
     "TIME",
     "TIMESTAMP",
@@ -84,6 +85,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         char *type_str_sub;
         DATA_TYPE_T type;
     } MORE_TYPES_BEGIN_WITH[] = {
+        {"FLOAT(",      T_FLOAT},
         {"DECIMAL(",    T_DECIMAL_PS},
         {"VARCHAR(",    T_VARCHAR},
         {"NVARCHAR(",   T_NVARCHAR},
@@ -226,6 +228,37 @@ void StrToLower(std::string& str)
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 }
 
+#ifdef _WIN32
+static std::wstring s2ws(const std::string& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
+    std::wstring r(len, L'\0');
+    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, &r[0], len);
+    return r;
+}
+
+static std::string ws2s(const std::wstring& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0); 
+    std::string r(len, '\0');
+    WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, &r[0], len, 0, 0); 
+    return r;
+}
+#endif
+
+std::wstring StrToWStr(const char *str)
+{
+#ifndef _WIN32
+    return wstr(str, str + strlen(str));
+#else
+    return s2ws(str);
+#endif
+}
+
 void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 {
     int linepos = 0;
@@ -315,11 +348,11 @@ static void ParseParamStr(const string &param, int &p1, int &p2)
                 p2 = atoi(s2+1);
             }
         }
-    } else if (T_CHAR == type || T_NCHAR == type || T_VARCHAR == type || T_NVARCHAR == type || T_ALPHANUM == type) {
+    } else if (T_CHAR == type || T_NCHAR == type || T_VARCHAR == type || T_NVARCHAR == type ||
+        T_ALPHANUM == type || T_FLOAT == type)
+    {
         const char *s1 = strchr(param.c_str(), '(');
-        if (s1) {
-            p1 = atoi(s1+1);
-        }
+        p1 = s1 ? atoi(s1+1) : 0;
     }
 }
 
@@ -416,7 +449,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         }
         parsed_table.col_types.push_back(type);
 
-        if (T_DECIMAL_PS == type || T_CHAR == type || T_NCHAR == type || 
+        if (T_FLOAT == type || T_DECIMAL_PS == type || T_CHAR == type || T_NCHAR == type || 
             T_VARCHAR == type || T_NVARCHAR == type || T_ALPHANUM == type) {
             ParseParamStr(subs[1], p1, p2);
         }

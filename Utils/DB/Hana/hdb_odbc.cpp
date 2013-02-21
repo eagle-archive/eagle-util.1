@@ -32,62 +32,91 @@ std::string GetOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle)
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<char, T_TINYINT> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TINYINT, SQL_TINYINT,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<short, T_SMALLINT> &col)
 {
-    assert(false); // TODO: to implement
-    return 0;
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_SHORT, SQL_SMALLINT,
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<int, T_INTEGER> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLBIGINT, T_BIGINT> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_SBIGINT, SQL_BIGINT,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<float, T_REAL> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_FLOAT, SQL_REAL,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_DOUBLE> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
+}
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_FLOAT> &col)
+{
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_FLOAT,
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_DATE_STRUCT, T_DATE> &col)
 {
-    assert(false); // TODO: to implement
+    UnImplemented();
     return 0;
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIME_STRUCT, T_TIME> &col)
 {
-    assert(false); // TODO: to implement
+    UnImplemented();
     return 0;
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
+}
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_SMALLDECIMAL> &col)
+{
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
+}
+
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_DECIMAL> &col)
+{
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_DECIMAL_PS> &col)
 {
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_DOUBLE, SQL_DOUBLE,
-        0, 0, (SQLPOINTER)col.GetData(), 0, 0);
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCHAR, T_CHAR> &col)
@@ -129,6 +158,7 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCH
     return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
         ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
 }
+
 
 bool OdbcConn::Connect()
 {

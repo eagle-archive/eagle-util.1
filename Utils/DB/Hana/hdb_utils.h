@@ -37,6 +37,7 @@ std::string &TrimStr(std::string &str, const char *whitespace = " \t");
 std::string &ReduceStr(std::string& str, const char *fill= " ", const char *whitespace =" \t");
 void StrToUpper(std::string& str);
 void StrToLower(std::string& str);
+std::wstring StrToWStr(const char *str);
 
 void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter);
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str);

@@ -37,6 +37,9 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
     case T_DOUBLE:
         pCol = new DoubleCol(col_name, attr.null_able);
         break;
+    case T_FLOAT:
+        pCol = new FloatCol(col_name, attr.null_able);
+        break;
     case T_DATE:
         pCol = new DateCol(col_name, attr.null_able);
         break;
@@ -65,10 +68,10 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
         pCol = new AlphaNumCol(col_name, attr.a, attr.null_able);
         break;
     case T_SMALLDECIMAL:
-        assert(false);
+        pCol = new SmallDecimalCol(col_name, attr.null_able);
         break;
     case T_DECIMAL:
-        assert(false);
+        pCol = new DecimalCol(col_name, attr.null_able);
         break;
     case T_DECIMAL_PS:
         pCol = new DecimalPsCol(col_name, attr);

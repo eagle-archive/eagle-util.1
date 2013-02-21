@@ -3,8 +3,7 @@
 
 namespace hdb {
 
-typedef enum
-{
+typedef enum {
     T_UNKNOWN = 0,
     T_TINYINT = 1,
     T_SMALLINT,
@@ -12,6 +11,7 @@ typedef enum
     T_BIGINT,
     T_REAL,
     T_DOUBLE,
+    T_FLOAT,
     T_DATE,
     T_TIME,
     T_TIMESTAMP,

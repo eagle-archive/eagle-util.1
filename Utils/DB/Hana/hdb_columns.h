@@ -140,6 +140,7 @@ public:
             }
             break;
         case T_DOUBLE:
+        case T_FLOAT:
             {
                 DoubleCol *pcol = (DoubleCol *)this;
                 for (size_t i = 0; i < count; i++) {
@@ -190,7 +191,13 @@ public:
             break;
         case T_SMALLDECIMAL:
         case T_DECIMAL:
-            assert(false);
+            {
+                DoubleCol *pcol = (DoubleCol *)this;
+                for (size_t i = 0; i < count; i++) {
+			        double t = ((double) rand() / RAND_MAX * 999999999);
+                    pcol->PushBack(t);
+                }
+            }
             break;
         case T_DECIMAL_PS:
             {
@@ -280,7 +287,7 @@ public:
         size_t len = mDataVec.size();
         mDataVec.resize(len +  mDataAttr.a + 1);
         if (T_NCHAR == mDataAttr.type || T_NVARCHAR == mDataAttr.type) {
-            wstring wstr(str, str + strlen(str));
+            wstring wstr = StrToWStr(str);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
@@ -361,6 +368,7 @@ typedef ColT<int, T_INTEGER> IntCol;
 typedef ColT<SQLBIGINT, T_BIGINT> BigIntCol;
 typedef ColT<float, T_REAL> RealCol;
 typedef ColT<double, T_DOUBLE> DoubleCol;
+typedef ColT<double, T_FLOAT> FloatCol;
 typedef ColT<SQL_DATE_STRUCT, T_DATE> DateCol;
 typedef ColT<SQL_TIME_STRUCT, T_TIME> TimeCol;
 typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
@@ -370,8 +378,8 @@ typedef CharColT<SQLWCHAR, T_NCHAR > NCharCol;
 typedef CharColT<SQLVARCHAR, T_VARCHAR> VarCharCol;
 typedef CharColT<SQLWCHAR, T_NVARCHAR> NVarCharCol;
 typedef CharColT<SQLCHAR, T_ALPHANUM> AlphaNumCol;
-// T_SMALLDECIMAL ?
-// T_DECIMAL ?
+typedef ColT<double, T_DECIMAL> DecimalCol;
+typedef ColT<double, T_SMALLDECIMAL> SmallDecimalCol;
 typedef ColT<double, T_DECIMAL_PS> DecimalPsCol; // NOTE: map double to decimal may not be precise!
 // T_BINARY ?
 // T_VARBINARY ?

@@ -105,9 +105,12 @@ OdbcConn *Test_CreateConn(const char *dsn, const char *user, const char *passwd)
     pConn = new OdbcConn(dsn, user, passwd);
     assert(pConn);
 
+    printf("To connect to HDB, DSN:%s ...\n", dsn);
     bool ok = pConn->Connect();
     if (!ok) {
         printf("Error in SQLConnect(): %s\n", pConn->GetDbcErrorStr().c_str());
+    } else {
+        printf("Connected to HDB.\n");
     }
     assert(ok);
 
@@ -126,7 +129,6 @@ void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_
         printf("Error in parsing create table SQL: %s\n", records.GetErrStr());
     }
     assert(ok);
-    assert(records.GetColCount() == 6);
 
     std::string ins_stmt, err;
     ParseTableFromSql(table_create_sql, parsed_table, err);
@@ -146,7 +148,7 @@ void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_
     }
     if (records.GetRowCount() == 0) {
         records.GenerateFakeData(1000);
-        assert(records.GetRowCount() == 3);
+        assert(records.GetRowCount() == 1000);
     }
 
     ok = ins_exe.ExecuteInsert(records);
@@ -161,13 +163,32 @@ void Test_Inserts()
         char *create_table;
         char *csv_lines;
     } test_params[] = {
+        /*
+        {
+            "CREATE COLUMN TABLE I078212.TEST_DECIMAL (NAME1 DECIMAL, NAME2 SMALLDECIMAL, NAME3 DECIMAL(4,10), NAME4 DECIMAL(4,-6), NAME5 DECIMAL(12, 0));",
+            NULL
+        },*/
         {
             "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)",
             "\"A7613\",\"A498550370\",\"N23838\",\"A6042970\",\"N78\",A368724\n"\
             "A7613,A498550370,N23838,A6042970,N78,A368724\n"\
             ",,,A6042970,N78,A368724\n"\
+            "\"1\",\"2\",\"ºº\",\"4\",\"×Ö\",Alpha\n"\
             "\"A8394\",\"A559617907\",\"N86199\",\"A5988647\",\"N05\",A427991",
-        }
+        },
+        {
+            "CREATE COLUMN TABLE I078212.TEST_INT (NAME1 TINYINT CS_INT, NAME2 SMALLINT CS_INT, NAME3 INTEGER CS_INT, NAME4 BIGINT CS_FIXED)",
+            "22,19737,18588,35822626\n"
+            ", ,,\n"
+            "114,16336,7811,60429700",
+        },
+        {
+            "CREATE COLUMN TABLE I078212.TEST_APPROXIMATE (NAME1 DOUBLE, NAME2 REAL, NAME3 FLOAT, F20 FLOAT(20), F50 FLOAT(50));",
+            "1959898.4825586719,60234,5672779.974120304,3.5823e+06,5967893.9312417982\n"\
+            ", ,,,\n"\
+            "-0, 0, -1, 0, 0\n"\
+            "7613146.6125675226,49855,2383800.5367900631,6.043e+06,7822808.7517014062",
+        },
     };
 
     for (int i = 0; i < sizeof(test_params)/sizeof(*test_params); i++) {
