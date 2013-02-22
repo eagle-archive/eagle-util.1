@@ -201,11 +201,14 @@ public:
             break;
         case T_DECIMAL_PS:
             {
+                UnImplemented();
+#if 0
                 DoubleCol *pcol = (DoubleCol *)this;
                 for (size_t i = 0; i < count; i++) {
 			        double t = ((double) rand() / RAND_MAX * 9999999);
                     pcol->PushBack(t);
                 }
+#endif
             }
             break;
         case T_BINARY:
@@ -412,12 +415,14 @@ public:
             delete mPtrCols[i];
         }
         mPtrCols.clear();
+        mErrStr.clear();
     };
     void ClearAllRows() {
         mRowCount = 0;
         for (size_t i = 0; i < mPtrCols.size(); i++) {
             mPtrCols[i]->RemoveAllRows();
         }
+        mErrStr.clear();
     };
     void Reserve(size_t count) {
         for (size_t i = 0; i < mPtrCols.size(); i++) {

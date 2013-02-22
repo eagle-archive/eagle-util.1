@@ -278,6 +278,7 @@ void StringReplace(string &strBase, const string &strSrc, const string &strDes)
     }
 }
 
+#if 0
 void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 {
     int linepos = 0;
@@ -331,6 +332,83 @@ void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
     record.push_back( curstring );
     return;
 }
+#else
+
+void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
+{
+    int linepos = 0;
+    bool inquotes = false;
+    char c;
+    int linemax = (int)strlen(line);
+
+    char curstring[1024];
+    int cur_cur = 0;
+    int rec_num = 0, rec_size = (int)record.size();
+
+    while(linepos < linemax)
+    {
+        c = line[linepos];
+
+        if (!inquotes && cur_cur==0 && c=='"')
+        {
+            //beginquotechar
+            inquotes=true;
+        }
+        else if (inquotes && c=='"')
+        {
+            //quotechar
+            if ( (linepos+1 <linemax) && (line[linepos+1]=='"') ) 
+            {
+                //encountered 2 double quotes in a row (resolves to 1 double quote)
+                curstring[cur_cur++] = c;
+                linepos++;
+            }
+            else
+            {
+                //endquotechar
+                inquotes=false; 
+            }
+        }
+        else if (!inquotes && c==delimiter)
+        {
+            //end of field
+            curstring[cur_cur] = '\0';
+            if (rec_num >= rec_size) {
+                record.push_back( curstring );
+                rec_size++;
+            } else {
+                record[rec_num] = curstring;
+            }
+            rec_num++;
+
+            cur_cur = 0;
+        }
+        else if (!inquotes && (c=='\r' || c=='\n') )
+        {
+            break;
+        }
+        else
+        {
+            curstring[cur_cur++] = c;
+        }
+        linepos++;
+    }
+
+    curstring[cur_cur] = '\0';
+    if (rec_num >= rec_size) {
+        record.push_back( curstring );
+        rec_size++;
+    } else {
+        record[rec_num] = curstring;
+    }
+    rec_num++;
+
+    if (rec_size > rec_num) {
+        record.resize(rec_num);
+    }
+    return;
+}
+#endif
 
 static void SplitParams(vector<string> &record, const char *params)
 {
@@ -372,6 +450,18 @@ static void ParseParamStr(const string &param, int &p1, int &p2)
     {
         const char *s1 = strchr(param.c_str(), '(');
         p1 = s1 ? atoi(s1+1) : 0;
+    }
+}
+
+static void TrimRightFromNoCase(std::string &str, const char *sub)
+{
+    std::string strUpper(str), subUpper(sub);
+    StrToUpper(strUpper);
+    StrToUpper(subUpper);
+
+    size_t pos = strUpper.find(subUpper);
+    if (pos != string::npos) {
+        str.resize(pos);
     }
 }
 
@@ -428,11 +518,9 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
 
     s_begin++;
     string str(s_begin);
-    // strip the sub-string after "PARTITION BY"
-    size_t partition_by_pos = str.find("PARTITION BY");
-    if (partition_by_pos != string::npos) {
-        str.resize(partition_by_pos);
-    }
+    TrimRightFromNoCase(str, "PARTITION BY"); // strip the sub-string starting from "PARTITION BY"
+    TrimRightFromNoCase(str, "WITH PARAMETERS"); // strip the sub-string starting from "WITH PARAMETERS"
+
     const char *s_end = strrchr(str.c_str(), ')');
     if (!s_end) {
         err_str = "Not found ')' in SQL passed in.";
@@ -500,6 +588,30 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
 void UnImplemented()
 {
     *(int *)0 = 0; // to crash!
+}
+
+
+long get_time_in_ms() {
+#ifdef _WIN32
+    return (long)GetTickCount();
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+#endif
+}
+
+std::string FormatTimeStr(unsigned long uTimeMs)
+{
+    char buff[64];
+    sprintf(buff, "%2d:%02d:%03d",
+        (uTimeMs/60000), (uTimeMs/1000) % 60, uTimeMs % 1000);
+    return buff;
+}
+
+static unsigned int g_dwStart = ::GetTickCount();
+std::string ElapsedTimeStr() {
+    return FormatTimeStr(::GetTickCount() - g_dwStart);
 }
 
 } // end of namespace hdb

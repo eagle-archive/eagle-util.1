@@ -85,26 +85,3 @@ bool init_globals(const char *config_file) {
 
     return true;
 }
-
-long get_time_in_ms() {
-#ifdef _WIN32
-    return (long)GetTickCount();
-#else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
-#endif
-}
-
-std::string FormatTimeStr(unsigned long uTimeMs)
-{
-    char buff[64];
-    sprintf(buff, "%2d:%02d:%03d",
-        (uTimeMs/60000), (uTimeMs/1000) % 60, uTimeMs % 1000);
-    return buff;
-}
-
-static unsigned int g_dwStart = ::GetTickCount();
-std::string ElapsedTimeStr() {
-    return FormatTimeStr(::GetTickCount() - g_dwStart);
-}

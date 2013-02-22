@@ -205,53 +205,136 @@ bool CreateDirNested(const char *pDir)
     return iRet == 0;
 }
 
-static inline
-void TrimLeftAndPushBack(vector<string> &strs, string &str) {
-    const char *s = str.c_str();
-    while (*s == ' ' || *s == '\t') s++;
-    strs.push_back(s);
-}
-
-void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
+#if 0
+void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 {
     int linepos = 0;
-    int inquotes = false;
+    bool inquotes = false;
     char c;
-    int linemax = (int)line.length();
-    std::string curstring;
+    int linemax = (int)strlen(line);
+    string curstring;
     record.clear();
 
-    while (line[linepos] != 0 && linepos < linemax) {
-
+    while(line[linepos]!=0 && linepos < linemax)
+    {
         c = line[linepos];
 
-        if (!inquotes && curstring.length() == 0 && c == '"') {
+        if (!inquotes && curstring.length()==0 && c=='"')
+        {
             //beginquotechar
-            inquotes = true;
-        } else if (inquotes && c == '"') {
+            inquotes=true;
+        }
+        else if (inquotes && c=='"')
+        {
             //quotechar
-            if ((linepos + 1 < linemax) && (line[linepos + 1] == '"')) {
+            if ( (linepos+1 <linemax) && (line[linepos+1]=='"') ) 
+            {
                 //encountered 2 double quotes in a row (resolves to 1 double quote)
                 curstring.push_back(c);
                 linepos++;
-            } else {
-                //endquotechar
-                inquotes = false;
             }
-        } else if (!inquotes && c == delimiter) {
+            else
+            {
+                //endquotechar
+                inquotes=false; 
+            }
+        }
+        else if (!inquotes && c==delimiter)
+        {
             //end of field
-            TrimLeftAndPushBack(record, curstring);
-            curstring = "";
-        } else if (!inquotes && (c == '\r' || c == '\n')) {
-            TrimLeftAndPushBack(record, curstring);
+            record.push_back( curstring );
+            curstring="";
+        }
+        else if (!inquotes && (c=='\r' || c=='\n') )
+        {
+            record.push_back( curstring );
             return;
-        } else {
+        }
+        else
+        {
             curstring.push_back(c);
         }
         linepos++;
     }
-
-    TrimLeftAndPushBack(record, curstring);
+    record.push_back( curstring );
+    return;
 }
+#else
+
+void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
+{
+    int linepos = 0;
+    bool inquotes = false;
+    char c;
+    int linemax = (int)strlen(line);
+
+    char curstring[1024];
+    int cur_cur = 0;
+    int rec_num = 0, rec_size = (int)record.size();
+
+    while(linepos < linemax)
+    {
+        c = line[linepos];
+
+        if (!inquotes && cur_cur==0 && c=='"')
+        {
+            //beginquotechar
+            inquotes=true;
+        }
+        else if (inquotes && c=='"')
+        {
+            //quotechar
+            if ( (linepos+1 <linemax) && (line[linepos+1]=='"') ) 
+            {
+                //encountered 2 double quotes in a row (resolves to 1 double quote)
+                curstring[cur_cur++] = c;
+                linepos++;
+            }
+            else
+            {
+                //endquotechar
+                inquotes=false; 
+            }
+        }
+        else if (!inquotes && c==delimiter)
+        {
+            //end of field
+            curstring[cur_cur] = '\0';
+            if (rec_num >= rec_size) {
+                record.push_back( curstring );
+                rec_size++;
+            } else {
+                record[rec_num] = curstring;
+            }
+            rec_num++;
+
+            cur_cur = 0;
+        }
+        else if (!inquotes && (c=='\r' || c=='\n') )
+        {
+            break;
+        }
+        else
+        {
+            curstring[cur_cur++] = c;
+        }
+        linepos++;
+    }
+
+    curstring[cur_cur] = '\0';
+    if (rec_num >= rec_size) {
+        record.push_back( curstring );
+        rec_size++;
+    } else {
+        record[rec_num] = curstring;
+    }
+    rec_num++;
+
+    if (rec_size > rec_num) {
+        record.resize(rec_num);
+    }
+    return;
+}
+#endif
 
 }

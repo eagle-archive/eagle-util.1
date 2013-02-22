@@ -44,6 +44,10 @@ void StringReplace(std::string &strBase, const std::string &strSrc, const std::s
 void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter);
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str);
 
+long get_time_in_ms();
+std::string FormatTimeStr(unsigned long uTimeMs);
+std::string ElapsedTimeStr();
+
 void UnImplemented();
 
 }// namespace hdb

@@ -161,9 +161,9 @@ void Test_Insert(OdbcConn *pConn, const char *table_create_sql, const char *csv_
     assert(ok);
 }
 
-void Test_Inserts()
+void Test_Inserts(const char *dsn, const char *user, const char *passwd)
 {
-    OdbcConn *pConn = Test_CreateConn("HD5", "I078212", "Sprint6800");
+    OdbcConn *pConn = Test_CreateConn(dsn, user, passwd);
 
     static const struct {
         char *create_table;
@@ -171,7 +171,7 @@ void Test_Inserts()
     } test_params[] = {
         {
             "CREATE COLUMN TABLE I078212.TEST_DECIMAL (NAME1 DEC, NAME2 SMALLDECimal, NAME3 DEC (4,10), NAME4 DECIMAL (4,-6), NAME5 DECIMAL(12, 0));",
-            NULL
+            "\"100.000000012341234234\",\"1234525.235231231\",\"0.0000001234\",\"0\",\"123456789012\""
         },
         {
             "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)",
@@ -194,6 +194,41 @@ void Test_Inserts()
             "-0, 0, -1, 0, 0\n"\
             "7613146.6125675226,49855,2383800.5367900631,6.043e+06,7822808.7517014062",
         },
+        {
+            "CREATE COLUMN TABLE \"I078212\".\"EXT_TAXI_HEB\" ("\
+            "\"GPSDATA_ID\" BIGINT CS_FIXED, "\
+            "\"DEVID\" VARCHAR(20), "\
+            "\"STIME\" LONGDATE CS_LONGDATE, "\
+            "\"ALARMFLAG\" INTEGER CS_INT, "\
+            "\"STATE\" INTEGER CS_INT, "\
+            "\"LONGITUDE\" DOUBLE CS_DOUBLE, "\
+            "\"LATITUDE\" DOUBLE CS_DOUBLE, "\
+            "\"SPEED\" DOUBLE CS_DOUBLE, "\
+            "\"GPSTIME\" LONGDATE CS_LONGDATE, "\
+            "\"ODOMETER\" DOUBLE CS_DOUBLE, "\
+            "\"OILGAUGE\" DOUBLE CS_DOUBLE, "\
+            "\"ORIENTATION\" SMALLINT CS_INT, "\
+            "\"GPS_STATUS\" TINYINT CS_INT, "\
+            "\"OPERATION_STATE\" TINYINT CS_INT, "\
+            "\"ORDER_STATE\" TINYINT CS_INT, "\
+            "\"PASSENGER_STATE\" TINYINT CS_INT, "\
+            "\"OIL_STATE\" TINYINT CS_INT, "\
+            "\"OVERSPEED_STATE\" TINYINT CS_INT, "\
+            "\"SQUARE_X\" INTEGER CS_INT, "\
+            "\"SQUARE_Y\" INTEGER CS_INT, "\
+            "\"WAY_SEGMENT_ID\" BIGINT CS_FIXED, "\
+            "\"REVERSED\" TINYINT CS_INT, "\
+            "\"TIME_SLOT\" TINYINT CS_INT, "\
+            "\"WEEK_DAY\" TINYINT CS_INT, "\
+            "\"DAY_OF_YEAR\" SMALLINT CS_INT, "\
+            "\"HOUR\" TINYINT CS_INT, "\
+            "\"INSERT_TIME\" LONGDATE CS_LONGDATE) "\
+            "WITH PARAMETERS ('PARTITION_SPEC' = 'HASH 1 DAY_OF_YEAR')",
+
+            "7317822,\"0300017588\",\"2012-01-23 10:15:03.0000000\",34816,0,126.560196,45.721435999999997,0,\"2012-01-23 10:15:20.0000000\",,,80,0,0,0,0,0,0,2379877,997366,-1,0,41,1,23,10,\"2013-02-02 04:12:09.3850000\"\n"\
+            "7320718,\"0300016955\",\"2012-01-23 10:15:09.0000000\",34816,0,126.63844,45.495710000000003,0,\"2012-01-23 10:15:24.0000000\",,,18,0,0,0,0,0,0,2380484,999871,-1,0,41,1,23,10,\"2013-02-02 04:12:13.3920000\"\n"\
+            "7326314,\"0300017583\",\"2012-01-23 10:14:46.0000000\",34816,0,126.65768,45.687130000000003,0,\"2012-01-23 10:15:44.0000000\",,,13,0,0,0,0,0,0,2380633,997747,-1,0,41,1,23,10,\"2013-02-02 04:12:33.4000000\"",
+        },
     };
 
     for (int i = 0; i < sizeof(test_params)/sizeof(*test_params); i++) {
@@ -204,12 +239,36 @@ void Test_Inserts()
     pConn = NULL;
 }
 
-bool TestHdb_Main()
+
+void Test_CsvParse()
 {
+    const char *csv_lines = 
+        "7317822,\"0300017588\",\"2012-01-23 10:15:03.0000000\",34816,0,126.560196,45.721435999999997,0,\"2012-01-23 10:15:20.0000000\",,,80,0,0,0,0,0,0,2379877,997366,-1,0,41,1,23,10,\"2013-02-02 04:12:09.3850000\"\n"\
+        "7320718,\"0300016955\",\"2012-01-23 10:15:09.0000000\",34816,0,126.63844,45.495710000000003,0,\"2012-01-23 10:15:24.0000000\",,,18,0,0,0,0,0,0,2380484,999871,-1,0,41,1,23,10,\"2013-02-02 04:12:13.3920000\"\n"\
+        "7326314,\"0300017583\",\"2012-01-23 10:14:46.0000000\",34816,0,126.65768,45.687130000000003,0,\"2012-01-23 10:15:44.0000000\",,,13,0,0,0,0,0,0,2380633,997747,-1,0,41,1,23,10,\"2013-02-02 04:12:33.4000000\"";
+
+    printf("\r%s: Start testing CSV Parse ...\n", ElapsedTimeStr().c_str());
+
+    vector<string> lines, records;
+    int repeat = 1000000;
+    for (int i = 0; i < repeat; i++) {
+        CsvLinePopulate(lines, csv_lines, '\n');
+        for (size_t i = 0; i < lines.size(); i++) {
+            CsvLinePopulate(records, lines[i].c_str(), ',');
+        }
+    }
+
+    printf("\r%s: End testing CSV Parse.\n", ElapsedTimeStr().c_str());
+}
+
+bool TestHdb_Main(const char *dsn, const char *user, const char *passwd)
+{
+    //Test_CsvParse();
+
     Test_Types();
     Test_Cols();
     Test_Records();
-    Test_Inserts();
+    //Test_Inserts(dsn, user, passwd); // Need connect to server
 
     return true;
 };

@@ -28,9 +28,6 @@ struct UTIL_GLOBALS {
 extern UTIL_GLOBALS GLOBALS;
 
 bool init_globals(const char *config_file);
-long get_time_in_ms();
 
-std::string FormatTimeStr(unsigned long uTimeMs);
-std::string ElapsedTimeStr();
 
 #endif // __INSERT_SIM_UTILS_H_
