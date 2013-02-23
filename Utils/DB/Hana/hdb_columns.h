@@ -72,9 +72,7 @@ public:
 
     virtual void Reserve(size_t count) {
         mDataVec.reserve(count);
-        if (NullAble()) {
-            mStrLenOrIndVec.reserve(count);
-        }
+        mStrLenOrIndVec.reserve(count);
     };
     virtual size_t GetCount() const {
         return mStrLenOrIndVec.size();
@@ -260,7 +258,7 @@ public:
     void PushBack(const T &val) {
         assert(mDataAttr.type != T_CHAR && mDataAttr.type != T_NCHAR && mDataAttr.type != T_VARCHAR && mDataAttr.type != T_NVARCHAR);
         mDataVec.push_back(val);
-        mStrLenOrIndVec.push_back(0);
+        mStrLenOrIndVec.push_back(SQL_NTS);
     };
 
 protected:
