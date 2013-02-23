@@ -9,6 +9,8 @@ using namespace std;
 
 namespace hdb {
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void PrintOdbcError(SQLSMALLINT handletype, const SQLHANDLE& handle)
 {
     SQLCHAR sqlstate[1024];
@@ -159,6 +161,8 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCH
         ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// class OdbcConn
 
 bool OdbcConn::Connect()
 {
@@ -189,6 +193,9 @@ bool OdbcConn::Connect()
     mConnected = SQL_SUCCEEDED(rc);
     return mConnected;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// class InsertExecutor
 
 bool InsertExecutor::GetInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name, std::string &stmt)
 {
@@ -250,6 +257,35 @@ bool InsertExecutor::ExecuteInsert(const ColRecords &records) const
         rc = SQLEndTran(SQL_HANDLE_DBC, mpConn->GetHDbc(), SQL_COMMIT);
     }
     return SQL_SUCCEEDED(rc);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// class FetchExecutor
+
+static void PartialRecordsReady(FetchExecutor *executor, const ColRecords *partialRecords, void *pUser)
+{
+    ColRecords *pAllRecords = (ColRecords *)pUser;
+    pAllRecords->AddRows(*partialRecords);
+}
+
+bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
+{
+    records.ClearAllRows();
+    bool ok = ExecuteFetchInParts(records, PartialRecordsReady, &records, 5000);
+    return ok;
+}
+
+// See http://msdn.microsoft.com/en-us/library/windows/desktop/ms713541(v=vs.85).aspx
+bool FetchExecutor::ExecuteFetchInParts(const ColRecords &columns, OnPartialRecordsReady fun,
+    void *pUser, int partialRowNum)
+{
+    ColRecords partials;
+    for (size_t i = 0; i < columns.GetColCount(); i++) {
+        partials.AddCol(columns.GetColumn(i)->GetColName(), columns.GetColumn(i)->GetDataAttr());
+    }
+
+    hdb::UnImplemented();
+    return true;
 }
 
 } // end of namespace hdb

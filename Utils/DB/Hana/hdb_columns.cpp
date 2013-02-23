@@ -189,6 +189,20 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
     return total;
 }
 
+// pre-condition: column structurs of *this and records must be identical
+// return the number of lines actually added
+int ColRecords::AddRows(const ColRecords &records)
+{
+    if (this->GetColCount() > records.GetColCount()) {
+        return 0;
+    }
+    for (size_t i = 0; i < GetColCount(); i++) {
+        this->GetColumn(i)->Append(records.GetColumn(i));
+    }
+    mRowCount += records.GetRowCount();
+    return (int)records.GetRowCount();
+}
+
 void ColRecords::GenerateFakeData(size_t row_count)
 {
     size_t col_count = this->GetColCount();

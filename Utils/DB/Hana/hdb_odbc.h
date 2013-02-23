@@ -114,6 +114,49 @@ protected:
     SQLHSTMT mHstmt;
 };
 
+
+class FetchExecutor;
+typedef void (*OnPartialRecordsReady)(FetchExecutor *executor, const ColRecords *partialRecords, void *pUser);
+
+class FetchExecutor {
+public:
+    FetchExecutor(OdbcConn *pConn, const char *sql = NULL) {
+        mpConn = pConn;
+        if (sql) {
+            mSql = sql;
+        }
+        SQLAllocHandle(SQL_HANDLE_STMT, pConn->GetHDbc(), &mHstmt);
+    };
+    ~FetchExecutor() {
+        if (mHstmt) {
+            SQLFreeHandle(SQL_HANDLE_STMT, mHstmt);
+            mHstmt = NULL;
+        }
+        mpConn = NULL;
+        mSql.clear();
+    };
+    void SetSql(const char *sql = NULL) {
+        mSql = sql;
+    };
+    const char *GetSql() const {
+        return mSql.c_str();
+    };
+    SQLHSTMT GetHStmt() const {
+        return mHstmt;
+    };
+    std::string GetErrorStr() const {
+        return GetOdbcError(SQL_HANDLE_STMT, mHstmt);
+    };
+    bool ExecuteFetchAll(ColRecords &records);
+    bool ExecuteFetchInParts(const ColRecords &columns, OnPartialRecordsReady fun,
+        void *pUser, int partialRowNum = 5000);
+
+protected:
+    OdbcConn *mpConn;
+    SQLHSTMT mHstmt;
+    std::string mSql;
+};
+
 }// namespace hdb
 
 #endif // _HDB_ODBC_H

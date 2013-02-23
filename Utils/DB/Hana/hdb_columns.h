@@ -49,6 +49,7 @@ public:
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
     virtual bool AddFromStr(const char *str) = 0;
     virtual void RemoveAllRows() = 0;
+    virtual bool Append(const BaseColumn *pCol) = 0;
 
 protected:
     DATA_ATTR_T mDataAttr;
@@ -76,7 +77,7 @@ public:
         }
     };
     virtual size_t GetCount() const {
-        return mDataVec.size();
+        return mStrLenOrIndVec.size();
     };
     virtual void *GetData() {
         return mDataVec.data();
@@ -226,16 +227,10 @@ public:
     };
     virtual bool AddFromStr(const char *str) {
         T value;
-        if (NullAble()) {
-            bool is_null = (*str == '\0');
-            mStrLenOrIndVec.push_back(is_null ? SQL_NULL_DATA : SQL_NTS);
-            if (is_null) {
-                memset(&value, 0, sizeof(T));
-            } else {
-                if (false == StrToValue(str, value)) {
-                    return false;
-                }
-            }
+        bool is_null = (*str == '\0');
+        mStrLenOrIndVec.push_back(is_null ? SQL_NULL_DATA : SQL_NTS);
+        if (is_null) {
+            memset(&value, 0, sizeof(T));
         } else {
             if (false == StrToValue(str, value)) {
                 return false;
@@ -247,6 +242,13 @@ public:
     virtual void RemoveAllRows() {
         mDataVec.clear();
         mStrLenOrIndVec.clear();
+    };
+    virtual bool Append(const BaseColumn *pCol) {
+        const ColT<T, data_type> &col = *(const ColT<T, data_type> *)pCol;
+        assert(mDataAttr.type == col.mDataAttr.type);
+        mDataVec.insert(mDataVec.end(), col.mDataVec.begin(), col.mDataVec.end());
+        mStrLenOrIndVec.insert(mStrLenOrIndVec.end(), col.mStrLenOrIndVec.begin(), col.mStrLenOrIndVec.end());
+        return true;
     };
 
 public:
@@ -279,9 +281,6 @@ public:
         mDataVec.reserve(count * (mDataAttr.a + 1));
         mStrLenOrIndVec.reserve(count);
     };
-    virtual size_t GetCount() const {
-        return mStrLenOrIndVec.size();
-    }
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
         return SqlBindInParam(hstmt, ipar, *this);
     };
@@ -441,12 +440,16 @@ public:
     BaseColumn *GetColumn(size_t index) {
         return mPtrCols[index];
     };
+    const BaseColumn *GetColumn(size_t index) const {
+        return mPtrCols[index];
+    };
     std::vector<BaseColumn *> &GetColumns() {
         return mPtrCols;
     };
     bool AddCol(const char *col_name, DATA_TYPE_T type, bool null_able = true) {
         return AddCol(col_name, GenDataAttr(type, null_able, 0, 0));
     };
+    bool AddCol(const char *col_name, const DATA_ATTR_T &attr);
     bool AddColFixedChar(const char *col_name, DATA_TYPE_T type, unsigned char num, bool null_able = false) {
         assert(type == T_CHAR || type == T_NCHAR);
         return AddCol(col_name, GenDataAttr(type, null_able, num, 0));
@@ -459,10 +462,8 @@ public:
     SQLRETURN BindAllInColumns(SQLHSTMT hstmt) const;
     bool AddRow(const char *line, char delimiter = ','); // one line of CSV
     int AddRows(std::ifstream &is_csv, int num, char delimiter = ',');
+    int AddRows(const ColRecords &records);
     void GenerateFakeData(size_t row_count);
-
-protected:
-    bool AddCol(const char *col_name, const DATA_ATTR_T &attr);
 
 protected:
     size_t mRowCount;
