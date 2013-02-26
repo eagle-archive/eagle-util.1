@@ -66,6 +66,7 @@ static
 void *insert_executor(void *arg) {
     SQLRETURN rc;
     long t_index = (long)arg;
+    printf("%s: Enter insert_executor()\n", ElapsedTimeStr().c_str());
 
     InsertExecutor ins_exe(gpOdbcConn);
     ColRecords records;
