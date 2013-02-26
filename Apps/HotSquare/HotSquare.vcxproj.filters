@@ -22,6 +22,9 @@
     <Filter Include="External\INI">
       <UniqueIdentifier>{73e55c4c-082e-4de8-a3c2-cec1510d45f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ODBC">
+      <UniqueIdentifier>{8f153154-ab8c-4b3f-a7fd-f7b15e6153d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -50,6 +53,18 @@
     </ClInclude>
     <ClInclude Include="..\..\External\iniparser\src\iniparser.h">
       <Filter>External\INI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utils\DB\Hana\hdb_columns.h">
+      <Filter>ODBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utils\DB\Hana\hdb_odbc.h">
+      <Filter>ODBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utils\DB\Hana\hdb_types.h">
+      <Filter>ODBC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Utils\DB\Hana\hdb_utils.h">
+      <Filter>ODBC</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +100,15 @@
     </ClCompile>
     <ClCompile Include="HotSquare_NJ.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utils\DB\Hana\hdb_columns.cpp">
+      <Filter>ODBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utils\DB\Hana\hdb_odbc.cpp">
+      <Filter>ODBC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Utils\DB\Hana\hdb_utils.cpp">
+      <Filter>ODBC</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

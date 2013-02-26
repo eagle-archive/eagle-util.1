@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "hdb_utils.h"
 #include "HotSquare.h"
 #include "SquareManager.h"
 
@@ -26,7 +27,9 @@ typedef struct {
     string      gpstime;
     short       inload;
     short       inservice;
-} VEHICLE_RECORD_NJ;
+    int         timeslot;
+    int         status;
+} VEHICLE_RECORD_NJ_EXT;
 
 static string ToDoubleStr(double f) {
     char buff[32];
@@ -35,23 +38,28 @@ static string ToDoubleStr(double f) {
 }
 
 static 
-bool ParseRecord(string &line, VEHICLE_RECORD_NJ &r) {
+bool ParseRecord(string &line, VEHICLE_RECORD_NJ_EXT &r) {
     /*
       Input line example:
-      3584043109,118.500844,31.886752000000001,27,134,"2011-11-29 11:37:10.0000000",0,1
+      "3584013563",118.79103499999999,32.010750000000002,31,194,"2011-11-29 07:59:01.0000000",0,1,7,0
     */
-    char buffs[8][64];
-    if (8 != sscanf(line.c_str(), "%[^,],%[^,],%[^,],%[^,],%[^,],\"%[^\"]\",%[^,],%s", buffs[0], buffs[1], buffs[2], buffs[3], buffs[4], buffs[5], buffs[6], buffs[7])) {
+    vector<string> buffs;
+    CsvLinePopulate(buffs, line, ',');
+    if (10 != buffs.size()) {
+        printf("invalid CSV line: %s\n", line.c_str());
         return false;
     }
+
     r.vechid = buffs[0];
-    r.lng = atof(buffs[1]);
-    r.lat = atof(buffs[2]);
-    r.speed = atof(buffs[3]);
-    r.heading = atof(buffs[4]);
+    r.lng = atof(buffs[1].c_str());
+    r.lat = atof(buffs[2].c_str());
+    r.speed = atof(buffs[3].c_str());
+    r.heading = atof(buffs[4].c_str());
     r.gpstime = buffs[5];
-    r.inload = atoi(buffs[6]);
-    r.inservice = atoi(buffs[7]);
+    r.inload = atoi(buffs[6].c_str());
+    r.inservice = atoi(buffs[7].c_str());
+    r.timeslot = atoi(buffs[8].c_str());
+    r.status = atoi(buffs[9].c_str());
 
     return true;
 }
@@ -104,7 +112,7 @@ static bool NanjingAssign_UsingTileManager()
 
     std::string line;
     while (GetLine(in, line)) {
-        VEHICLE_RECORD_NJ record;
+        VEHICLE_RECORD_NJ_EXT record;
         if (true == ParseRecord(line, record)) {
             if (count % 100000 == 0) {
                 PrintNjAssignStatus(count);
@@ -119,13 +127,13 @@ static bool NanjingAssign_UsingTileManager()
             if (INVALID_SEG_ID == assigned_seg_id1) {
                 no_hit_count++;
             }
-            int time_slot = GetTimeSlot(record.gpstime);
+            //int time_slot = GetTimeSlot(record.gpstime);
 
             char buff[1024 * 4];
-            sprintf(buff, "%s,%s,%s,%s,%s,\"%s\",%d,%d,%lld,%d\n",
+            sprintf(buff, "%s,%s,%s,%s,%s,\"%s\",%d,%d,%d,%d,%lld\n",
                 record.vechid.c_str(), ToDoubleStr(record.lng).c_str(), ToDoubleStr(record.lat).c_str(), ToDoubleStr(record.speed).c_str(),
                 ToDoubleStr(record.heading).c_str(), record.gpstime.c_str(), (int)record.inload, (int)record.inservice,
-                assigned_seg_id1, time_slot);
+                record.timeslot, record.status, assigned_seg_id1);
             out << buff;
             if (TOP > 0 && count == TOP) {
                 break;

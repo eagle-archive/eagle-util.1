@@ -7,6 +7,7 @@
 #include <io.h>
 #include <fstream>
 #include "HotSquare.h"
+#include "hdb_utils.h"
 
 using namespace std;
 
@@ -118,53 +119,9 @@ bool CreateDirNested(const char *pDir)
     return iRet == 0;
 }
 
-static inline
-void TrimLeftAndPushBack(vector<string> &strs, string &str) {
-    const char *s = str.c_str();
-    while (*s == ' ' || *s == '\t') s++;
-    strs.push_back(s);
-}
-
 void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
 {
-    int linepos = 0;
-    int inquotes = false;
-    char c;
-    int linemax = (int)line.length();
-    std::string curstring;
-    record.clear();
-
-    while (line[linepos] != 0 && linepos < linemax) {
-
-        c = line[linepos];
-
-        if (!inquotes && curstring.length() == 0 && c == '"') {
-            //beginquotechar
-            inquotes = true;
-        } else if (inquotes && c == '"') {
-            //quotechar
-            if ((linepos + 1 < linemax) && (line[linepos + 1] == '"')) {
-                //encountered 2 double quotes in a row (resolves to 1 double quote)
-                curstring.push_back(c);
-                linepos++;
-            } else {
-                //endquotechar
-                inquotes = false;
-            }
-        } else if (!inquotes && c == delimiter) {
-            //end of field
-            TrimLeftAndPushBack(record, curstring);
-            curstring = "";
-        } else if (!inquotes && (c == '\r' || c == '\n')) {
-            TrimLeftAndPushBack(record, curstring);
-            return;
-        } else {
-            curstring.push_back(c);
-        }
-        linepos++;
-    }
-
-    TrimLeftAndPushBack(record, curstring);
+    hdb::CsvLinePopulate(record, line.c_str(), delimiter);
 }
 
 bool read_ini_int(dictionary *dict, const char*section, int &value) {
