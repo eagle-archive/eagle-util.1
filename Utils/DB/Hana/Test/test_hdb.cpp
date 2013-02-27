@@ -261,6 +261,23 @@ void Test_CsvParse()
     printf("\r%s: End testing CSV Parse.\n", ElapsedTimeStr().c_str());
 }
 
+void Test_Fetches(const char *dsn, const char *user, const char *passwd, const char *query_sql)
+{
+    bool ok;
+    OdbcConn *pConn = Test_CreateConn(dsn, user, passwd);
+    FetchExecutor fetch_exe(pConn, query_sql);
+
+    ColRecords records;
+    ok = fetch_exe.ExecuteFetchAll(records);
+    if (!ok) {
+        printf("Error in FetchExecutor::ExecuteFetchAll(): %s\n", fetch_exe.GetErrorStr().c_str());
+    }
+    assert(ok);
+    
+    delete pConn;
+    pConn = NULL;
+}
+
 bool TestHdb_Main(const char *dsn, const char *user, const char *passwd)
 {
     //Test_CsvParse();
@@ -269,6 +286,7 @@ bool TestHdb_Main(const char *dsn, const char *user, const char *passwd)
     Test_Cols();
     Test_Records();
     //Test_Inserts(dsn, user, passwd); // Need connect to server
+    Test_Fetches(dsn, user, passwd, "select * from I078212.EXT_TAXI_HEB"); // Need connect to server
 
     return true;
 };

@@ -148,8 +148,7 @@ public:
         return GetOdbcError(SQL_HANDLE_STMT, mHstmt);
     };
     bool ExecuteFetchAll(ColRecords &records);
-    bool ExecuteFetchInParts(const ColRecords &columns, OnPartialRecordsReady fun,
-        void *pUser, int partialRowNum = 5000);
+    bool ExecuteFetchInParts(OnPartialRecordsReady fun, void *pUser, int partialRowNum = 5000);
 
 protected:
     OdbcConn *mpConn;

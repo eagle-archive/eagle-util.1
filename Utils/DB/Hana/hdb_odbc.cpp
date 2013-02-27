@@ -270,19 +270,58 @@ static void PartialRecordsReady(FetchExecutor *executor, const ColRecords *parti
 
 bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
 {
+    SQLHSTMT hstmt = GetHStmt();
+    SQLRETURN rc;
+
+    rc = SQLSetStmtAttr(hstmt, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
+/*
+    SQLSetStmtAttr(hstmt, SQL_ATTR_ROW_ARRAY_SIZE, ROW_ARRAY_SIZE, 0);
+    SQLSetStmtAttr(hstmt, SQL_ATTR_ROW_STATUS_PTR, RowStatusArray, 0);
+    SQLSetStmtAttr(hstmt, SQL_ATTR_ROWS_FETCHED_PTR, &NumRowsFetched, 0);
+*/
+    if (SQL_SUCCEEDED(rc)) {
+        rc = SQLExecDirect(hstmt, (SQLCHAR *)mSql.c_str(), SQL_NTS);
+    }
+    if (SQL_SUCCEEDED(rc)) {
+        records.ClearAllCols();
+
+        SQLUSMALLINT    ColumnNumber = 1;
+        SQLCHAR         ColumnName[100];
+        SQLSMALLINT     NameLength;
+        SQLSMALLINT     DataType;
+        SQLULEN         ColumnSize;
+        SQLSMALLINT     DecimalDigits;
+        SQLSMALLINT     Nullable;
+
+        while (SQL_SUCCEEDED(rc)) {
+            rc = SQLDescribeCol(hstmt, ColumnNumber, ColumnName, sizeof(ColumnName), &NameLength,
+                &DataType, &ColumnSize, &DecimalDigits, &Nullable);
+            if (SQL_SUCCEEDED(rc)) {
+                ColumnName[sizeof(ColumnName)-1] = '\0';
+                DATA_ATTR_T attr;
+                hdb::UnImplemented(); // TODO:
+                records.AddCol((const char *)ColumnName, attr);
+            } else {
+                break;
+            }
+            ColumnNumber++;
+        }
+
+        if (records.GetRowCount() > 0) {
+            rc = SQL_SUCCESS;
+        }
+    }
+
+
     records.ClearAllRows();
-    bool ok = ExecuteFetchInParts(records, PartialRecordsReady, &records, 5000);
+    bool ok = ExecuteFetchInParts(PartialRecordsReady, &records, 5000);
     return ok;
 }
 
 // See http://msdn.microsoft.com/en-us/library/windows/desktop/ms713541(v=vs.85).aspx
-bool FetchExecutor::ExecuteFetchInParts(const ColRecords &columns, OnPartialRecordsReady fun,
-    void *pUser, int partialRowNum)
+bool FetchExecutor::ExecuteFetchInParts(OnPartialRecordsReady fun, void *pUser, int partialRowNum)
 {
     ColRecords partials;
-    for (size_t i = 0; i < columns.GetColCount(); i++) {
-        partials.AddCol(columns.GetColumn(i)->GetColName(), columns.GetColumn(i)->GetDataAttr());
-    }
 
     hdb::UnImplemented();
     return true;
