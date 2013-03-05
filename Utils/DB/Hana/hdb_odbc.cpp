@@ -83,13 +83,13 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_DATE_STRUCT, T_DATE> &col)
 {
-    UnImplemented();
+    UnImplemented("SqlBindInParam");
     return 0;
 }
 
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIME_STRUCT, T_TIME> &col)
 {
-    UnImplemented();
+    UnImplemented("SqlBindInParam");
     return 0;
 }
 
@@ -299,7 +299,7 @@ bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
             if (SQL_SUCCEEDED(rc)) {
                 ColumnName[sizeof(ColumnName)-1] = '\0';
                 DATA_ATTR_T attr;
-                hdb::UnImplemented(); // TODO:
+                hdb::UnImplemented("Get attr from SQLDescribeCol"); // TODO:
                 records.AddCol((const char *)ColumnName, attr);
             } else {
                 break;
@@ -323,7 +323,7 @@ bool FetchExecutor::ExecuteFetchInParts(OnPartialRecordsReady fun, void *pUser, 
 {
     ColRecords partials;
 
-    hdb::UnImplemented();
+    hdb::UnImplemented("FetchExecutor::ExecuteFetchInParts");
     return true;
 }
 

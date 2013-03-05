@@ -48,7 +48,7 @@ long get_time_in_ms();
 std::string FormatTimeStr(unsigned long uTimeMs);
 std::string ElapsedTimeStr();
 
-void UnImplemented();
+void UnImplemented(const char *desc);
 
 }// namespace hdb
 

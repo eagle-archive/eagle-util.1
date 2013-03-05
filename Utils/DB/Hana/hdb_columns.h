@@ -200,7 +200,7 @@ public:
             break;
         case T_DECIMAL_PS:
             {
-                UnImplemented();
+                UnImplemented("GenerateFakeData - T_DECIMAL_PS");
 #if 0
                 DoubleCol *pcol = (DoubleCol *)this;
                 for (size_t i = 0; i < count; i++) {

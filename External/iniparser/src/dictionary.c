@@ -1,4 +1,4 @@
-#ifdef _WIN32
+#if defined(_MSC_VER)
 #define _CRT_SECURE_NO_WARNINGS // Disable security warning message on MSVC
 #endif
 
