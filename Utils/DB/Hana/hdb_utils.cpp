@@ -171,7 +171,7 @@ bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
 {
     if (s == NULL || *s == '\0') return false;
     int year, month, day, hour, minute, second, fraction;
-    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction)) {
+    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction)) { // for HANA
         v.year = year;
         v.month = month;
         v.day = day;
@@ -179,6 +179,15 @@ bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
         v.minute = minute;
         v.second = second;
         v.fraction = fraction;
+        return true;
+    } else if (6 == sscanf(s, "%d-%d-%d-%d.%d.%d", &year, &month, &day, &hour, &minute, &second)) { // for DB2
+        v.year = year;
+        v.month = month;
+        v.day = day;
+        v.hour = hour;
+        v.minute = minute;
+        v.second = second;
+        v.fraction = 0;
         return true;
     }
     return false;
@@ -258,6 +267,15 @@ std::wstring StrToWStr(const char *str)
     return s2ws(str);
 #else
     return wstring(str, str + strlen(str));
+#endif
+}
+
+std::string WStrToStr(const wchar_t *wstr)
+{
+#ifdef _WIN32
+    return ws2s(wstr);
+#else
+    return string(wstr, wstr + wstrlen(wstr));
 #endif
 }
 
@@ -587,7 +605,11 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
 
 void UnImplemented(const char *desc)
 {
-    printf("%s: Unimplemented feature: %s\n", ElapsedTimeStr().c_str(), desc);
+    if (desc) {
+        printf("%s: Unimplemented feature: %s\n", ElapsedTimeStr().c_str(), desc);
+    } else {
+        printf("%s: Unimplemented feature\n", ElapsedTimeStr().c_str());
+    }
     printf("%s: THIS APP WILL CRASH!\n", ElapsedTimeStr().c_str());
     *(int *)0 = 0; // to crash!
 }

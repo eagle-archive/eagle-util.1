@@ -38,6 +38,7 @@ std::string &ReduceStr(std::string& str, const char *fill= " ", const char *whit
 void StrToUpper(std::string& str);
 void StrToLower(std::string& str);
 std::wstring StrToWStr(const char *str);
+std::string WStrToStr(const wchar_t *wstr);
 void ReplaceCharInStr(std::string& str, char ch1, char ch2);
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 

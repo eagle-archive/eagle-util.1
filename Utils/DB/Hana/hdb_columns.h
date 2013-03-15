@@ -291,11 +291,13 @@ public:
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
-            UnImplemented();
+            UnImplemented(NULL);
 #endif
         } else {
 #ifdef _WIN32
-            strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
+            string s = WStrToStr(StrToWStr(str).c_str());
+            strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, s.c_str(), mDataAttr.a);
+            //strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
 #else
             strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
 #endif
