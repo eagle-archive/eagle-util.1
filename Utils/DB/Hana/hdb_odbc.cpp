@@ -121,19 +121,18 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T
         0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLCHAR, T_CHAR> &col)
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLWCHAR, T_CHAR> &col)
 {
     SQLULEN ColumnSize = col.GetDataAttr().a; // http://msdn.microsoft.com/en-us/library/ms711786.aspx
-    SQLLEN BufferLength = col.GetDataAttr().a + 1; // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
-    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
+    SQLLEN BufferLength = 2 * (col.GetDataAttr().a + 1); // http://msdn.microsoft.com/en-us/library/ms710963.aspx, see "BufferLength Argument"
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_CHAR,
         ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
 }
 
-SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLVARCHAR, T_VARCHAR> &col)
-{
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const CharColT<SQLWCHAR, T_VARCHAR> &col) {
     SQLULEN ColumnSize = col.GetDataAttr().a;
-    SQLLEN BufferLength = col.GetDataAttr().a + 1;
-    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_VARCHAR,
+    SQLLEN BufferLength = 2 * (col.GetDataAttr().a + 1);
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_VARCHAR,
         ColumnSize, 0, (SQLPOINTER)col.GetData(), BufferLength, (SQLLEN *)col.GetStrLenOrIndVec());
 }
 
