@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\google\protobuf\io\coded_stream.cc" />
+    <ClCompile Include="..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.cc" />
     <ClCompile Include="..\src\google\protobuf\stubs\common.cc" />
     <ClCompile Include="..\src\google\protobuf\descriptor.cc" />
     <ClCompile Include="..\src\google\protobuf\descriptor.pb.cc" />
@@ -131,6 +132,7 @@
     <ClCompile Include="..\src\google\protobuf\reflection_ops.cc" />
     <ClCompile Include="..\src\google\protobuf\repeated_field.cc" />
     <ClCompile Include="..\src\google\protobuf\service.cc" />
+    <ClCompile Include="..\src\google\protobuf\stubs\stringprintf.cc" />
     <ClCompile Include="..\src\google\protobuf\stubs\structurally_valid.cc" />
     <ClCompile Include="..\src\google\protobuf\stubs\strutil.cc" />
     <ClCompile Include="..\src\google\protobuf\stubs\substitute.cc" />

@@ -215,5 +215,11 @@
     <ClCompile Include="..\src\google\protobuf\io\zero_copy_stream_impl_lite.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\google\protobuf\stubs\atomicops_internals_x86_msvc.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\google\protobuf\stubs\stringprintf.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
