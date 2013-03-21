@@ -50,39 +50,39 @@ DATA_ATTR_T GenDataAttr(DATA_TYPE_T type, bool null_able, int param1, int param2
 const char *DataTypeToStr(DATA_TYPE_T type);
 DATA_TYPE_T StrToDataType(const char *type_str);
 
-static inline bool StrToValue(const char *s, char &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = (char)atoi(s);
+static inline bool StrToValue(const std::string &s, char &v) {
+    if (s.empty()) return false;
+    v = (char)atoi(s.c_str());
     return true;
 }
-static inline bool StrToValue(const char *s, short &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = (short)atoi(s);
+static inline bool StrToValue(const std::string &s, short &v) {
+    if (s.empty()) return false;
+    v = (short)atoi(s.c_str());
     return true;
 }
-static inline bool StrToValue(const char *s, int &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = atoi(s);
+static inline bool StrToValue(const std::string &s, int &v) {
+    if (s.empty()) return false;
+    v = atoi(s.c_str());
     return true;
 }
-static inline bool StrToValue(const char *s, SQLBIGINT &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = _atoi64(s);
+static inline bool StrToValue(const std::string &s, SQLBIGINT &v) {
+    if (s.empty()) return false;
+    v = _atoi64(s.c_str());
     return true;
 }
-static inline bool StrToValue(const char *s, float &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = (float)atof(s);
+static inline bool StrToValue(const std::string &s, float &v) {
+    if (s.empty()) return false;
+    v = (float)atof(s.c_str());
     return true;
 }
-static inline bool StrToValue(const char *s, double &v) {
-    if (s == NULL || *s == '\0') return false;
-    v = atof(s);
+static inline bool StrToValue(const std::string &s, double &v) {
+    if (s.empty()) return false;
+    v = atof(s.c_str());
     return true;
 }
-bool StrToValue(const char *s, SQL_DATE_STRUCT &v);
-bool StrToValue(const char *s, SQL_TIME_STRUCT &v);
-bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v);
+bool StrToValue(const std::string &s, SQL_DATE_STRUCT &v);
+bool StrToValue(const std::string &s, SQL_TIME_STRUCT &v);
+bool StrToValue(const std::string &s, SQL_TIMESTAMP_STRUCT &v);
 
 }// namespace hdb
 

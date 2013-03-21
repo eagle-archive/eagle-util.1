@@ -37,12 +37,12 @@ std::string &TrimStr(std::string &str, const char *whitespace = " \t");
 std::string &ReduceStr(std::string& str, const char *fill= " ", const char *whitespace =" \t");
 void StrToUpper(std::string& str);
 void StrToLower(std::string& str);
-std::wstring StrToWStr(const char *str);
-std::string WStrToStr(const wchar_t *wstr);
+std::wstring StrToWStr(const std::string &str);
+std::string WStrToStr(const std::wstring &wstr);
 void ReplaceCharInStr(std::string& str, char ch1, char ch2);
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 
-void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter);
+void CsvLinePopulate(std::vector<std::string> &record, const std::string &line, char delimiter);
 bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::string &err_str);
 
 long get_time_in_ms();

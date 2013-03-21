@@ -141,11 +141,11 @@ void GetCurTime(SQL_TIME_STRUCT &time) {
 	time.second = stm.tm_sec;
 };
 
-bool StrToValue(const char *s, SQL_DATE_STRUCT &v)
+bool StrToValue(const string &s, SQL_DATE_STRUCT &v)
 {
-    if (s == NULL || *s == '\0') return false;
+    if (s.empty()) return false;
     int year, month, day;
-    if (3 == sscanf(s, "%d-%d-%d", &year, &month, &day)) {
+    if (3 == sscanf(s.c_str(), "%d-%d-%d", &year, &month, &day)) {
         v.year = year;
         v.month = month;
         v.day = day;
@@ -154,11 +154,11 @@ bool StrToValue(const char *s, SQL_DATE_STRUCT &v)
     return false;
 }
 
-bool StrToValue(const char *s, SQL_TIME_STRUCT &v)
+bool StrToValue(const string &s, SQL_TIME_STRUCT &v)
 {
-    if (s == NULL || *s == '\0') return false;
+    if (s.empty()) return false;
     int hour, minute, second;
-    if (3 == sscanf(s, "%d:%d:%d", &hour, &minute, &second)) {
+    if (3 == sscanf(s.c_str(), "%d:%d:%d", &hour, &minute, &second)) {
         v.hour = hour;
         v.minute = minute;
         v.second = second;
@@ -167,11 +167,11 @@ bool StrToValue(const char *s, SQL_TIME_STRUCT &v)
     return false;
 }
 
-bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
+bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
 {
-    if (s == NULL || *s == '\0') return false;
+    if (s.empty()) return false;
     int year, month, day, hour, minute, second, fraction;
-    if (7 == sscanf(s, "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction)) { // for HANA
+    if (7 == sscanf(s.c_str(), "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction)) { // for HANA
         v.year = year;
         v.month = month;
         v.day = day;
@@ -180,7 +180,7 @@ bool StrToValue(const char *s, SQL_TIMESTAMP_STRUCT &v)
         v.second = second;
         v.fraction = fraction;
         return true;
-    } else if (6 == sscanf(s, "%d-%d-%d-%d.%d.%d", &year, &month, &day, &hour, &minute, &second)) { // for DB2
+    } else if (6 == sscanf(s.c_str(), "%d-%d-%d-%d.%d.%d", &year, &month, &day, &hour, &minute, &second)) { // for DB2
         v.year = year;
         v.month = month;
         v.day = day;
@@ -261,7 +261,7 @@ static std::string ws2s(const std::wstring& s)
 }
 #endif
 
-std::wstring StrToWStr(const char *str)
+std::wstring StrToWStr(const std::string &str)
 {
 #ifdef _WIN32
     return s2ws(str);
@@ -270,7 +270,7 @@ std::wstring StrToWStr(const char *str)
 #endif
 }
 
-std::string WStrToStr(const wchar_t *wstr)
+std::string WStrToStr(const std::wstring &wstr)
 {
 #ifdef _WIN32
     return ws2s(wstr);
@@ -352,12 +352,12 @@ void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 }
 #else
 
-void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
+void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
 {
     int linepos = 0;
     bool inquotes = false;
     char c;
-    int linemax = (int)strlen(line);
+    int linemax = (int)line.size();
 
     char curstring[1024];
     int cur_cur = 0;

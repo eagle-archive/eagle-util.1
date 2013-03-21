@@ -108,7 +108,7 @@ SQLRETURN ColRecords::BindAllInColumns(SQLHSTMT hstmt) const
 }
 
 // Add one line of CSV
-bool ColRecords::AddRow(const char *line, char delimiter)
+bool ColRecords::AddRow(const string &line, char delimiter)
 {
     size_t count = this->GetColCount();
     vector<string> strs;
@@ -119,7 +119,7 @@ bool ColRecords::AddRow(const char *line, char delimiter)
     }
 
     for (size_t i = 0; i < count; i++) {
-        if (false == mPtrCols[i]->AddFromStr(strs[i].c_str())) {
+        if (false == mPtrCols[i]->AddFromStr(strs[i])) {
             return false;
         }
     }
@@ -179,7 +179,15 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
     int total = 0;
     for (int i = 0; i < num; i++) {
         if (!GetLine(is_csv, line)) break;
-        if (AddRow(line.c_str(), delimiter)) {
+#if 0
+        // Special handling: replace 0x0 with 0x20 (space)
+        for (int k = (int)line.size() - 1; k >=0; k--) {
+            if (line[k] == '\0') {
+                line[k] = 0x20;
+            }
+        }
+#endif
+        if (AddRow(line, delimiter)) {
             total++;
         } else {
             printf("Warning: cannot parse CSV line: %s\n", line.c_str());

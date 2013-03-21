@@ -47,7 +47,7 @@ public:
     virtual const void *GetStrLenOrIndVec() const = 0;
     virtual void GenerateFakeData(size_t count) = 0;
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
-    virtual bool AddFromStr(const char *str) = 0;
+    virtual bool AddFromStr(const std::string &str) = 0;
     virtual void RemoveAllRows() = 0;
     virtual bool Append(const BaseColumn *pCol) = 0;
 
@@ -223,9 +223,9 @@ public:
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
         return SqlBindInParam(hstmt, ipar, *this);
     };
-    virtual bool AddFromStr(const char *str) {
+    virtual bool AddFromStr(const std::string &str) {
         T value;
-        bool is_null = (*str == '\0');
+        bool is_null = str.empty();
         mStrLenOrIndVec.push_back(is_null ? SQL_NULL_DATA : SQL_NTS);
         if (is_null) {
             memset(&value, 0, sizeof(T));
@@ -282,8 +282,8 @@ public:
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
         return SqlBindInParam(hstmt, ipar, *this);
     };
-    virtual bool AddFromStr(const char *str) {
-        mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
+    virtual bool AddFromStr(const std::string &str) {
+        mStrLenOrIndVec.push_back((NullAble() && str.empty()) ? SQL_NULL_DATA : SQL_NTS);
         size_t len = mDataVec.size();
         mDataVec.resize(len +  mDataAttr.a + 1);
         if (sizeof(T) == 2) {
@@ -295,8 +295,7 @@ public:
 #endif
         } else {
 #ifdef _WIN32
-            strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
-            //strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str, mDataAttr.a);
+            strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str.c_str(), mDataAttr.a);
 #else
             strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
 #endif
@@ -382,8 +381,8 @@ static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const 
 static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_VARCHAR> &col) {return 0;};
 static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col) {return 0;};
 static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col) {return 0;};
-static inline bool StrToValue(const char *s, SQLCHAR &v) {return 0;};
-static inline bool StrToValue(const char *s, SQLWCHAR &v) {return 0;};
+static inline bool StrToValue(const std::string &s, SQLCHAR &v) {return 0;};
+static inline bool StrToValue(const std::string &s, SQLWCHAR &v) {return 0;};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -448,7 +447,7 @@ public:
     bool AddColsFromCreateSql(const char *create_sql);
 
     SQLRETURN BindAllInColumns(SQLHSTMT hstmt) const;
-    bool AddRow(const char *line, char delimiter = ','); // one line of CSV
+    bool AddRow(const std::string &line, char delimiter = ','); // one line of CSV
     int AddRows(std::ifstream &is_csv, int num, char delimiter = ',');
     int AddRows(const ColRecords &records);
     void GenerateFakeData(size_t row_count);
