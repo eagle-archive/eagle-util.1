@@ -39,8 +39,17 @@ void TestWeekPtr()
     assert(sp4.get() == NULL);
 }
 
+#include <boost/atomic.hpp>
+void TestAtomic()
+{
+    boost::atomic<int> a(1);
+    a++;
+    assert(a == 2);
+}
+
 int main()
 {
     TestWeekPtr();
     TestConcurrentQueue();
+    TestAtomic();
 }
