@@ -30,12 +30,15 @@ bool LoadSocketLib()
 int main()
 {
 #ifdef _WIN32
-    LoadSocketLib();
+    if (false == LoadSocketLib()) {
+        return 1;
+    }
 #endif
+    printf("UdpServer started.\n");
 
     SOCKET sockfd;
     int n = 1;
-    struct sockaddr_in servaddr,cliaddr;
+    struct sockaddr_in servaddr, cliaddr;
     int len;
     char mesg[1000];
 
@@ -45,13 +48,19 @@ int main()
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
-    bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr));
+    if (0 != bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr))) {
+        perror("Error: faild to call bind");
+        return 2;
+    }
 
     for (;;)
     {
         len = sizeof(cliaddr);
         recvfrom(sockfd,mesg, 1000, 0, (struct sockaddr *)&cliaddr, &len);
-        printf("Received %ld packages.\n", n++);
+        printf("Received %ld packages from %d.%d.%d.%d:%d\n", n++,
+            (int)cliaddr.sin_addr.S_un.S_un_b.s_b1, (int)cliaddr.sin_addr.S_un.S_un_b.s_b2,
+            (int)cliaddr.sin_addr.S_un.S_un_b.s_b3, (int)cliaddr.sin_addr.S_un.S_un_b.s_b4,
+            (int)cliaddr.sin_port);
     }
     return 0;
 }

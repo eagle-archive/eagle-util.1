@@ -10,9 +10,9 @@
 #include <netinet/in.h>
 #endif
 
-#define IP_ADDR     "221.226.4.245"
+//#define IP_ADDR     "221.226.4.245"
 //#define IP_ADDR     "127.0.0.1"
-//#define IP_ADDR     "114.221.96.190"  // ADSL
+#define IP_ADDR     "192.168.1.200"
 #define PORT        40001
 
 void SleepMs(long ms)
@@ -46,6 +46,7 @@ int main()
 #ifdef _WIN32
     LoadSocketLib();
 #endif
+    printf("UdpClient started.\n");
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
