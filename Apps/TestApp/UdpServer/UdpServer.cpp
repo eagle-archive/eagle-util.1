@@ -48,7 +48,8 @@ int main()
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
-    if (0 != bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr))) {
+    if (-1 == bind(sockfd,(struct sockaddr *)&servaddr,sizeof(servaddr))) {
+        closesocket(sockfd);
         perror("Error: faild to call bind");
         return 2;
     }
