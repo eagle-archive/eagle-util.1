@@ -10,10 +10,10 @@
 #include <netinet/in.h>
 #endif
 
-#define SERVER_IP_ADDR      "221.226.4.246"
-#define CLIENT_IP_ADDR      "117.60.58.65"
+#define SERVER_IP_ADDR      "192.168.1.200"
+#define CLIENT_IP_ADDR      "192.168.1.200"
 
-#define PORT        40001
+#define PORT        50001
 
 void SleepMs(long ms)
 {
@@ -36,11 +36,26 @@ bool LoadSocketLib()
 }
 #endif
 
+bool GetSampleData(std::vector<unsigned char> &data)
+{
+    data.clear();
+    char buff[1024 * 2];
+    FILE *fp = fopen("proto-msgs.dat", "rb");
+    if (fp) {
+        int n = fread(buff, 1, sizeof(buff), fp);
+        fclose(fp);
+        if (n > 0) {
+            data.resize(n);
+            memcpy(data.data(), buff, n);
+        }
+    }
+    return !data.empty();
+}
+
 int main()
 {
     SOCKET sockfd;
     struct sockaddr_in server_addr, sa;
-    char sendline[1000];
     long n = 1;
 
 #ifdef _WIN32
@@ -68,18 +83,23 @@ int main()
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP_ADDR);
     server_addr.sin_port = htons(PORT);
 
+    std::vector<unsigned char> data;
+    GetSampleData(data);
+
     while (true)
     {
-        sprintf(sendline, "This is a testing UDP package. Package #: %ld", n);
-        int sent = sendto(sockfd, sendline, strlen(sendline) ,0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+        int sent = sendto(sockfd, (const char *)data.data(), data.size(), 0,
+            (struct sockaddr *)&server_addr, sizeof(server_addr));
         if (sent < 0) {
             printf("send failed\n");
             closesocket(sockfd);
             exit(2);
         } else {
-            printf("Package #%ld sent out.\n", n);
+            if (n % 100 == 0) {
+                printf("Package #%ld sent out.\n", n);
+            }
         }
-        SleepMs(800);
+        SleepMs(20);
         n++;
     }
 }
