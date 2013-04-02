@@ -1,4 +1,3 @@
-
 #include <assert.h>
 #include "../hdb_utils.h"
 
@@ -166,8 +165,8 @@ void Test_Inserts(const char *dsn, const char *user, const char *passwd)
     OdbcConn *pConn = Test_CreateConn(dsn, user, passwd);
 
     static const struct {
-        char *create_table;
-        char *csv_lines;
+        const char *create_table;
+        const char *csv_lines;
     } test_params[] = {
         {
             "CREATE COLUMN TABLE I078212.TEST_DECIMAL (NAME1 DEC, NAME2 SMALLDECimal, NAME3 DEC (4,10), NAME4 DECIMAL (4,-6), NAME5 DECIMAL(12, 0));",
@@ -175,10 +174,10 @@ void Test_Inserts(const char *dsn, const char *user, const char *passwd)
         },
         {
             "CREATE COLUMN TABLE I078212.TEST_CHAR (NAME1 VARCHAR(5), NAME2 VARCHAR(10) NOT NULL , NAME3 NVARCHAR(6), NAME4 CHAR(8) CS_FIXEDSTRING, NAME5 NCHAR(3), NAME6 ALPHANUM(7) CS_ALPHANUM)",
-            "\"A7613\",\"A498550370\",\"N23838\",\"A6042970\",\"N78\",A368724\n"\
+            "A7613,A498550370,N23838,A6042970,N78,A368724\n"\
             "A7613,A498550370,N23838,A6042970,N78,A368724\n"\
             ",,,A6042970,N78,A368724\n"\
-            "\"1\",\"2\",\"ºº\",\"4\",\"×Ö\",Alpha\n"\
+            "1,\xA1\xBF\xE4,3,4,555,Alpha\n"\
             "\"A8394\",\"A559617907\",\"N86199\",\"A5988647\",\"N05\",A427991",
         },
         {
@@ -194,6 +193,7 @@ void Test_Inserts(const char *dsn, const char *user, const char *passwd)
             "-0, 0, -1, 0, 0\n"\
             "7613146.6125675226,49855,2383800.5367900631,6.043e+06,7822808.7517014062",
         },
+#if 0
         {
             "CREATE COLUMN TABLE \"I078212\".\"EXT_TAXI_HEB\" ("\
             "\"GPSDATA_ID\" BIGINT CS_FIXED, "\
@@ -229,6 +229,7 @@ void Test_Inserts(const char *dsn, const char *user, const char *passwd)
             "7320718,\"0300016955\",\"2012-01-23 10:15:09.0000000\",34816,0,126.63844,45.495710000000003,0,\"2012-01-23 10:15:24.0000000\",,,18,0,0,0,0,0,0,2380484,999871,-1,0,41,1,23,10,\"2013-02-02 04:12:13.3920000\"\n"\
             "7326314,\"0300017583\",\"2012-01-23 10:14:46.0000000\",34816,0,126.65768,45.687130000000003,0,\"2012-01-23 10:15:44.0000000\",,,13,0,0,0,0,0,0,2380633,997747,-1,0,41,1,23,10,\"2013-02-02 04:12:33.4000000\"",
         },
+#endif
     };
 
     for (int i = 0; i < sizeof(test_params)/sizeof(*test_params); i++) {
@@ -285,8 +286,8 @@ bool TestHdb_Main(const char *dsn, const char *user, const char *passwd)
     Test_Types();
     Test_Cols();
     Test_Records();
-    //Test_Inserts(dsn, user, passwd); // Need connect to server
-    Test_Fetches(dsn, user, passwd, "select * from I078212.EXT_TAXI_HEB"); // Need connect to server
+    Test_Inserts(dsn, user, passwd); // Need connect to server
+    //Test_Fetches(dsn, user, passwd, "select * from I078212.EXT_TAXI_HEB"); // Need connect to server
 
     return true;
 };

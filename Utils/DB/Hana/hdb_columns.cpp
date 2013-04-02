@@ -12,6 +12,7 @@ using namespace std;
 namespace hdb {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// class ColRecords
 
 bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
 {

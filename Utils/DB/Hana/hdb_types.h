@@ -1,6 +1,8 @@
 #ifndef _HDB_TYPES_H
 #define _HDB_TYPES_H
 
+#include <stdlib.h>
+
 namespace hdb {
 
 typedef enum {
@@ -67,7 +69,11 @@ static inline bool StrToValue(const std::string &s, int &v) {
 }
 static inline bool StrToValue(const std::string &s, SQLBIGINT &v) {
     if (s.empty()) return false;
+#ifdef _WIN32
     v = _atoi64(s.c_str());
+#else
+    v = atoll(s.c_str());
+#endif
     return true;
 }
 static inline bool StrToValue(const std::string &s, float &v) {

@@ -1,14 +1,19 @@
 #ifndef _HDB_COLUMNS_H
 #define _HDB_COLUMNS_H
 
+#include <stdlib.h>
 #include <memory.h>
 #include <vector>
+#include <string>
 #include <assert.h>
 #ifdef _WIN32
 #include <windows.h> // required by sqlext.h for WIN32
+#else
+#include <unistd.h>
 #endif
 #include <sqlext.h>
 #include <time.h>
+#include <wchar.h>
 #include "hdb_types.h"
 #include "hdb_odbc.h"
 
@@ -19,7 +24,7 @@ class BaseColumn {
 public:
     BaseColumn(const char *col_name, const DATA_ATTR_T &attr) {
         SetColName(col_name);
-        memcpy(&mDataAttr, &attr, sizeof(DATA_ATTR_T));
+        mDataAttr = attr;
     };
     virtual ~BaseColumn() {};
 
@@ -55,6 +60,44 @@ protected:
     DATA_ATTR_T mDataAttr;
     std::string mColName;
 };
+
+// Forward template class declarations
+template<class T, DATA_TYPE_T data_type> class ColT;
+template<class T, DATA_TYPE_T data_type> class CharColT;
+
+typedef ColT<char, T_TINYINT> TinyIntCol;
+typedef ColT<short, T_SMALLINT> SmallIntCol;
+typedef ColT<int, T_INTEGER> IntCol;
+typedef ColT<SQLBIGINT, T_BIGINT> BigIntCol;
+typedef ColT<float, T_REAL> RealCol;
+typedef ColT<double, T_DOUBLE> DoubleCol;
+typedef ColT<double, T_FLOAT> FloatCol;
+typedef ColT<SQL_DATE_STRUCT, T_DATE> DateCol;
+typedef ColT<SQL_TIME_STRUCT, T_TIME> TimeCol;
+typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
+// T_SECONDDATE ?
+typedef CharColT<SQLWCHAR, T_CHAR> CharCol; // To support unicode, CHAR and VARCHAR are mapped to SQLWCHAR instead of SQLCHAR
+typedef CharColT<SQLWCHAR, T_NCHAR > NCharCol;
+typedef CharColT<SQLWCHAR, T_VARCHAR> VarCharCol;
+typedef CharColT<SQLWCHAR, T_NVARCHAR> NVarCharCol;
+typedef CharColT<SQLCHAR, T_ALPHANUM> AlphaNumCol;
+typedef ColT<double, T_DECIMAL> DecimalCol;
+typedef ColT<double, T_SMALLDECIMAL> SmallDecimalCol;
+typedef ColT<double, T_DECIMAL_PS> DecimalPsCol; // NOTE: map double to decimal may not be precise!
+// T_BINARY ?
+// T_VARBINARY ?
+// T_BLOB ?
+// T_TEXT ?
+
+// Dummy functions for CharColT derived classes, do not use them!
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_CHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_VARCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col) {return 0;};
+static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col) {return 0;};
+static inline bool StrToValue(const std::string &s, SQLCHAR &v) {return 0;};
+static inline bool StrToValue(const std::string &s, SQLWCHAR &v) {return 0;};
+
 
 template<class T, DATA_TYPE_T data_type>
 class ColT : public BaseColumn
@@ -276,18 +319,18 @@ public:
     };
     virtual ~CharColT() {};
     virtual void Reserve(size_t count) {
-        mDataVec.reserve(count * (mDataAttr.a + 1));
-        mStrLenOrIndVec.reserve(count);
+    	ColT<T, data_type>::mDataVec.reserve(count * (ColT<T, data_type>::mDataAttr.a + 1));
+    	ColT<T, data_type>::mStrLenOrIndVec.reserve(count);
     };
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const {
         return SqlBindInParam(hstmt, ipar, *this);
     };
     virtual bool AddFromStr(const std::string &str) {
-        mStrLenOrIndVec.push_back((NullAble() && str.empty()) ? SQL_NULL_DATA : SQL_NTS);
-        size_t len = mDataVec.size();
-        mDataVec.resize(len +  mDataAttr.a + 1);
+    	ColT<T, data_type>::mStrLenOrIndVec.push_back((NullAble() && str.empty()) ? SQL_NULL_DATA : SQL_NTS);
+        size_t len = ColT<T, data_type>::mDataVec.size();
+        ColT<T, data_type>::mDataVec.resize(len +  ColT<T, data_type>::mDataAttr.a + 1);
         if (sizeof(T) == 2) {
-            wstring wstr = StrToWStr(str);
+            std::wstring wstr = StrToWStr(str);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
@@ -297,7 +340,8 @@ public:
 #ifdef _WIN32
             strncpy_s((char *)mDataVec.data() + len, mDataAttr.a + 1, str.c_str(), mDataAttr.a);
 #else
-            strncpy((char *)mDataVec.data() + len, str, mDataAttr.a);
+            strncpy((char *)ColT<T, data_type>::mDataVec.data() + len,
+            		str.c_str(), ColT<T, data_type>::mDataAttr.a);
 #endif
         }
         return true;
@@ -306,26 +350,26 @@ public:
         RemoveAllRows();
         Reserve(count);
         if (sizeof(T) == 1) {
-            string buff;
-            buff.resize(mDataAttr.a + 1);
+            std::string buff;
+            buff.resize(ColT<T, data_type>::mDataAttr.a + 1);
             for (size_t i = 0; i < count; i++) {
                 long t = (long) ((double) rand() / RAND_MAX * 999999999);
 #ifdef _WIN32
                 _snprintf_s((char*)buff.data(), buff.size(), mDataAttr.a, "A%09ld", t);
 #else
-                snprintf((char*)buff.data(), mDataAttr.a, "A%09ld", t);
+                snprintf((char*)buff.data(), ColT<T, data_type>::mDataAttr.a, "A%09ld", t);
 #endif
                 AddFromStr((const char *)buff.c_str());
             }
         } else if (sizeof(T) == 2) {
-            wstring buff;
-            buff.resize(mDataAttr.a + 1);
+            std::wstring buff;
+            buff.resize(ColT<T, data_type>::mDataAttr.a + 1);
             for (size_t i = 0; i < count; i++) {
-                long t = (long) ((double) rand() / RAND_MAX * 999999999);
 #ifdef _WIN32
+                long t = (long) ((double) rand() / RAND_MAX * 999999999);
                 _snwprintf_s((SQLWCHAR*)buff.data(), buff.size(), mDataAttr.a, L"N%09ld", t);
 #else
-                UnImplemented();
+                UnImplemented(NULL);
 #endif
                 PushBack((T*)buff.c_str());
             }
@@ -336,53 +380,20 @@ public:
 
 public:
     void PushBack(const T *str) {
-        if (T_NCHAR == mDataAttr.type || T_NVARCHAR == mDataAttr.type) {
-            mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
-            size_t len = mDataVec.size();
-            mDataVec.resize(len +  mDataAttr.a + 1);
+        if (T_NCHAR == ColT<T, data_type>::mDataAttr.type || T_NVARCHAR == ColT<T, data_type>::mDataAttr.type) {
+        	ColT<T, data_type>::mStrLenOrIndVec.push_back((NullAble() && *str == '\0') ? SQL_NULL_DATA : SQL_NTS);
+            size_t len = ColT<T, data_type>::mDataVec.size();
+            ColT<T, data_type>::mDataVec.resize(len +  ColT<T, data_type>::mDataAttr.a + 1);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)str, mDataAttr.a);
 #else
-            UnImplemented();
+            UnImplemented(NULL);
 #endif
         } else {
             AddFromStr((const char *)str);
         }
     };
 };
-
-typedef ColT<char, T_TINYINT> TinyIntCol;
-typedef ColT<short, T_SMALLINT> SmallIntCol;
-typedef ColT<int, T_INTEGER> IntCol;
-typedef ColT<SQLBIGINT, T_BIGINT> BigIntCol;
-typedef ColT<float, T_REAL> RealCol;
-typedef ColT<double, T_DOUBLE> DoubleCol;
-typedef ColT<double, T_FLOAT> FloatCol;
-typedef ColT<SQL_DATE_STRUCT, T_DATE> DateCol;
-typedef ColT<SQL_TIME_STRUCT, T_TIME> TimeCol;
-typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
-// T_SECONDDATE ?
-typedef CharColT<SQLWCHAR, T_CHAR> CharCol; // To support unicode, CHAR and VARCHAR are mapped to SQLWCHAR instead of SQLCHAR
-typedef CharColT<SQLWCHAR, T_NCHAR > NCharCol;
-typedef CharColT<SQLWCHAR, T_VARCHAR> VarCharCol;
-typedef CharColT<SQLWCHAR, T_NVARCHAR> NVarCharCol;
-typedef CharColT<SQLCHAR, T_ALPHANUM> AlphaNumCol;
-typedef ColT<double, T_DECIMAL> DecimalCol;
-typedef ColT<double, T_SMALLDECIMAL> SmallDecimalCol;
-typedef ColT<double, T_DECIMAL_PS> DecimalPsCol; // NOTE: map double to decimal may not be precise!
-// T_BINARY ?
-// T_VARBINARY ?
-// T_BLOB ?
-// T_TEXT ?
-
-// Dummy functions for CharColT derived classes, do not use them!
-static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_CHAR> &col) {return 0;};
-static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NCHAR> &col) {return 0;};
-static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_VARCHAR> &col) {return 0;};
-static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLWCHAR, T_NVARCHAR> &col) {return 0;};
-static inline SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQLCHAR, T_ALPHANUM> &col) {return 0;};
-static inline bool StrToValue(const std::string &s, SQLCHAR &v) {return 0;};
-static inline bool StrToValue(const std::string &s, SQLWCHAR &v) {return 0;};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

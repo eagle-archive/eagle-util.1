@@ -3,6 +3,9 @@
 #endif
 
 #include <algorithm>
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 #include "hdb_utils.h"
 
 using namespace hdb;
@@ -10,6 +13,12 @@ using namespace std;
 
 #ifndef _COUNOF
 #define _COUNOF(a)  sizeof(a)/sizeof(*a)
+#endif
+
+#ifdef _WIN32
+#define STRICMP _stricmp
+#else
+#define STRICMP strcasecmp
 #endif
 
 namespace hdb {
@@ -68,7 +77,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
     }
 
     static const struct {
-        char *type_str;
+        const char *type_str;
         DATA_TYPE_T type;
     } MORE_TYPES[] = {
         {"DEC",         T_DECIMAL},
@@ -76,14 +85,14 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"SECONDTIME",  T_TIME},
         {"LONGDATE",    T_TIMESTAMP},
     };
-    for (int i = 0; i < _COUNOF(MORE_TYPES); i++) {
+    for (int i = 0; i < (int)_COUNOF(MORE_TYPES); i++) {
         if (typestr == MORE_TYPES[i].type_str) {
             return MORE_TYPES[i].type;
         }
     }
 
     static const struct {
-        char *type_str_sub;
+        const char *type_str_sub;
         DATA_TYPE_T type;
     } MORE_TYPES_BEGIN_WITH[] = {
         {"FLOAT(",      T_FLOAT},
@@ -266,7 +275,7 @@ std::wstring StrToWStr(const std::string &str)
 #ifdef _WIN32
     return s2ws(str);
 #else
-    return wstring(str, str + strlen(str));
+    return std::wstring(str.begin(), str.end());
 #endif
 }
 
@@ -275,7 +284,7 @@ std::string WStrToStr(const std::wstring &wstr)
 #ifdef _WIN32
     return ws2s(wstr);
 #else
-    return string(wstr, wstr + wstrlen(wstr));
+    return std::string(wstr.begin(), wstr.end());
 #endif
 }
 
@@ -512,7 +521,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
             err_str = "Too few items in \"" + create + '\"';
             return false;
         }
-        if (sub_count > 3 && !_stricmp(subs[1].c_str(), "COLUMN")) {
+        if (sub_count > 3 && !STRICMP(subs[1].c_str(), "COLUMN")) {
             parsed_table.column = true;
         }
 
@@ -628,14 +637,14 @@ long get_time_in_ms() {
 std::string FormatTimeStr(unsigned long uTimeMs)
 {
     char buff[64];
-    sprintf(buff, "%2d:%02d:%03d",
+    sprintf(buff, "%2ld:%02ld:%03ld",
         (uTimeMs/60000), (uTimeMs/1000) % 60, uTimeMs % 1000);
     return buff;
 }
 
-static unsigned int g_dwStart = ::GetTickCount();
+static unsigned long g_dwStart = get_time_in_ms();
 std::string ElapsedTimeStr() {
-    return FormatTimeStr(::GetTickCount() - g_dwStart);
+    return FormatTimeStr(get_time_in_ms() - g_dwStart);
 }
 
 } // end of namespace hdb

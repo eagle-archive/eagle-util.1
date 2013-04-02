@@ -13,7 +13,7 @@ int main()
         return 10;
     }
 
-#if 0
+#if 1
     bool TestHdb_Main(const char *dsn, const char *user, const char *passwd);
     TestHdb_Main(GLOBALS.DSN.c_str(), GLOBALS.USER.c_str(), GLOBALS.PASSWORD.c_str());
 #else
