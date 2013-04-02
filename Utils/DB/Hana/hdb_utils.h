@@ -37,8 +37,8 @@ std::string &TrimStr(std::string &str, const char *whitespace = " \t");
 std::string &ReduceStr(std::string& str, const char *fill= " ", const char *whitespace =" \t");
 void StrToUpper(std::string& str);
 void StrToLower(std::string& str);
-std::wstring StrToWStr(const std::string &str);
-std::string WStrToStr(const std::wstring &wstr);
+void StrToWStr(const std::string &str, string16 &wstr);
+void WStrToStr(const string16 &wstr, std::string &str);
 void ReplaceCharInStr(std::string& str, char ch1, char ch2);
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 

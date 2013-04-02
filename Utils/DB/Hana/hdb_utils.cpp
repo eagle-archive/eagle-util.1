@@ -249,42 +249,42 @@ void StrToLower(std::string& str)
 }
 
 #ifdef _WIN32
-static std::wstring s2ws(const std::string& s)
+static void s2ws(const std::string& s, string16 &ws)
 {
     int len;
     int slength = (int)s.length() + 1;
     len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
-    std::wstring r(len, L'\0');
-    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, &r[0], len);
-    return r;
+    ws.resize(len, 0);
+    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, (LPWSTR)&ws[0], len);
 }
 
-static std::string ws2s(const std::wstring& s)
+static void ws2s(const string16& ws, std::string &r)
 {
     int len;
-    int slength = (int)s.length() + 1;
-    len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0); 
-    std::string r(len, '\0');
-    WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, &r[0], len, 0, 0); 
-    return r;
+    int slength = (int)ws.length() + 1;
+    len = WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.c_str(), slength, 0, 0, 0, 0); 
+    r.resize(len, 0);
+    WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.c_str(), slength, &r[0], len, 0, 0); 
 }
 #endif
 
-std::wstring StrToWStr(const std::string &str)
+void StrToWStr(const std::string &str, string16 &wstr)
 {
 #ifdef _WIN32
-    return s2ws(str);
+    s2ws(str, wstr);
 #else
-    return std::wstring(str.begin(), str.end());
+    wstr.clear();
+    //utf8::utf8to16(str.begin(), str.begin() + str.length(), back_inserter(wstr));
 #endif
 }
 
-std::string WStrToStr(const std::wstring &wstr)
+void WStrToStr(const string16 &wstr, std::string &str)
 {
 #ifdef _WIN32
-    return ws2s(wstr);
+    ws2s(wstr, str);
 #else
-    return std::string(wstr.begin(), wstr.end());
+    str.clear();
+    //utf8::utf16to8(wstr.begin(), wstr.begin() + wstr.length(), back_inserter(str));
 #endif
 }
 

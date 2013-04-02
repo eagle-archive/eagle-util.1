@@ -279,10 +279,20 @@ void Test_Fetches(const char *dsn, const char *user, const char *passwd, const c
     pConn = NULL;
 }
 
+void Test_StrUtil()
+{
+    std::string str;
+    string16 wstr(3, 0);
+    wstr[0] = L'жа';
+    wstr[1] = L'Йњ';
+    WStrToStr(wstr, str);
+    StrToWStr(string("\xA1\xBF\xE4"), wstr);
+}
+
 bool TestHdb_Main(const char *dsn, const char *user, const char *passwd)
 {
     //Test_CsvParse();
-
+    Test_StrUtil();
     Test_Types();
     Test_Cols();
     Test_Records();

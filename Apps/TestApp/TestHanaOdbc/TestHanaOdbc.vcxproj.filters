@@ -15,6 +15,9 @@
     <Filter Include="HDB">
       <UniqueIdentifier>{dba46fbb-0c9f-4268-9483-03b796e11083}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UTF">
+      <UniqueIdentifier>{358199f6-93d7-458c-b26c-4a1aa7404a74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\insert_sim_utils.h">

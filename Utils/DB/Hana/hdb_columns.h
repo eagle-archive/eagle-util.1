@@ -19,6 +19,8 @@
 
 namespace hdb {
 
+typedef std::basic_string<unsigned short> string16;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class BaseColumn {
 public:
@@ -330,7 +332,8 @@ public:
         size_t len = ColT<T, data_type>::mDataVec.size();
         ColT<T, data_type>::mDataVec.resize(len +  ColT<T, data_type>::mDataAttr.a + 1);
         if (sizeof(T) == 2) {
-            std::wstring wstr = StrToWStr(str);
+            string16 wstr;
+            StrToWStr(str, wstr);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
