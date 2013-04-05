@@ -100,6 +100,13 @@ SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIMES
         0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
 }
 
+SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<SQL_TIMESTAMP_STRUCT, T_SECONDDATE> &col)
+{
+    SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;
+    return SQLBindParameter(hstmt, ipar, SQL_PARAM_INPUT, SQL_C_TYPE_TIMESTAMP, SQL_TYPE_TIMESTAMP,
+        0, 0, (SQLPOINTER)col.GetData(), 0, ind_vec);
+}
+
 SQLRETURN SqlBindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar, const ColT<double, T_SMALLDECIMAL> &col)
 {
     SQLLEN *ind_vec = col.NullAble() ? (SQLLEN *)col.GetStrLenOrIndVec() : NULL;

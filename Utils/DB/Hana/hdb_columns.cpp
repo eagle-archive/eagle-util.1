@@ -51,7 +51,7 @@ bool ColRecords::AddCol(const char *col_name, const DATA_ATTR_T &attr)
         pCol = new TimeStampCol(col_name, attr.null_able);
         break;
     case T_SECONDDATE:
-        assert(false);
+        pCol = new SecondDateCol(col_name, attr.null_able);
         break;
     case T_CHAR:
         pCol = new CharCol(col_name, attr.a, attr.null_able);

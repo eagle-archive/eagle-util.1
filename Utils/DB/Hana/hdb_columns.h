@@ -77,7 +77,7 @@ typedef ColT<double, T_FLOAT> FloatCol;
 typedef ColT<SQL_DATE_STRUCT, T_DATE> DateCol;
 typedef ColT<SQL_TIME_STRUCT, T_TIME> TimeCol;
 typedef ColT<SQL_TIMESTAMP_STRUCT, T_TIMESTAMP> TimeStampCol;
-// T_SECONDDATE ?
+typedef ColT<SQL_TIMESTAMP_STRUCT, T_SECONDDATE> SecondDateCol;
 typedef CharColT<SQLWCHAR, T_CHAR> CharCol; // To support unicode, CHAR and VARCHAR are mapped to SQLWCHAR instead of SQLCHAR
 typedef CharColT<SQLWCHAR, T_NCHAR > NCharCol;
 typedef CharColT<SQLWCHAR, T_VARCHAR> VarCharCol;
@@ -332,12 +332,13 @@ public:
         size_t len = ColT<T, data_type>::mDataVec.size();
         ColT<T, data_type>::mDataVec.resize(len +  ColT<T, data_type>::mDataAttr.a + 1);
         if (sizeof(T) == 2) {
-            string16 wstr;
-            StrToWStr(str, wstr);
+            string16 wstr = StrToWStr(str);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
-            UnImplemented(NULL);
+            int copy_len = (wstr.length() + 1) < (ColT<T, data_type>::mDataAttr.a + 1) ?
+            		wstr.length() + 1 : ColT<T, data_type>::mDataAttr.a + 1;
+            memcpy((SQLWCHAR *)ColT<T, data_type>::mDataVec.data() + len, (SQLWCHAR *)wstr.c_str(), copy_len * 2);
 #endif
         } else {
 #ifdef _WIN32
