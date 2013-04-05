@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #endif
 
-#define SERVER_IP_ADDR      "192.168.1.200"
+#define SERVER_IP_ADDR      "192.168.130.129"
 #define CLIENT_IP_ADDR      "192.168.1.200"
 
 #define PORT        50001
@@ -65,6 +65,7 @@ int main()
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
+#if 0
     // Bind the socket to a specified IP so that it only send the package via this network card
     // Does this work on Linux? If not, try setsockopt() with SO_BINDTODEVICE parameter.
     memset(&sa, 0, sizeof(struct sockaddr_in));
@@ -77,6 +78,7 @@ int main()
         closesocket(sockfd);
         exit(1);
     }
+#endif
 
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;

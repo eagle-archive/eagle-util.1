@@ -7,8 +7,6 @@
 #include "HotSquare.h"
 #include "SquareManager.h"
 
-#define DMS_TO_DEGREE(d,m,s,ms)    (d + (m)/60.0 + ((s) + (ms)/1000.0)/3600.0)
-
 using namespace std;
 
 

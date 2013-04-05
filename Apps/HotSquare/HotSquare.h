@@ -43,6 +43,8 @@ extern double SQUARE_ZOOM_LEVEL;
 #define CPP11_SUPPORT
 #endif
 
+#define DMS_TO_DEGREE(d,m,s,ms)    (d + (m)/60.0 + ((s) + (ms)/1000.0)/3600.0)
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::string FormatTimeStr(unsigned long uTimeMs);
