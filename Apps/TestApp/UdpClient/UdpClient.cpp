@@ -14,7 +14,7 @@
 #define SERVER_IP_ADDR      "192.168.1.200"
 //#define CLIENT_IP_ADDR      "192.168.1.200"
 
-#define PORT        40001
+#define PORT        50001
 
 void SleepMs(long ms)
 {
