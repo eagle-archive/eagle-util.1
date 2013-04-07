@@ -10,10 +10,11 @@
 #include <netinet/in.h>
 #endif
 
-#define SERVER_IP_ADDR      "192.168.130.129"
-#define CLIENT_IP_ADDR      "192.168.1.200"
+//#define SERVER_IP_ADDR      "192.168.130.129"
+#define SERVER_IP_ADDR      "192.168.1.200"
+//#define CLIENT_IP_ADDR      "192.168.1.200"
 
-#define PORT        50001
+#define PORT        40001
 
 void SleepMs(long ms)
 {
@@ -55,7 +56,7 @@ bool GetSampleData(std::vector<unsigned char> &data)
 int main()
 {
     SOCKET sockfd;
-    struct sockaddr_in server_addr, sa;
+    struct sockaddr_in server_addr;
     long n = 1;
 
 #ifdef _WIN32
@@ -65,18 +66,21 @@ int main()
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-#if 0
-    // Bind the socket to a specified IP so that it only send the package via this network card
-    // Does this work on Linux? If not, try setsockopt() with SO_BINDTODEVICE parameter.
-    memset(&sa, 0, sizeof(struct sockaddr_in));
-    sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = inet_addr(CLIENT_IP_ADDR);
-    sa.sin_port = 0; // Just specify the IP address, and leave the port open (i.e. 0), so that the system can still chose one.
-    if (bind(sockfd, (struct sockaddr *)&sa, sizeof(struct sockaddr_in)) == -1)
+#ifdef CLIENT_IP_ADDR
     {
-        printf("Bind to Port Number %d ,IP address %s failed\n", PORT, CLIENT_IP_ADDR);
-        closesocket(sockfd);
-        exit(1);
+        // Bind the socket to a specified IP so that it only send the package via this network card
+        // Does this work on Linux? If not, try setsockopt() with SO_BINDTODEVICE parameter.
+        struct sockaddr_in sa;
+        memset(&sa, 0, sizeof(struct sockaddr_in));
+        sa.sin_family = AF_INET;
+        sa.sin_addr.s_addr = inet_addr(CLIENT_IP_ADDR);
+        sa.sin_port = 0; // Just specify the IP address, and leave the port open (i.e. 0), so that the system can still chose one.
+        if (bind(sockfd, (struct sockaddr *)&sa, sizeof(struct sockaddr_in)) == -1)
+        {
+            printf("Bind to Port Number %d ,IP address %s failed\n", PORT, CLIENT_IP_ADDR);
+            closesocket(sockfd);
+            exit(1);
+        }
     }
 #endif
 
