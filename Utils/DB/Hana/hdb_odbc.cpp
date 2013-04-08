@@ -305,8 +305,8 @@ bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
             if (SQL_SUCCEEDED(rc)) {
                 ColumnName[sizeof(ColumnName)-1] = '\0';
                 DATA_ATTR_T attr;
-                hdb::UnImplemented("Get attr from SQLDescribeCol"); // TODO:
-                records.AddCol((const char *)ColumnName, attr);
+                //hdb::UnImplemented("Get attr from SQLDescribeCol"); // TODO:
+                //records.AddCol((const char *)ColumnName, attr);
             } else {
                 break;
             }
@@ -329,7 +329,7 @@ bool FetchExecutor::ExecuteFetchInParts(OnPartialRecordsReady fun, void *pUser, 
 {
     ColRecords partials;
 
-    hdb::UnImplemented("FetchExecutor::ExecuteFetchInParts");
+    //hdb::UnImplemented("FetchExecutor::ExecuteFetchInParts");
     return true;
 }
 
