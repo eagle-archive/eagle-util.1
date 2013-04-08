@@ -10,11 +10,17 @@
 #include <netinet/in.h>
 #endif
 
-//#define SERVER_IP_ADDR      "192.168.130.129"
-#define SERVER_IP_ADDR      "192.168.1.200"
+#define SERVER_IP_ADDR      "192.168.2.133"
+//#define SERVER_IP_ADDR      "192.168.1.200"
+
 //#define CLIENT_IP_ADDR      "192.168.1.200"
 
-#define PORT        50001
+#define PORT        40001
+
+using namespace std;
+
+typedef vector<unsigned char> PACKAGE;
+vector<PACKAGE> gKmPackages;
 
 void SleepMs(long ms)
 {
@@ -53,6 +59,31 @@ bool GetSampleData(std::vector<unsigned char> &data)
     return !data.empty();
 }
 
+bool GetKmSampleData(vector<PACKAGE> &kmPackages)
+{
+    PACKAGE pack;
+    kmPackages.clear();
+
+    for (int i=2; i<=7440; i++) {
+        char name[128];
+        sprintf(name, "UdpCapture\\pack-%06d.dat", i);
+        FILE *fp = fopen(name, "rb");
+        if (fp) {
+            char buff[2048];
+            int size = fread(buff, 1, sizeof(buff), fp);
+            fclose(fp);
+
+            if (size > 0) {
+                pack.resize(size);
+                memcpy(pack.data(), buff, size);
+
+                kmPackages.push_back(pack);
+            }
+        }
+    }
+    return !gKmPackages.empty();
+}
+
 int main()
 {
     SOCKET sockfd;
@@ -89,13 +120,23 @@ int main()
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP_ADDR);
     server_addr.sin_port = htons(PORT);
 
-    std::vector<unsigned char> data;
-    GetSampleData(data);
+    std::vector<unsigned char> dataSingleBuff;
+    GetSampleData(dataSingleBuff);
 
+    printf("Preloading KunMing captured packages ...\n");
+    GetKmSampleData(gKmPackages);
+    if (gKmPackages.size() > 0) {
+        printf("Preloading KunMing captured packages - done\n");
+    } else {
+        printf("Preloading KunMing captured packages - not found\n");
+    }
+
+    int nPackIndex = 0;
     while (true)
     {
-        int sent = sendto(sockfd, (const char *)data.data(), data.size(), 0,
-            (struct sockaddr *)&server_addr, sizeof(server_addr));
+        PACKAGE &data = gKmPackages[nPackIndex];
+
+        int sent = sendto(sockfd, (const char *)data.data(), data.size(), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
         if (sent < 0) {
             printf("send failed\n");
             closesocket(sockfd);
@@ -105,7 +146,8 @@ int main()
                 printf("Package #%ld sent out.\n", n);
             }
         }
-        SleepMs(20);
+        SleepMs(30);
         n++;
+        nPackIndex = (nPackIndex + 1) % gKmPackages.size();
     }
 }
