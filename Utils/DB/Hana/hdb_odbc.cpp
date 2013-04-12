@@ -292,7 +292,7 @@ bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
         records.ClearAllCols();
 
         SQLUSMALLINT    ColumnNumber = 1;
-        SQLCHAR         ColumnName[100];
+        SQLCHAR         ColumnName[512];
         SQLSMALLINT     NameLength;
         SQLSMALLINT     DataType;
         SQLULEN         ColumnSize;
@@ -313,15 +313,14 @@ bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
             ColumnNumber++;
         }
 
-        if (records.GetRowCount() > 0) {
-            rc = SQL_SUCCESS;
-        }
+        rc = SQL_SUCCESS;
     }
 
-
-    records.ClearAllRows();
-    bool ok = ExecuteFetchInParts(PartialRecordsReady, &records, 5000);
-    return ok;
+    if (SQL_SUCCEEDED(rc)) {
+        records.ClearAllRows();
+        ExecuteFetchInParts(PartialRecordsReady, &records, 5000);
+    }
+    return SQL_SUCCEEDED(rc);
 }
 
 // See http://msdn.microsoft.com/en-us/library/windows/desktop/ms713541(v=vs.85).aspx

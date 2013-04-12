@@ -85,7 +85,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"SECONDTIME",  T_TIME},
         {"LONGDATE",    T_TIMESTAMP},
     };
-    for (int i = 0; i < (int)_COUNOF(MORE_TYPES); i++) {
+    for (unsigned int i = 0; i < _COUNOF(MORE_TYPES); i++) {
         if (typestr == MORE_TYPES[i].type_str) {
             return MORE_TYPES[i].type;
         }
@@ -104,7 +104,7 @@ DATA_TYPE_T StrToDataType(const char *type_str)
         {"NCHAR(",      T_NCHAR},
         {"ALPHANUM(",   T_ALPHANUM},
     };
-    for (int i = 0; i < _COUNOF(MORE_TYPES_BEGIN_WITH); i++) {
+    for (unsigned int i = 0; i < _COUNOF(MORE_TYPES_BEGIN_WITH); i++) {
         if (typestr.find(MORE_TYPES_BEGIN_WITH[i].type_str_sub) == 0) {
             return MORE_TYPES_BEGIN_WITH[i].type;
         }
@@ -224,15 +224,15 @@ std::string &ReduceStr(std::string& str, const char *fill/*= " "*/, const char *
     TrimStr(str, whitespace);
 
     // replace sub ranges
-    auto beginSpace = str.find_first_of(whitespace);
+    size_t beginSpace = str.find_first_of(whitespace);
     while (beginSpace != std::string::npos)
     {
-        const auto endSpace = str.find_first_not_of(whitespace, beginSpace);
-        const auto range = endSpace - beginSpace;
+        const size_t endSpace = str.find_first_not_of(whitespace, beginSpace);
+        const size_t range = endSpace - beginSpace;
 
         str.replace(beginSpace, range, fill);
 
-        const auto newStart = beginSpace + strlen(fill);
+        const size_t newStart = beginSpace + strlen(fill);
         beginSpace = str.find_first_of(whitespace, newStart);
     }
 
