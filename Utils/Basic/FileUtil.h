@@ -2,6 +2,7 @@
 #define _FILE_UTIL_H
 
 #include <string>
+#include <vector>
 #include <afxwin.h>         // MFC core and standard components
 
 namespace utils {
@@ -22,5 +23,6 @@ bool GetLine(std::ifstream &fs, std::string &line);
 void CsvLinePopulate(std::vector<std::string> &items, const std::string &line, char delimiter);
 bool ReadAllFromFile(const char *path, std::string &data);
 
+}
 
 #endif // _FILE_UTIL_H

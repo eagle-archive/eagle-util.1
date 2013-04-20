@@ -1,5 +1,6 @@
 #include <afx.h>         // MFC core and standard components
 #include <string>
+#include <fstream>
 #include <direct.h>
 #include <io.h>
 #include <shlobj.h>
@@ -134,7 +135,7 @@ bool WriteAllLines(const TCHAR * name, const CStringArray &linesArray)
 bool GetLine(std::ifstream &fs, std::string &line) {
     line.clear();
     do{
-        if(getline(fs, line)) {
+        if(std::getline(fs, line)) {
             if(fs.good() && line.empty()){
                 continue;
             }
@@ -146,10 +147,10 @@ bool GetLine(std::ifstream &fs, std::string &line) {
     return false;
 }
 
-bool ReadAllFromFile(const char *path, string &data)
+bool ReadAllFromFile(const char *path, std::string &data)
 {
     std::ifstream in(path);
-    string line;
+    std::string line;
 
     data.clear();
     while(GetLine(in, line)) {
@@ -158,7 +159,7 @@ bool ReadAllFromFile(const char *path, string &data)
     return true;
 }
 
-bool WriteStrToFile(const char *path, const string &data)
+bool WriteStrToFile(const char *path, const std::string &data)
 {
     std::ofstream out(path);
     if (!out.good()) return false;
@@ -261,7 +262,7 @@ void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 }
 #else
 
-void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
+void CsvLinePopulate(std::vector<std::string> &record, const char *line, char delimiter)
 {
     int linepos = 0;
     bool inquotes = false;

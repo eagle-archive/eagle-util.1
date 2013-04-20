@@ -1,5 +1,6 @@
 #include <afx.h>         // MFC core and standard components
 #include <string>
+#include <algorithm>
 #include "StrUtil.h"
 #include <shlobj.h>
 
@@ -8,6 +9,7 @@
 #define new DEBUG_NEW
 #endif
 
+using namespace std;
 
 namespace utils {
 
