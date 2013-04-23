@@ -6,22 +6,22 @@ package com.sap.nic.mytaxi.cityaccess;
  */
 public class TaxiInfo {
 	/** device ID */
-	String devId;
-	/** Car plate number */
-	String plateNum;
+	public String devId;
+	/** Car plate number 车牌号码 */
+	public String plateNum;
 
 	/** Latitude */
-	double lat;
+	public double lat;
 	/** Longitude */
-	double lng;
+	public double lng;
 
 	/**
 	 * Passenger state
-	 * 0 - unknown
-	 * 1 - empty
-	 * 2 - with passenger(s)
+	 * 0 - unknown 未知
+	 * 1 - empty 空车
+	 * 2 - with passenger(s) 重车
 	 */
-	int passengerState;
+	public int passengerState;
 
 	// others?
 }

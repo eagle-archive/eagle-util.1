@@ -1,8 +1,10 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
- * This interface gives access to city level taxi calling provider (e.g., Nanjing Tong Yong,
- * Shanghai Da Zhong), who is supposed to implement this interface in Java.
+ * This interface gives access to city level taxi calling provider/vendor (e.g., 南京通用,
+ * 上海大众), who is supposed to implement this interface in Java.
+ * 
+ * 移动招车平台接入接口。该接口应由接入提供商实现。
  */
 public interface IAccessEntry {
     /**
@@ -13,20 +15,20 @@ public interface IAccessEntry {
 	public IAccessFeature getAccessFeature();
 
     /**
-     * Create a new taxi calling order.
+     * Create a new taxi calling order. 用户招车请求。
      *
-     * @param latitude, required
-     * @param longitude, required
-     * @param user ID, required, could be user registered mobile number or some generated ID
-     * @param name of the user, can be in different forms, e.g., Miss Zhang, Xiao Wang
-     * @param gender of the user, 0 - male, 1 - female, 2 - unknown
-     * @param destination latitude, optional, could be 0
-     * @param destination longitude, optional, could be 0
-     * @param destination description, e.g., some name of the location or generated from map
+     * @param lat latitude, required
+     * @param lng longitude, required
+     * @param userId user ID, required, could be user registered mobile number or some generated ID
+     * @param name name of the user, can be in different forms, e.g., 张女士, 小王
+     * @param gender gender of the user, 0 - male, 1 - female, 2 - unknown
+     * @param destLat destination latitude, optional, could be 0
+     * @param destLng destination longitude, optional, could be 0
+     * @param destDesc destination description, e.g., some name of the location or generated from map
      *        by manually pick a location. optional
-     * @param the user requested car type description, optional
-     * @param other user request description, e.g., female driver, optional
-     * @param mobile number of the requested user, required
+     * @param orderCarType the user requested car type description, optional
+     * @param otherDesc other user request description, e.g., female driver, optional
+     * @param reqMobileNum mobile number of the requested user, required
      * @return TaxiOrder object.
      * @throws GeneralAccessException
      */
@@ -37,7 +39,7 @@ public interface IAccessEntry {
     /**
      * Query order status.
      *
-     * @param order ID, required
+     * @param orderId order ID, required
      * @return TaxiOrder object.
      * @throws GeneralAccessException
      */
@@ -47,20 +49,22 @@ public interface IAccessEntry {
     /**
      * Create a new taxi calling order with enlarged search range.
      *
-     * @param latitude, required
-     * @param longitude, required
-     * @param user ID, required, could be user registered mobile number or some generated ID
-     * @param name of the user, can be in different forms, e.g., Miss Zhang, Xiao Wang
-     * @param gender of the user, 0 - male, 1 - female, 2 - unknown
-     * @param destination latitude, optional, could be 0
-     * @param destination longitude, optional, could be 0
-     * @param destination description, e.g., some name of the location or generated from map
+     * @param lat latitude, required
+     * @param lng longitude, required
+     * @param userId user ID, required, could be user registered mobile number or some generated ID
+     * @param name name of the user, can be in different forms, e.g., 张女士, 小王
+     * @param gender gender of the user, 0 - male, 1 - female, 2 - unknown
+     * @param destLat destination latitude, optional, could be 0
+     * @param destLng destination longitude, optional, could be 0
+     * @param destDesc destination description, e.g., some name of the location or generated from map
      *        by manually pick a location. optional
-     * @param the user requested car type description, optional
-     * @param other user request description, e.g., female driver, optional
-     * @param mobile number of the requested user, required
-     * @param suggested time of the enlarged range (1-3). The vendor can adjust it to fit its own
+     * @param orderCarType the user requested car type description, optional
+     * @param otherDesc other user request description, e.g., female driver, optional
+     * @param reqMobileNum mobile number of the requested user, required
+     * @return TaxiOrder object.
+     * @param enlargeTime suggested time of the enlarged range (1-3). The vendor can adjust it to fit its own
      *        system.
+     *        建议的招车扩大范围倍数（一般在1-3倍）。接入提供商可以根据自己的系统做相应的映射来调整此参数
      * @return TaxiOrder object.
      * @throws GeneralAccessException
      */
@@ -71,10 +75,12 @@ public interface IAccessEntry {
     /**
      * Get the nearby taxis of the specified location.
      *
-     * @param latitude, required
-     * @param longitude, required
-     * @param Suggested radius in meters. If it is left to 0, the vender will decide the radius.
+     * @param lat latitude, required
+     * @param lng longitude, required
+     * @param radius Suggested radius in meters. If it is left to 0, the vender will decide the radius.
      *        NOTE: the radius is only the suggested parameter. It can be adjusted or ignored.
+     *        建议的搜车半径。如果传入0，接入提供商采用自己默认的半径范围。
+     *        注意：这个参数仅仅是建议的参数，接入提供商可以根据自身的系统进行调整。
      * @return array of TaxiInfo object. If some of the member of TaxiInfo is not available,
      *         leave them to null or 0. If not taxi is found, return null.
      * @throws IllegalArgumentException if (lat, lng) or radius is invalid
@@ -85,9 +91,11 @@ public interface IAccessEntry {
     /**
      * Get the nearby taxis of the specified location.
      *
-     * @param device ID
-     * @param Suggested radius in meters. Leave it to 0, the vender will decide the radius.
+     * @param devId device ID
+     * @param radius Suggested radius in meters. If it is left to 0, the vender will decide the radius.
      *        NOTE: the radius is only the suggested parameter. It can be adjusted or ignored.
+     *        建议的搜车半径。如果传入0，接入提供商采用自己默认的半径范围。
+     *        注意：这个参数仅仅是建议的参数，接入提供商可以根据自身的系统进行调整。
      * @return array of TaxiInfo object.
      * 		   If some of the member of TaxiInfo is not available, leave them to null or 0.
      *         If no taxi is found, return null.
@@ -100,7 +108,7 @@ public interface IAccessEntry {
     /**
      * Get the taxi information.
      *
-     * @param device ID
+     * @param devId device ID
      * @return TaxiInfo object.
      * 		   If some of the member of TaxiInfo is not available, leave them to null or 0.
      * @throws IllegalArgumentException if devId or radius is invalid
@@ -110,13 +118,15 @@ public interface IAccessEntry {
 			throws IllegalArgumentException, DeviceNotFoundException;
 
     /**
-     * Urge taxi driver go come fast
+     * Urge taxi driver go come fast。催促（提醒）司机快点过来。
      *
-     * @param order ID, required, order should be in confirmed status
-     * @param device ID, required
-     * @param name of the user, can be in different forms, e.g., Miss Zhang, Xiao Wang
-     * @param gender of the user, 0 - male, 1 - female, 2 - unknown
-     * @param description text from the user input from mobile devices
+     * @param orderId order ID, required, order should be in confirmed status
+     * @param devId device ID, required
+     * @param title name of the user, can be in different forms, e.g., Miss Zhang, Xiao Wang
+     *        名字，称呼，等等
+     * @param gender gender of the user, 0 - male, 1 - female, 2 - unknown
+     * @param text description text from the user input from mobile devices
+     *        用户从移动终端输入的催车内容
      * @throws IllegalArgumentException if devId is invalid
      * @throws DeviceNotFoundException if devId is valid but not found
      * @throws GeneralAccessException for other internal error, e.g., if the order is 
@@ -128,8 +138,8 @@ public interface IAccessEntry {
     /**
      * User cancels order
      *
-     * @param order ID, required, order should be in confirmed status
-     * @param device ID, required
+     * @param orderId order ID, required, order should be in confirmed status
+     * @param devId device ID, required
      * @throws IllegalArgumentException if orderId or devId is invalid
      * @throws DeviceNotFoundException if devId is valid but not found
      * @throws GeneralAccessException for other internal error, e.g., if the order is 
@@ -141,8 +151,8 @@ public interface IAccessEntry {
     /**
      * User reports the driver does not appear after the a long time 
      *
-     * @param order ID, required, order should be in confirmed status
-     * @param device ID, required
+     * @param orderId order ID, required, order should be in confirmed status
+     * @param devId device ID, required
      * @throws IllegalArgumentException if orderId or devId is invalid
      * @throws DeviceNotFoundException if devId is valid but not found
      * @throws GeneralAccessException for other internal error, e.g., if the order is 
@@ -154,7 +164,7 @@ public interface IAccessEntry {
     /**
      * Query order status in batches
      *
-     * @param order IDs, required
+     * @param orderIds order ID array, required
      * @return TaxiOrder object array in the same size of array orderIds.
      *         If some of the order IDs is invalid or query fails, put null in the corresponding
      *         return array.
