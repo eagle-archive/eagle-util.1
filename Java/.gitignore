@@ -1,2 +1,1 @@
-# ignore generated java doc
-doc/
+.settings/
