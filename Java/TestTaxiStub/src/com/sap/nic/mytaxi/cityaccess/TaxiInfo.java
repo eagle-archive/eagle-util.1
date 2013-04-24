@@ -1,13 +1,13 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
- * Taxi information.
- * If some of the member is not available, leave it to 0 or null;
+ * Taxi information.<br>
+ * If some of the member is not available, leave it to default (0 or null)
  */
 public class TaxiInfo {
 	/** device ID */
 	public String devId;
-	/** Car plate number 车牌号码 */
+	/** Car plate number 杞︾墝鍙风爜 */
 	public String plateNum;
 
 	/** Latitude */
@@ -17,9 +17,9 @@ public class TaxiInfo {
 
 	/**
 	 * Passenger state
-	 * 0 - unknown 未知
-	 * 1 - empty 空车
-	 * 2 - with passenger(s) 重车
+	 * 0 - unknown 鏈煡
+	 * 1 - empty 绌鸿溅
+	 * 2 - with passenger(s) 閲嶈溅
 	 */
 	public int passengerState;
 
