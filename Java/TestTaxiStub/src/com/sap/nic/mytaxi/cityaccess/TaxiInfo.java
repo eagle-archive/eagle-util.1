@@ -1,6 +1,7 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
+ * 出租车信息。<br>
  * Taxi information.<br>
  * If some of the member is not available, leave it to default (0 or null)
  */

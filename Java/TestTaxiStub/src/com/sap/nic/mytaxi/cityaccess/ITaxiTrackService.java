@@ -1,11 +1,24 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
+ * 移动招车平台出租车位置跟踪服务接口。该接口应由接入提供商实现。<br>
+ * <b>注意：</b>实现类需要提供轻量级默认构造函数，实现应注意线程安全!
+ * 
  * This interface gives access to city level taxi tracking service. The service provider
  * (e.g., 南京通用, 上海大众) is supposed to implement this interface in Java.<br>
  * 
- * 移动招车出租车位置跟踪服务。该接口应由接入提供商实现。<br>
- * <b>注意：</b>实现类需要提供默认构造函数，并且默认构造函数运行代价较小，实现应注意线程安全!
+ * <br><b>接口配置：</b><br>
+ * 配置文件：WEB-INFO/conf/provider_config.xml<br>
+ * 配置示例：<br>
+ * <pre>
+ * {@code
+ * <providers>
+ *	<provider name="上海大众" jarPath="/jars/dazhong.jar">
+ *		<interface ... </interface>
+ *		<interface name="ITaxiTrackService" classname="com.xxx.xxx.classname" />
+ *	</provider>
+ * }
+ * </pre>
  */
 public interface ITaxiTrackService {
     /**

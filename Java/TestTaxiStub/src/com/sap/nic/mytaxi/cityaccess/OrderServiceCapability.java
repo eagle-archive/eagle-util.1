@@ -1,9 +1,9 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
- * This interface defines the capability(supported features) of the taxi ordering vendor/provider.<br>
+ * 接入提供商招车相关服务的能力（支持的招车的具体功能）。<br>
  * 
- * 接入提供商能力（支持的功能）
+ * This interface defines the ordering capability (supported features) of the vendor/provider.<br>
  */
 public class OrderServiceCapability {
 	/**
@@ -40,7 +40,7 @@ public class OrderServiceCapability {
 	/**
 	 * For fixed price increase, the corresponding price increase value array.<br>
 	 * 固定加价所对应的加价数组，单位：元<br>
-	 * 例如，某提供商支持两种加价，5元和10元，<br>
+	 * 例如，某提供商支持两种加价，5元和10元，代码示例：<br>
 	 * <pre>
 	 * {@code
 	 *     fixedPriceIncreaseLevelNumber = 2;

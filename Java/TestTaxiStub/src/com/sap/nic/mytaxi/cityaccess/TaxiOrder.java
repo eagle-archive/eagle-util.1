@@ -1,6 +1,7 @@
 package com.sap.nic.mytaxi.cityaccess;
 
 /**
+ * 招车订单信息。<br>
  * Taxi order information.
  */
 public class TaxiOrder {
