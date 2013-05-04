@@ -227,17 +227,29 @@ bool InsertExecutor::GetInsStmt(const std::vector<BaseColumn *> &pCols, const ch
     return true;
 }
 
+bool InsertExecutor::PrepareInsStmt(const char *sSqlStmt) const
+{
+    SQLRETURN rc = SQL_SUCCESS;
+#ifndef FAKE_DB_CONN 
+    rc = ::SQLPrepare(mHstmt, (SQLCHAR *)sSqlStmt, SQL_NTS);
+#endif
+    return SQL_SUCCEEDED(rc);
+}
+
 bool InsertExecutor::PrepareInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name) const
 {
     string ins_into;
     GetInsStmt(pCols, table_name, ins_into);
-    SQLRETURN rc = SQLPrepare(mHstmt, (SQLCHAR *)ins_into.c_str(), SQL_NTS);
+    SQLRETURN rc = SQL_SUCCESS;
+#ifndef FAKE_DB_CONN 
+    rc = ::SQLPrepare(mHstmt, (SQLCHAR *)ins_into.c_str(), SQL_NTS);
+#endif
     return SQL_SUCCEEDED(rc);
 }
 
 bool InsertExecutor::ExecuteInsert(const ColRecords &records) const
 {
-    SQLULEN ParamsProcessed;
+    SQLULEN ParamsProcessed = 0;
     SQLRETURN rc;
 
     rc = SQLSetStmtAttr(mHstmt, SQL_ATTR_PARAM_BIND_TYPE, (SQLPOINTER)SQL_PARAM_BIND_BY_COLUMN, 0);

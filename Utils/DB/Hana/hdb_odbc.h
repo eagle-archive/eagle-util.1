@@ -106,8 +106,9 @@ public:
     std::string GetErrorStr() const {
         return GetOdbcError(SQL_HANDLE_STMT, mHstmt);
     };
-    static bool GetInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name, std::string &stmt);
-    bool PrepareInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name) const;
+    static bool GetInsStmt(const std::vector<BaseColumn *> &pCols, const char *sTableName, std::string &stmt);
+    bool PrepareInsStmt(const char *sSqlStmt) const;
+    bool PrepareInsStmt(const std::vector<BaseColumn *> &pCols, const char *sTableName) const;
     bool ExecuteInsert(const ColRecords &records) const;
 
 protected:

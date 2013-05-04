@@ -6,6 +6,10 @@
 #include <fstream>
 #include "hdb_utils.h"
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#endif
+
 using namespace hdb;
 using namespace std;
 
@@ -116,11 +120,19 @@ bool ColRecords::AddRow(const string &line, char delimiter)
     strs.reserve(count);
     CsvLinePopulate(strs, line, delimiter);
     if (strs.size() < count) {
+        char tmp[1024];
+        snprintf(tmp, sizeof(tmp), "No enough columns. Required column #%d, actual column #%d, when parsing \"%s\"",
+            (int)count, (int)strs.size(), line.c_str());
+        mErrStr = tmp;
         return false;
     }
 
     for (size_t i = 0; i < count; i++) {
         if (false == mPtrCols[i]->AddFromStr(strs[i])) {
+            char tmp[1024];
+            snprintf(tmp, sizeof(tmp), "Invalid column: \"%s\" when parsing \"%s\"",
+                strs[i].c_str(), line.c_str());
+            mErrStr = tmp;
             return false;
         }
     }
@@ -191,7 +203,8 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
         if (AddRow(line, delimiter)) {
             total++;
         } else {
-            printf("Warning: cannot parse CSV line: %s\n", line.c_str());
+            printf(this->GetErrStr());
+            printf("\n");
         }
     }
     mRowCount = total;

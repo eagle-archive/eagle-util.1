@@ -158,6 +158,9 @@ bool StrToValue(const string &s, SQL_DATE_STRUCT &v)
         v.year = year;
         v.month = month;
         v.day = day;
+        if (v.year < 0 || v.year > 3000) return false;
+        if (v.month <= 0 || v.month > 12) return false;
+        if (v.day <= 0 || v.day > 31) return false;
         return true;
     }
     return false;
@@ -171,6 +174,9 @@ bool StrToValue(const string &s, SQL_TIME_STRUCT &v)
         v.hour = hour;
         v.minute = minute;
         v.second = second;
+        if (v.hour > 24) return false;
+        if (v.minute >= 60) return false;
+        if (v.second >= 60) return false;
         return true;
     }
     return false;
@@ -179,9 +185,27 @@ bool StrToValue(const string &s, SQL_TIME_STRUCT &v)
 bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
 {
     if (s.empty()) return false;
+
     int year, month, day, hour, minute, second, fraction;
-    int r = sscanf(s.c_str(), "%d-%d-%d %d:%d:%d.%d", &year, &month, &day, &hour, &minute, &second, &fraction); // for HANA
+
+    int r = sscanf(s.c_str(), "%d-%d-%d%*[ -]%d%*[:.]%d%*[:.]%d%*[:.]%d",
+        &year, &month, &day, &hour, &minute, &second, &fraction);
     if (r == 6 || r == 7) {
+        if (year <= 0 || year > 3000) return false;
+        if (month < 0 || month > 12) {
+            return false;
+        } else if (month == 0) {
+            month = 1;
+        }
+        if (day < 0 || day > 31) {
+            return false;
+        } else if (day == 0) {
+            day = 1;
+        }
+        if (hour > 24) return false;
+        if (minute > 60) return false;
+        if (second > 60) return false;
+
         v.year = year;
         v.month = month;
         v.day = day;
@@ -189,15 +213,7 @@ bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
         v.minute = minute;
         v.second = second;
         v.fraction = (r == 7) ? fraction : 0;
-        return true;
-    } else if (6 == sscanf(s.c_str(), "%d-%d-%d-%d.%d.%d", &year, &month, &day, &hour, &minute, &second)) { // for DB2
-        v.year = year;
-        v.month = month;
-        v.day = day;
-        v.hour = hour;
-        v.minute = minute;
-        v.second = second;
-        v.fraction = 0;
+
         return true;
     }
     return false;
