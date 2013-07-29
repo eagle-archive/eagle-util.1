@@ -26,13 +26,18 @@ double get_heading_in_degree(const COORDINATE &from, const COORDINATE &to);
 double get_heading_in_degree(const double &from_lat, const double &from_lng,
                              const double &to_lat, const double &to_lng);
 
-// WGS84 to Mars
+// WGS84 (World Geodetic System) to GCJ-02 (Mars Geodetic System)
 void wgs84_to_mars(double wgLat, double wgLon, double &mgLat, double &mgLon);
+
 // Mars to BD-09
 void bd_encrypt(const double gg_lat, const double gg_lon, double &bd_lat, double &bd_lon);
 // BD-09 to Mars
 void bd_decrypt(const double bd_lat, const double bd_lon, double &gg_lat, double &gg_lon);
 
+// BD-09 to WGS84
+void bd09_to_wgs84(const double bd_lat, const double bd_lng, double &lat, double &lng);
+// WGS84 to BD-09
+void wgs84_to_bd09(const double lat, const double lng, double &bd_lat, double &bd_lng);
 }
 
 #endif // _GEO_UTILS_H

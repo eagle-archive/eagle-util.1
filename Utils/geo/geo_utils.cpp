@@ -134,6 +134,32 @@ void bd_decrypt(const double bd_lat, const double bd_lon, double &gg_lat, double
     gg_lat = z * sin(theta);
 }
 
+//
+// BD-09 to WGS84
+// See http://blog.csdn.net/coolypf/article/details/8686588
+//
+void bd09_to_wgs84(const double bd_lat, const double bd_lng, double &lat, double &lng)
+{
+    // BD09 to Mars
+    double mars_lat, mars_lng;
+    geo::bd_decrypt(bd_lat, bd_lng, mars_lat, mars_lng);
+
+    // Mars to WGS84
+    geo::wgs84_to_mars(mars_lat, mars_lng, lat, lng);
+    lat = mars_lat - (lat - mars_lat);
+    lng = mars_lng - (lng - mars_lng);
+}
+
+//
+// WGS84 to BD-09
+// See http://blog.csdn.net/coolypf/article/details/8686588
+//
+void wgs84_to_bd09(const double lat, const double lng, double &bd_lat, double &bd_lng)
+{
+    double mars_lat, mars_lng;
+    wgs84_to_mars(lat, lng, mars_lat, mars_lng);
+    bd_encrypt(mars_lat, mars_lng, bd_lat, bd_lng);
+}
 
 static bool outOfChina(double lat, double lon)
 {

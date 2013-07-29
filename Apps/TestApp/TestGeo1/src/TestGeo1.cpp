@@ -2,17 +2,27 @@
 //
 
 #include "stdafx.h"
-#include "insert_sim_utils.h"
+#include "geo/geo_utils.h"
 
-bool bulk_insert(const char *csv);
+
 
 int main()
 {
-    if (false == init_globals()) {
-        printf("Error: cannot init config");
-        return 10;
-    }
+    // Nanjing DeJi guangchang
+    double bd_lat0 = 32.048893;
+    double bd_lng0 = 118.790914;
+    double lat0 = 32.0448;
+    double lng0 = 118.7794;
 
+    double lat, lng;
+
+    geo::bd09_to_wgs84(bd_lat0, bd_lng0, lat, lng);
+    double error_bd = geo::distance_in_meter(lat0, lng0, bd_lat0, bd_lng0);
+    double error = geo::distance_in_meter(lat0, lng0, lat, lng);
+
+    double bd_lat, bd_lng;
+    geo::wgs84_to_bd09(lat0, lng0, bd_lat, bd_lng);
+    error = geo::distance_in_meter(bd_lat0, bd_lng0, bd_lat, bd_lng);
 
 	return 0;
 }
