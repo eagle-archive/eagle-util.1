@@ -8,8 +8,8 @@ bool bulk_insert(const char *csv);
 
 int main()
 {
-    if (false == init_globals(CONFIG_FILE)) {
-        printf("Error: cannot load config file %s\n", CONFIG_FILE);
+    if (false == init_globals()) {
+        printf("Error: cannot init config");
         return 10;
     }
 

@@ -1,17 +1,8 @@
 #ifndef __INSERT_SIM_UTILS_H_
 #define __INSERT_SIM_UTILS_H_
 
-#ifdef _WIN32
-#include "windows.h"
-#endif
-#include "sqlext.h"
 #include <string>
-#include <fstream>
-
-// for debug purpose only, comment it out for real DB connection
-//#define FAKE_DB_CONN
-
-#define CONFIG_FILE "TestGeo1.ini"
+#include "geo/geo_utils.h"
 
 
 struct UTIL_GLOBALS {
@@ -28,7 +19,7 @@ struct UTIL_GLOBALS {
 
 extern UTIL_GLOBALS GLOBALS;
 
-bool init_globals(const char *config_file);
+bool init_globals();
 
 
 #endif // __INSERT_SIM_UTILS_H_

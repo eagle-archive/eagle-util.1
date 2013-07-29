@@ -14,7 +14,8 @@ using namespace std;
 UTIL_GLOBALS GLOBALS;
 
 
-bool init_globals(const char *config_file) {
+bool init_globals()
+{
 
     return true;
 }
