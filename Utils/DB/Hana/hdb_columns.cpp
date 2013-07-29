@@ -133,6 +133,12 @@ bool ColRecords::AddRow(const string &line, char delimiter)
             snprintf(tmp, sizeof(tmp), "Invalid column: \"%s\" when parsing \"%s\"",
                 strs[i].c_str(), line.c_str());
             mErrStr = tmp;
+
+            // Error happens, remove previous columns for this row 
+            for (int k = 0; k < i; ++k) {
+                mPtrCols[k]->RemoveRow();
+            }
+
             return false;
         }
     }

@@ -230,7 +230,7 @@ bool InsertExecutor::GetInsStmt(const std::vector<BaseColumn *> &pCols, const ch
 bool InsertExecutor::PrepareInsStmt(const char *sSqlStmt) const
 {
     SQLRETURN rc = SQL_SUCCESS;
-#ifndef FAKE_DB_CONN 
+#ifndef FAKE_DB_CONN
     rc = ::SQLPrepare(mHstmt, (SQLCHAR *)sSqlStmt, SQL_NTS);
 #endif
     return SQL_SUCCEEDED(rc);
@@ -241,7 +241,7 @@ bool InsertExecutor::PrepareInsStmt(const std::vector<BaseColumn *> &pCols, cons
     string ins_into;
     GetInsStmt(pCols, table_name, ins_into);
     SQLRETURN rc = SQL_SUCCESS;
-#ifndef FAKE_DB_CONN 
+#ifndef FAKE_DB_CONN
     rc = ::SQLPrepare(mHstmt, (SQLCHAR *)ins_into.c_str(), SQL_NTS);
 #endif
     return SQL_SUCCEEDED(rc);
@@ -316,7 +316,7 @@ bool FetchExecutor::ExecuteFetchAll(ColRecords &records)
                 &DataType, &ColumnSize, &DecimalDigits, &Nullable);
             if (SQL_SUCCEEDED(rc)) {
                 ColumnName[sizeof(ColumnName)-1] = '\0';
-                DATA_ATTR_T attr;
+                //DATA_ATTR_T attr;
                 //hdb::UnImplemented("Get attr from SQLDescribeCol"); // TODO:
                 //records.AddCol((const char *)ColumnName, attr);
             } else {

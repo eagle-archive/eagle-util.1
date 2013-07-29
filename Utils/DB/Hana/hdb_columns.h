@@ -55,6 +55,7 @@ public:
     virtual void GenerateFakeData(size_t count) = 0;
     virtual SQLRETURN BindInParam(SQLHSTMT hstmt, SQLUSMALLINT ipar) const = 0;
     virtual bool AddFromStr(const std::string &str) = 0;
+    virtual void RemoveRow() = 0;
     virtual void RemoveAllRows() = 0;
     virtual bool Append(const BaseColumn *pCol) = 0;
 
@@ -282,6 +283,12 @@ public:
         mDataVec.push_back(value);
         return true;
     };
+    virtual void RemoveRow() {
+        mDataVec.pop_back();
+        if (mStrLenOrIndVec.size() > 0) {
+            mStrLenOrIndVec.pop_back();
+        }
+    }
     virtual void RemoveAllRows() {
         mDataVec.clear();
         mStrLenOrIndVec.clear();
@@ -330,13 +337,13 @@ public:
     virtual bool AddFromStr(const std::string &str) {
     	ColT<T, data_type>::mStrLenOrIndVec.push_back((NullAble() && str.empty()) ? SQL_NULL_DATA : SQL_NTS);
         size_t len = ColT<T, data_type>::mDataVec.size();
-        ColT<T, data_type>::mDataVec.resize(len +  ColT<T, data_type>::mDataAttr.a + 1);
+        ColT<T, data_type>::mDataVec.resize(len + ColT<T, data_type>::mDataAttr.a + 1);
         if (sizeof(T) == 2) {
             string16 wstr = StrToWStr(str);
 #ifdef _WIN32
             wcsncpy_s((SQLWCHAR *)mDataVec.data() + len, mDataAttr.a + 1, (SQLWCHAR *)wstr.c_str(), mDataAttr.a);
 #else
-            int copy_len = (wstr.length() + 1) < (ColT<T, data_type>::mDataAttr.a + 1) ?
+            int copy_len = (wstr.length() + 1) < ((size_t)ColT<T, data_type>::mDataAttr.a + 1) ?
             		wstr.length() + 1 : ColT<T, data_type>::mDataAttr.a + 1;
             memcpy((SQLWCHAR *)ColT<T, data_type>::mDataVec.data() + len, (SQLWCHAR *)wstr.c_str(), copy_len * 2);
 #endif
@@ -350,6 +357,13 @@ public:
         }
         return true;
     };
+    virtual void RemoveRow() {
+      	ColT<T, data_type>::mStrLenOrIndVec.pop_back();
+        size_t len = ColT<T, data_type>::mDataVec.size();
+        if (len > 0) {
+            ColT<T, data_type>::mDataVec.resize(len - (ColT<T, data_type>::mDataAttr.a + 1));
+        }
+    }
     virtual void GenerateFakeData(size_t count) {
         RemoveAllRows();
         Reserve(count);

@@ -190,7 +190,13 @@ bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
 
     int r = sscanf(s.c_str(), "%d-%d-%d%*[ -]%d%*[:.]%d%*[:.]%d%*[:.]%d",
         &year, &month, &day, &hour, &minute, &second, &fraction);
-    if (r == 6 || r == 7) {
+    if (r == 5 || r == 6 || r == 7) {
+        if (r == 5) {
+            second = fraction = 0;
+        } else if (r == 6) {
+            fraction = 0;
+        }
+
         if (year <= 0 || year > 3000) return false;
         if (month < 0 || month > 12) {
             return false;
@@ -212,7 +218,7 @@ bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
         v.hour = hour;
         v.minute = minute;
         v.second = second;
-        v.fraction = (r == 7) ? fraction : 0;
+        v.fraction = fraction;
 
         return true;
     }
@@ -266,23 +272,23 @@ void StrToLower(std::string& str)
 }
 
 #ifdef _WIN32
-static string16 s2ws(const std::string& s)
+static string16 utf82ws(const std::string& s)
 {
     int len;
     int slength = (int)s.length() + 1;
-    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
+    len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), slength, 0, 0); 
     string16 ws(len, (unsigned short)0);
-    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, (LPWSTR)&ws[0], len);
+    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), slength, (LPWSTR)&ws[0], len);
     return ws;
 }
 
-static std::string ws2s(const string16& ws)
+static std::string ws2utf8(const string16& ws)
 {
     int len;
     int slength = (int)ws.length() + 1;
-    len = WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.c_str(), slength, 0, 0, 0, 0); 
+    len = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)ws.c_str(), slength, 0, 0, 0, 0); 
     std::string r(len, '\0');
-    WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)ws.c_str(), slength, &r[0], len, 0, 0);
+    WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)ws.c_str(), slength, &r[0], len, 0, 0);
     return r;
 }
 #endif
@@ -290,7 +296,7 @@ static std::string ws2s(const string16& ws)
 string16 StrToWStr(const std::string &str)
 {
 #ifdef _WIN32
-    return s2ws(str);
+    return utf82ws(str);
 #else
     return string16(str.begin(), str.end());
 #endif
@@ -299,7 +305,7 @@ string16 StrToWStr(const std::string &str)
 std::string WStrToStr(const string16 &wstr)
 {
 #ifdef _WIN32
-    return ws2s(wstr);
+    return ws2utf8(wstr);
 #else
     return std::string(wstr.begin(), wstr.end());
 #endif
