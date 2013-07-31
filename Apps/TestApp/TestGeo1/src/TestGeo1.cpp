@@ -33,9 +33,15 @@ int test2()
     double lat0 = 25.05888;
     double lng0 = 102.71575;
     double lat_mars, lng_mars;
+    double lat_bd, lng_bd;
+
+    printf("WGS84: loc: %lf, %lf\n", lat0, lng0);
 
     geo::wgs84_to_mars(lat0, lng0, lat_mars, lng_mars);
-    printf("loc: %lf, %lf\n", lat_mars, lng_mars);
+    printf("MARS: loc: %lf, %lf\n", lat_mars, lng_mars);
+
+    geo::wgs84_to_bd09(lat0, lng0, lat_bd, lng_bd);
+    printf("BD-09: loc: %lf, %lf\n", lat_bd, lng_bd);
 
     return 0;
 }
