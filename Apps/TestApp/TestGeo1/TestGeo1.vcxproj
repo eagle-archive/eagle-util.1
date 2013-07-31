@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Utils\Geo\geo_utils.cpp" />
+    <ClCompile Include="..\..\..\Utils\geo\geo_utils_in_china.cpp" />
     <ClCompile Include="src\insert_sim_utils.cpp" />
     <ClCompile Include="src\TestGeo1.cpp" />
   </ItemGroup>

@@ -38,6 +38,9 @@ void bd_decrypt(const double bd_lat, const double bd_lon, double &gg_lat, double
 void bd09_to_wgs84(const double bd_lat, const double bd_lng, double &lat, double &lng);
 // WGS84 to BD-09
 void wgs84_to_bd09(const double lat, const double lng, double &bd_lat, double &bd_lng);
+
+bool is_inside_china(double lat, double lng);
+
 }
 
 #endif // _GEO_UTILS_H

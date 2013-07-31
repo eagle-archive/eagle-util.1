@@ -6,7 +6,8 @@
 
 
 
-int main()
+
+int test1()
 {
     // Nanjing DeJi guangchang
     double bd_lat0 = 32.048893;
@@ -25,4 +26,22 @@ int main()
     error = geo::distance_in_meter(bd_lat0, bd_lng0, bd_lat, bd_lng);
 
 	return 0;
+}
+
+int test2()
+{
+    double lat0 = 25.05888;
+    double lng0 = 102.71575;
+    double lat_mars, lng_mars;
+
+    geo::wgs84_to_mars(lat0, lng0, lat_mars, lng_mars);
+    printf("loc: %lf, %lf\n", lat_mars, lng_mars);
+
+    return 0;
+}
+
+int main()
+{
+    test2();
+    return 0;
 }

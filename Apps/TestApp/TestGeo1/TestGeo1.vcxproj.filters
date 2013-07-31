@@ -18,6 +18,9 @@
     <ClCompile Include="..\..\..\Utils\Geo\geo_utils.cpp">
       <Filter>Geo</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Utils\geo\geo_utils_in_china.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\insert_sim_utils.h">

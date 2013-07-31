@@ -194,8 +194,7 @@ static double transformLon(double x, double y)
 //
 void wgs84_to_mars(double wgLat, double wgLon, double &mgLat, double &mgLon)
 {
-    if (outOfChina(wgLat, wgLon))
-    {
+    if (!is_inside_china(wgLat, wgLon)) {
         mgLat = wgLat;
         mgLon = wgLon;
         return;
