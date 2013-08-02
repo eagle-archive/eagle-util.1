@@ -30,25 +30,22 @@
     vectors = new OpenLayers.Layer.Vector("Vector Layer");
     map.addLayer(vectors);
 
-    
-    addPolygon([
+
+    addPoints([
         {lat: 32.0500, lng: 118.7667},
         {lat: 32.0510, lng: 118.7687},
         {lat: 32.0510, lng: 118.7697},
     ]);
 
-    function addPolygon(coordinates) {
-        site_points = [];
+    function addPoints(coordinates) {
+        features = [];
         for (i in coordinates) {
             point = new OpenLayers.Geometry.Point(coordinates[i].lng, coordinates[i].lat);
             point.transform(fromProjection, toProjection);
-            site_points.push(point);
+            pointsFeature = new OpenLayers.Feature.Vector(point);
+            features.push(pointsFeature);
         }
-        site_points.push(site_points[0]);
-
-        var linear_ring = new OpenLayers.Geometry.LinearRing(site_points);
-        polygonFeature = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Polygon([linear_ring]));
-        vectors.addFeatures([polygonFeature]);
+        vectors.addFeatures(features);
     }
 </script>
 </body>
