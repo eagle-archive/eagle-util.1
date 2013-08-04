@@ -31,13 +31,6 @@
     map.addLayer(vectors);
 
 
-    addPolygon([
-        {lat: 32.02888, lng: 118.79529},
-        {lat: 32.02888, lng: 118.7974},
-        {lat: 32.02758, lng: 118.7974},
-        {lat: 32.02758, lng: 118.79529},
-    ]);
-
     function addPolygon(coordinates) {
         site_points = [];
         for (i in coordinates) {
@@ -51,6 +44,14 @@
         polygonFeature = new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Polygon([linear_ring]));
         vectors.addFeatures([polygonFeature]);
     }
+
+    addPolygon([
+        {lat: 32.02888, lng: 118.79529},
+        {lat: 32.02888, lng: 118.7974},
+        {lat: 32.02758, lng: 118.7974},
+        {lat: 32.02758, lng: 118.79529},
+    ]);
+
 </script>
 </body>
 </html>

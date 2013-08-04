@@ -31,6 +31,35 @@
     map.addLayer(vectors);
 
 
+    // see http://openlayers.org/dev/examples/vector-features.html
+ 
+    // Layer style
+    // we want opaque external graphics and non-opaque internal graphics
+    var layer_style = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+
+    // Blue style
+    var style_blue = OpenLayers.Util.extend({}, layer_style);
+    style_blue.strokeColor = "black";
+    style_blue.fillColor = "blue";
+    style_blue.graphicName = "star";
+    style_blue.pointRadius = 6;
+
+    var style_red = OpenLayers.Util.extend({}, layer_style);
+    style_red.strokeColor = "black";
+    style_red.fillColor = "red";
+    style_red.pointRadius = 6;
+    
+    function addPoints(coordinates) {
+        features = [];
+        for (i in coordinates) {
+            point = new OpenLayers.Geometry.Point(coordinates[i].lng, coordinates[i].lat);
+            point.transform(fromProjection, toProjection);
+            pointsFeature = new OpenLayers.Feature.Vector(point, null, style_red);
+            features.push(pointsFeature);
+        }
+        vectors.addFeatures(features);
+    }
+
     addPoints([
         {lat: 32.02888, lng: 118.79529},
         {lat: 32.02888, lng: 118.7974},
@@ -38,16 +67,6 @@
         {lat: 32.02758, lng: 118.79529},
     ]);
 
-    function addPoints(coordinates) {
-        features = [];
-        for (i in coordinates) {
-            point = new OpenLayers.Geometry.Point(coordinates[i].lng, coordinates[i].lat);
-            point.transform(fromProjection, toProjection);
-            pointsFeature = new OpenLayers.Feature.Vector(point);
-            features.push(pointsFeature);
-        }
-        vectors.addFeatures(features);
-    }
 </script>
 </body>
 </html>
