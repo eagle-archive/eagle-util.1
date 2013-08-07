@@ -60,11 +60,32 @@
         vectors.addFeatures(features);
     }
 
-    addPoints([
-        {lat: 32.02888, lng: 118.79529},
-        {lat: 32.02888, lng: 118.7974},
-        {lat: 32.02758, lng: 118.7974},
-        {lat: 32.02758, lng: 118.79529},
+    function addPointsWithColor(coordinates) {
+
+
+        features = [];
+        for (i in coordinates) {
+            point = new OpenLayers.Geometry.Point(coordinates[i].lng, coordinates[i].lat);
+            point.transform(fromProjection, toProjection);
+
+            var style = OpenLayers.Util.extend({}, layer_style);
+            style.graphicName = "square";
+            style.strokeColor = coordinates[i].color;
+            style.pointRadius = 6;
+            style.fillOpacity = 0.8;
+            style.fillColor = coordinates[i].color;
+
+            pointsFeature = new OpenLayers.Feature.Vector(point, null, style);
+            features.push(pointsFeature);
+        }
+        vectors.addFeatures(features);
+    }
+    
+    addPointsWithColor([
+        {lat: 32.02888, lng: 118.79529, color: "red"},
+        {lat: 32.02888, lng: 118.7974, color: "black"},
+        {lat: 32.02758, lng: 118.7974, color: "green"},
+        {lat: 32.02758, lng: 118.79529, color: "red"},
     ]);
 
 </script>
