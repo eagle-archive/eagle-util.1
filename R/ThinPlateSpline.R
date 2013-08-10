@@ -15,18 +15,19 @@ summary(fit)
 
 #this assigns the name ¡°sp.out¡± (choose your own name) to the predicted surface from the fitted tp spline.
 sp.out<-predict.surface(fit)
+#if want the same size
+# sp.out<-predict.surface(fit, nx=nrow(xy), ny=nrow(xy))
 
 #gives a shaded 2-d plot of the spline surface using heat colours
-image(sp.out)
-
+# image(sp.out)
 #gives a 3-d perspective surface and a contour map - not v satisfactory output
-surface(sp.out)
+# surface(sp.out)
 
 #gives a 3-d perspective surface
-persp(sp.out)
+# persp(sp.out, axes=TRUE, xlab="LNG", ylab="LAT", zlab="OD COUNT")
 
 #theta describes the rotation of the surface in degrees from which to view the perspective
-persp(sp.out, theta=270)
+# persp(sp.out, theta=270)
 
 #Plot a - perspective
 persp(sp.out, theta=210, phi=25, d=5, shade=1, axes=TRUE, ticktype="detailed", xlab="LNG", ylab="LAT", zlab="OD COUNT")
