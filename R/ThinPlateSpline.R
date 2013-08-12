@@ -30,7 +30,8 @@ sp.out<-predict.surface(fit)
 # persp(sp.out, theta=270)
 
 #Plot a - perspective
-persp(sp.out, theta=210, phi=25, d=5, shade=1, axes=TRUE, ticktype="detailed", xlab="LNG", ylab="LAT", zlab="OD COUNT")
+# persp(sp.out, theta=210, phi=25, d=5, shade=1, axes=TRUE, ticktype="detailed", xlab="LNG", ylab="LAT", zlab="OD COUNT")
+persp(sp.out, theta=-40, phi=25, d=5, shade=1, axes=TRUE, ticktype="detailed", xlab="LNG", ylab="LAT", zlab="OD COUNT")
 
 #MAKES THE FILLED CONTOURS
 image(sp.out, xlab="LNG", ylab="LAT", lwd=2, col=heat.colors(36)) 
