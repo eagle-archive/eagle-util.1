@@ -238,7 +238,7 @@ bool InsertExecutor::PrepareInsStmt(const char *sSqlStmt) const
 
 bool InsertExecutor::PrepareInsStmt(const std::vector<BaseColumn *> &pCols, const char *table_name) const
 {
-    string ins_into;
+    std::string ins_into;
     GetInsStmt(pCols, table_name, ins_into);
     SQLRETURN rc = SQL_SUCCESS;
 #ifndef FAKE_DB_CONN

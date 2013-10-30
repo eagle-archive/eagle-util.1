@@ -26,6 +26,14 @@ double get_heading_in_degree(const COORDINATE &from, const COORDINATE &to);
 double get_heading_in_degree(const double &from_lat, const double &from_lng,
                              const double &to_lat, const double &to_lng);
 
+
+int long2tilex(double lon, double z);
+int lat2tiley(double lat, double z);
+double tilex2long(int x, double z);
+double tiley2lat(int y, double z);
+
+double span_to_zoom_level(const double side_size, const double lat);
+
 // WGS84 (World Geodetic System) to GCJ-02 (Mars Geodetic System)
 void wgs84_to_mars(double wgLat, double wgLon, double &mgLat, double &mgLon);
 

@@ -113,10 +113,10 @@ SQLRETURN ColRecords::BindAllInColumns(SQLHSTMT hstmt) const
 }
 
 // Add one line of CSV
-bool ColRecords::AddRow(const string &line, char delimiter)
+bool ColRecords::AddRow(const std::string &line, char delimiter)
 {
     size_t count = this->GetColCount();
-    vector<string> strs;
+    std::vector<std::string> strs;
     strs.reserve(count);
     CsvLinePopulate(strs, line, delimiter);
     if (strs.size() < count) {
@@ -135,7 +135,7 @@ bool ColRecords::AddRow(const string &line, char delimiter)
             mErrStr = tmp;
 
             // Error happens, remove previous columns for this row 
-            for (int k = 0; k < i; ++k) {
+            for (size_t k = 0; k < i; ++k) {
                 mPtrCols[k]->RemoveRow();
             }
 
@@ -149,18 +149,18 @@ bool ColRecords::AddRow(const string &line, char delimiter)
 bool ColRecords::AddColsFromCreateSql(const char *create_sql)
 {
     PARSED_TABLE_T parsed_table;
-    string err;
+    std::string err;
     if (!ParseTableFromSql(create_sql, parsed_table, err)) {
         if (!err.empty()) {
             mErrStr = err;
         } else {
-            mErrStr = string("Error in parsing: ") + create_sql;
+            mErrStr = std::string("Error in parsing: ") + create_sql;
         }
         return false;
     }
     size_t col_count = parsed_table.col_names.size();
     if (col_count == 0) {
-        mErrStr = string("Error in parsing: ") + create_sql;
+        mErrStr = std::string("Error in parsing: ") + create_sql;
         return false;
     }
 
@@ -194,7 +194,7 @@ int ColRecords::AddRows(std::ifstream &is_csv, int num, char delimiter)
     if (!is_csv.is_open() || !is_csv.good())
         return 0;
 
-    string line;
+    std::string line;
     int total = 0;
     for (int i = 0; i < num; i++) {
         if (!GetLine(is_csv, line)) break;

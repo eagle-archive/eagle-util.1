@@ -101,7 +101,7 @@ double get_heading_in_degree(const COORDINATE &from, const COORDINATE &to)
 }
 
 double get_heading_in_degree(const double &from_lat, const double &from_lng,
-                             const double &to_lat, const double &to_lng)
+    const double &to_lat, const double &to_lng)
 {
     COORDINATE from, to;
     from.lat = from_lat;
@@ -111,118 +111,65 @@ double get_heading_in_degree(const double &from_lat, const double &from_lng,
     return get_heading_in_degree(from, to);
 }
 
-//
-// GCJ-02 to BD-09
-// see http://blog.csdn.net/yorling/article/details/9175913
-//
-void bd_encrypt(const double gg_lat, const double gg_lon, double &bd_lat, double &bd_lon)
+int long2tilex(double lon, double z) 
 {
-    double x = gg_lon, y = gg_lat;
-    double z = sqrt(x * x + y * y) + 0.00002 * sin(y * M_PI);
-    double theta = atan2(y, x) + 0.000003 * cos(x * M_PI);
-    bd_lon = z * cos(theta) + 0.0065;
-    bd_lat = z * sin(theta) + 0.006;
+    return (int)(floor((lon + 180.0) / 360.0 * pow(2.0, z))); 
 }
 
-//
-// BD-09 to GCJ-02 (Mars Geodetic System)
-// see http://blog.csdn.net/yorling/article/details/9175913
-//
-void bd_decrypt(const double bd_lat, const double bd_lon, double &gg_lat, double &gg_lon)
+int lat2tiley(double lat, double z)
 {
-    double x = bd_lon - 0.0065, y = bd_lat - 0.006;
-    double z = sqrt(x * x + y * y) - 0.00002 * sin(y * M_PI);
-    double theta = atan2(y, x) - 0.000003 * cos(x * M_PI);
-    gg_lon = z * cos(theta);
-    gg_lat = z * sin(theta);
+    return (int)(floor((1.0 - log( tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z))); 
 }
 
-//
-// BD-09 to WGS84
-// See http://blog.csdn.net/coolypf/article/details/8686588
-//
-void bd09_to_wgs84(const double bd_lat, const double bd_lng, double &lat, double &lng)
+double tilex2long(int x, double z) 
 {
-    // BD09 to Mars
-    double mars_lat, mars_lng;
-    geo::bd_decrypt(bd_lat, bd_lng, mars_lat, mars_lng);
-
-    // Mars to WGS84
-    geo::wgs84_to_mars(mars_lat, mars_lng, lat, lng);
-    lat = mars_lat - (lat - mars_lat);
-    lng = mars_lng - (lng - mars_lng);
+    return x / pow(2.0, z) * 360.0 - 180;
 }
 
-//
-// WGS84 to BD-09
-// See http://blog.csdn.net/coolypf/article/details/8686588
-//
-void wgs84_to_bd09(const double lat, const double lng, double &bd_lat, double &bd_lng)
+double tiley2lat(int y, double z) 
 {
-    double mars_lat, mars_lng;
-    wgs84_to_mars(lat, lng, mars_lat, mars_lng);
-    bd_encrypt(mars_lat, mars_lng, bd_lat, bd_lng);
+    double n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
+    return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
-static bool outOfChina(double lat, double lon)
+
+static double average_span(double lat, double lng, double zoom)
 {
-    if (lon < 72.004 || lon > 137.8347)
-        return true;
-    if (lat < 0.8293 || lat > 55.8271)
-        return true;
-    return false;
+    double lng1, lng2;
+    int tile_x = long2tilex(lng, zoom);
+
+    lng1 = tilex2long(tile_x, zoom);
+    lng2 = tilex2long(tile_x + 1, zoom);
+
+    return distance_in_meter_same_lat(lat, lng1, lng2);
 }
 
-static double transformLat(double x, double y)
+double span_to_zoom_level(const double side_size, const double lat)
 {
-    double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x));
-    ret += (20.0 * sin(6.0 * x * M_PI) + 20.0 * sin(2.0 * x * M_PI)) * 2.0 / 3.0;
-    ret += (20.0 * sin(y * M_PI) + 40.0 * sin(y / 3.0 * M_PI)) * 2.0 / 3.0;
-    ret += (160.0 * sin(y / 12.0 * M_PI) + 320 * sin(y * M_PI / 30.0)) * 2.0 / 3.0;
-    return ret;
-}
+    const double LNG = 114.1333; // lng does not matter
+    double a = 14, b = 24;
+    double fa = average_span(lat, LNG, a) - side_size;
+    double fb = average_span(lat, LNG, b) - side_size;
 
-static double transformLon(double x, double y)
-{
-    double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * sqrt(abs(x));
-    ret += (20.0 * sin(6.0 * x * M_PI) + 20.0 * sin(2.0 * x * M_PI)) * 2.0 / 3.0;
-    ret += (20.0 * sin(x * M_PI) + 40.0 * sin(x / 3.0 * M_PI)) * 2.0 / 3.0;
-    ret += (150.0 * sin(x / 12.0 * M_PI) + 300.0 * sin(x / 30.0 * M_PI)) * 2.0 / 3.0;
-    return ret;
-}
+    int count = 0;
+    while (abs(fa - fb) > 0.0000001) {
+        double m = (a + b) / 2.0;
+        double fm = average_span(lat, LNG, m) - side_size;
+        if (fm * fa < 0) {
+            b = m;
+            fb = fm;
+        } else {
+            a = m;
+            fa = fm;
+        }
 
-//
-// World Geodetic System (WGS-84) ==> Mars Geodetic System (GCJ-02)
-// see http://blog.csdn.net/yorling/article/details/9175913
-//
-void wgs84_to_mars(double wgLat, double wgLon, double &mgLat, double &mgLon)
-{
-    if (!is_inside_china(wgLat, wgLon)) {
-        mgLat = wgLat;
-        mgLon = wgLon;
-        return;
+        ++count;
+        if (count >= 1000) {
+            break;
+        }
     }
 
-    //
-    // Krasovsky 1940
-    //
-    // a = 6378245.0, 1/f = 298.3
-    // b = a * (1 - f)
-    // ee = (a^2 - b^2) / a^2;
-    const double a = 6378245.0;
-    const double ee = 0.00669342162296594323;
-
-    double dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
-    double dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
-    double radLat = wgLat / 180.0 * M_PI;
-    double magic = sin(radLat);
-    magic = 1 - ee * magic * magic;
-    double sqrtMagic = sqrt(magic);
-    dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * M_PI);
-    dLon = (dLon * 180.0) / (a / sqrtMagic * cos(radLat) * M_PI);
-    mgLat = wgLat + dLat;
-    mgLon = wgLon + dLon;
+    return (a + b) / 2;
 }
-
 
 }

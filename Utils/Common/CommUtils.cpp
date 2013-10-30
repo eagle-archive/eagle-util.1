@@ -9,6 +9,7 @@
 #include <time.h>
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <fstream>
 #include "CommUtils.h"
 
@@ -48,6 +49,63 @@ void GetCurTimestamp(SQL_TIMESTAMP_STRUCT &st) {
     st.fraction = 0;
 }
 
+time_t TimestampToTime(const SQL_TIMESTAMP_STRUCT &st)
+{
+    struct tm sourcedate;
+    memset(&sourcedate, 0, sizeof(sourcedate));
+
+    sourcedate.tm_sec = st.second;
+    sourcedate.tm_min = st.minute;
+    sourcedate.tm_hour = st.hour;
+    sourcedate.tm_mday = st.day;
+    sourcedate.tm_mon = st.month - 1;
+    sourcedate.tm_year = st.year - 1900;
+    return mktime(&sourcedate);
+}
+
+bool StrToTimestamp(const std::string &s, SQL_TIMESTAMP_STRUCT &v)
+{
+    if (s.empty()) return false;
+
+    int year, month, day, hour, minute, second, fraction;
+
+    int r = sscanf(s.c_str(), "%d-%d-%d%*[ -]%d%*[:.]%d%*[:.]%d%*[:.]%d",
+        &year, &month, &day, &hour, &minute, &second, &fraction);
+    if (r == 5 || r == 6 || r == 7) {
+        if (r == 5) {
+            second = fraction = 0;
+        } else if (r == 6) {
+            fraction = 0;
+        }
+
+        if (year <= 0 || year > 3000) return false;
+        if (month < 0 || month > 12) {
+            return false;
+        } else if (month == 0) {
+            month = 1;
+        }
+        if (day < 0 || day > 31) {
+            return false;
+        } else if (day == 0) {
+            day = 1;
+        }
+        if (hour > 24 || minute > 60 || second > 60 || hour < 0 || minute < 0 || second < 0) {
+            return false;
+        }
+
+        v.year = year;
+        v.month = month;
+        v.day = day;
+        v.hour = hour;
+        v.minute = minute;
+        v.second = second;
+        v.fraction = fraction;
+
+        return true;
+    }
+    return false;
+}
+
 bool LoadSocketLib()
 {
 #ifdef _WIN32
@@ -55,7 +113,7 @@ bool LoadSocketLib()
     int nResult = WSAStartup(MAKEWORD(2,2), &wsaData);
 
     if (NO_ERROR != nResult) {
-        Log(LOG_ERROR, "failed to init Winsock!");
+        printf("failed to init Winsock!\n");
         return false;
     }
 #endif
@@ -97,26 +155,63 @@ bool SetRecvTimeOutInMs(SOCKET sockfd, long timeout)
     return ret == 0;
 }
 
-bool ReadIniString(dictionary *dict, const char *section, std::string &str)
+bool ReadIniString(dictionary *dict, const char *section, std::string &str, std::string &err)
 {
     char *value = iniparser_getstring(dict, section, NULL);
     if (NULL == value) {
-        Log(LOG_WARNING, "cannot find %s in config file", section);
+        char buff[128];
+        snprintf(buff, sizeof(buff), "cannot find %s in config file", section);
+        err = buff;
         return false;
     }
     str = value;
     return true;
 }
 
-bool ReadIniInt(dictionary *dict, const char*section, int &value)
+bool ReadIniInt(dictionary *dict, const char*section, int &value, std::string &err)
 {
     value = iniparser_getint(dict, section, 0xCDCDCDCD);
     if ((unsigned int)value == 0xCDCDCDCD) {
-        Log(LOG_WARNING, "cannot find %s in config file", section);
+        char buff[128];
+        snprintf(buff, sizeof(buff), "cannot find %s in config file", section);
+        err = buff;
         return false;
     }
     return true;
 }
+
+bool ReadIniDouble(dictionary *dict, const char *section, double &value, std::string &err)
+{
+    std::string str;
+    if (!ReadIniString(dict, section, str, err)) {
+        return false;
+    }
+
+    try {
+        value = boost::lexical_cast<double>(str);
+    } catch(boost::bad_lexical_cast &e) {
+        err = e.what();
+        return false;
+    }
+    return true;
+}
+
+bool GetLine(std::ifstream &fs, std::string &line)
+{
+    line.clear();
+    do{
+        if(getline(fs, line)) {
+            if(fs.good() && line.empty()){
+                continue;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    } while(true);
+    return false;
+}
+
 
 static inline
 void trim_left_and_push_back(std::vector<std::string> &strs, std::string &str)
@@ -174,4 +269,17 @@ bool WriteStrToFile(const char *path, const std::string &data)
     if (!out.good()) return false;
     out << data;
     return true;
+}
+
+void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes)
+{
+    using namespace std;
+    string::size_type pos = 0;
+    string::size_type srcLen = strSrc.size();
+    string::size_type desLen = strDes.size();
+    pos = strBase.find(strSrc, pos); 
+    while ((pos != string::npos)) {
+        strBase.replace(pos, srcLen, strDes);
+        pos=strBase.find(strSrc, (pos+desLen));
+    }
 }

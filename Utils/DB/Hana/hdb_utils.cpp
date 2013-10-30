@@ -67,7 +67,7 @@ const char *DataTypeToStr(DATA_TYPE_T type)
 
 DATA_TYPE_T StrToDataType(const char *type_str)
 {
-    string typestr(type_str);
+    std::string typestr(type_str);
     StrToUpper(typestr);
 
     for (int i = 0; i <= T_MAX; i++) {
@@ -150,7 +150,7 @@ void GetCurTime(SQL_TIME_STRUCT &time) {
 	time.second = stm.tm_sec;
 };
 
-bool StrToValue(const string &s, SQL_DATE_STRUCT &v)
+bool StrToValue(const std::string &s, SQL_DATE_STRUCT &v)
 {
     if (s.empty()) return false;
     int year, month, day;
@@ -166,7 +166,7 @@ bool StrToValue(const string &s, SQL_DATE_STRUCT &v)
     return false;
 }
 
-bool StrToValue(const string &s, SQL_TIME_STRUCT &v)
+bool StrToValue(const std::string &s, SQL_TIME_STRUCT &v)
 {
     if (s.empty()) return false;
     int hour, minute, second;
@@ -182,7 +182,7 @@ bool StrToValue(const string &s, SQL_TIME_STRUCT &v)
     return false;
 }
 
-bool StrToValue(const string &s, SQL_TIMESTAMP_STRUCT &v)
+bool StrToValue(const std::string &s, SQL_TIMESTAMP_STRUCT &v)
 {
     if (s.empty()) return false;
 
@@ -316,13 +316,13 @@ void ReplaceCharInStr(std::string& str, char ch1, char ch2)
     std::replace(str.begin(), str.end(), ch1, ch2);
 }
 
-void StringReplace(string &strBase, const string &strSrc, const string &strDes)
+void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes)
 {
-    string::size_type pos = 0;
-    string::size_type srcLen = strSrc.size();
-    string::size_type desLen = strDes.size();
+    std::string::size_type pos = 0;
+    std::string::size_type srcLen = strSrc.size();
+    std::string::size_type desLen = strDes.size();
     pos = strBase.find(strSrc, pos); 
-    while ((pos != string::npos)) {
+    while ((pos != std::string::npos)) {
         strBase.replace(pos, srcLen, strDes);
         pos=strBase.find(strSrc, (pos+desLen));
     }
@@ -384,7 +384,7 @@ void CsvLinePopulate(vector<string> &record, const char *line, char delimiter)
 }
 #else
 // Optimized version
-void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
+void CsvLinePopulate(std::vector<std::string> &record, const std::string &line, char delimiter)
 {
     int linepos = 0;
     bool inquotes = false;
@@ -459,15 +459,15 @@ void CsvLinePopulate(vector<string> &record, const string &line, char delimiter)
 }
 #endif
 
-static void SplitParams(vector<string> &record, const char *params)
+static void SplitParams(std::vector<std::string> &record, const char *params)
 {
     CsvLinePopulate(record, params, ',');
 
     for (size_t i = 0; i < record.size(); i++) {
-        if (record[i].find('(') != string::npos) {
-            string upper(record[i]);
+        if (record[i].find('(') != std::string::npos) {
+            std::string upper(record[i]);
             StrToUpper(upper);
-            if (upper.find("DECIMAL(") != string::npos || upper.find("DEC(") != string::npos) {
+            if (upper.find("DECIMAL(") != std::string::npos || upper.find("DEC(") != std::string::npos) {
                 if (i + 1 < record.size()) {
                     record[i] += ',';
                     record[i] += record[i+1];
@@ -478,7 +478,7 @@ static void SplitParams(vector<string> &record, const char *params)
     }
 }
 
-static void ParseParamStr(const string &param, int &p1, int &p2)
+static void ParseParamStr(const std::string &param, int &p1, int &p2)
 {
     DATA_TYPE_T type = StrToDataType(param.c_str());
     assert(T_UNKNOWN != type);
@@ -509,7 +509,7 @@ static void TrimRightFromNoCase(std::string &str, const char *sub)
     StrToUpper(subUpper);
 
     size_t pos = strUpper.find(subUpper);
-    if (pos != string::npos) {
+    if (pos != std::string::npos) {
         str.resize(pos);
     }
 }
@@ -532,10 +532,10 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
     }
 
     {
-        string create(create_sql);
+        std::string create(create_sql);
         create.erase(s_begin - create_sql);
         ReduceStr(create); // Now, e.g., create = CREATE COLUMN TABLE "I078212"."GPS29"
-        vector<string> subs;
+        std::vector<std::string> subs;
         CsvLinePopulate(subs, create.c_str(), ' ');
 
         size_t sub_count = subs.size();
@@ -548,7 +548,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         }
 
         {
-            vector<string> strs;
+            std::vector<std::string> strs;
             CsvLinePopulate(strs, subs[sub_count - 1].c_str(), '.');
             if (strs.size() == 1) {
                 parsed_table.schema.clear();
@@ -566,7 +566,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
     }
 
     s_begin++;
-    string str(s_begin);
+    std::string str(s_begin);
     TrimRightFromNoCase(str, "PARTITION BY"); // strip the sub-string starting from "PARTITION BY"
     TrimRightFromNoCase(str, "WITH PARAMETERS"); // strip the sub-string starting from "WITH PARAMETERS"
 
@@ -577,7 +577,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
     }
     str.erase(s_end - str.c_str());
     std::replace(str.begin(), str.end(), '\t', ' ');
-    while(str.find(" (") != string::npos) {
+    while(str.find(" (") != std::string::npos) {
         StringReplace(str, " (", "(");
     }
 
@@ -587,10 +587,10 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         return false;
     }
     for (size_t i = 0; i < col_count; i++) {
-        string &col_str = parsed_table.col_strs[i];
+        std::string &col_str = parsed_table.col_strs[i];
         ReduceStr(col_str);
 
-        vector<string> subs;
+        std::vector<std::string> subs;
         CsvLinePopulate(subs, col_str.c_str(), ' ');
         if (subs.size() < 2) {
             err_str = "Error in parsing: " + col_str + ": too few items!";
@@ -617,7 +617,7 @@ bool ParseTableFromSql(const char *create_sql, PARSED_TABLE_T &table, std::strin
         // check null-able for the parameter
         bool null_able = true;
         if (subs.size() > 2) {
-            string rest;
+            std::string rest;
             for (size_t i = 2; i < subs.size(); i++) {
                 rest += subs[i];
                 rest += ' ';
