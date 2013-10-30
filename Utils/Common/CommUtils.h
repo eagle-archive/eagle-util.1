@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 #ifdef _WIN32
 #include <WinSock2.h>
 #else
