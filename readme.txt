@@ -11,11 +11,14 @@ alias eagle-util='cd /cygdrive/d/Dev/MyProgram/eagle-util'
 
 .git/config
 ====================================================================================================
+[core]
+    filemode = false
 [user]
 	name = dynuaa
 	email = dynuaa@gmail.com
 [http]
-	proxy = 192.168.1.200:8087    
+	proxy = 192.168.1.200:8087
+    sslVerify = false
 
 url = http://code.google.com/p/eagle-util/ 
 ==> 
